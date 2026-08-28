@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu Healthcare - Reports &amp; Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#dad9e3",
+                        "secondary-container": "#c3ecd7",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-surface-variant": "#404944",
+                        "secondary-fixed": "#c3ecd7",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-secondary-container": "#476c5b",
+                        "background": "#fbf8ff",
+                        "off-white": "#f5f5f4",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "on-primary-fixed": "#002117",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#95d3ba",
+                        "on-background": "#1a1b22",
+                        "outline": "#707974",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-tertiary-container": "#f69f0d",
+                        "on-primary-container": "#80bea6",
+                        "slate": "#475569",
+                        "on-surface": "#1a1b22",
+                        "primary-container": "#064e3b",
+                        "secondary": "#416656",
+                        "surface-container-high": "#e8e7f1",
+                        "tertiary": "#442800",
+                        "surface-tint": "#2b6954",
+                        "inverse-surface": "#2f3038",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#002115",
+                        "charcoal": "#1e293b",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#2a1700",
+                        "primary-fixed": "#b0f0d6",
+                        "surface": "#fbf8ff",
+                        "surface-container-highest": "#e3e1ec",
+                        "primary": "#003527",
+                        "surface-container-low": "#f4f2fd",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#bfc9c3",
+                        "surface-variant": "#e3e1ec",
+                        "tertiary-container": "#623c00",
+                        "warm-white": "#fafaf9",
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "surface-bright": "#fbf8ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#95d3ba",
+                        "surface-container": "#eeedf7",
+                        "emerald-accent": "#10b981",
+                        "inverse-on-surface": "#f1effa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "margin-desktop": "64px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "hero-display-mobile": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "nav-link": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "button": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "hero-display": ["Inter"]
+                    },
+                    "fontSize": {
+                        "hero-display-mobile": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "nav-link": ["14px", { "lineHeight": "1", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "button": ["16px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "body-lg": ["20px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "hero-display": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-warm-white text-on-surface h-full flex font-body-md">
+<!-- SideNavBar (Desktop Only) -->
+<nav aria-label="Sidebar Navigation" class="hidden md:flex flex-col bg-surface border-r border-zinc-500/20 fixed left-0 top-0 h-full w-64 z-50 flex-col gap-2 py-8 px-4">
+<div class="mb-8 px-4">
+<h1 class="font-headline-lg text-headline-lg text-primary">Clinical Portal</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Maharashtra Rural Health</p>
+</div>
+<ul class="flex flex-col gap-2 flex-grow">
+<!-- Overview -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-secondary-fixed/20 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-nav-link text-nav-link">Overview</span>
+</a>
+</li>
+<!-- Dispensing Queue -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-secondary-fixed/20 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">medication</span>
+<span class="font-nav-link text-nav-link">Dispensing Queue</span>
+</a>
+</li>
+<!-- Inventory -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-secondary-fixed/20 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-nav-link text-nav-link">Inventory</span>
+</a>
+</li>
+<!-- Stock Requests -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-secondary-fixed/20 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">order_approve</span>
+<span class="font-nav-link text-nav-link">Stock Requests</span>
+</a>
+</li>
+<!-- Reports (ACTIVE) -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary font-bold border-r-4 border-primary bg-secondary-container/30 translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined icon-filled">analytics</span>
+<span class="font-nav-link text-nav-link">Reports</span>
+</a>
+</li>
+<!-- Notifications -->
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-secondary-fixed/20 hover:text-primary transition-all" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-nav-link text-nav-link">Notifications</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto px-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-zinc-500/20">
+<img alt="Pharmacist Profile" class="w-full h-full object-cover" data-alt="A portrait of an Indian pharmacist in a clean, modern clinic setting, warm natural lighting, confident and professional expression. The style is modern digital public health infrastructure, utilizing soft whites and deep emerald green accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpa0nm1r7EQuLDtOKfhvj7jDIUFr7t9Q7unOU-St6NCLZKGc5GlMrQJtvyIhGGjg4vZ8Mfqkw0rV0_TrCC48p6souHPNTgnQEfyhJKbuzbwe1SLWvjvw_2e7jpHLf08-JYfOZnbn0PIYY5yheg0ISV8XrL2ZYdLsR9E6rcBu45sU1hTUt7nV37FynFiXs8Ob58UwUjEAV-_Tsz9bYChNfo2IBsJebILFnWNeptiUi7MeJmDw83msA3zw"/>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface font-semibold">Dr. A. Sharma</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant text-[10px]">Head Pharmacist</p>
+</div>
+</div>
+</nav>
+<!-- TopNavBar (Mobile) / Header (Desktop) -->
+<header class="md:hidden fixed top-0 right-0 w-full z-40 bg-warm-white/80 backdrop-blur-md border-b border-zinc-500/20 h-[72px] flex justify-between items-center px-margin-mobile">
+<span class="font-headline-md text-headline-md text-primary">Setu Healthcare</span>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-charcoal cursor-pointer hover:text-primary-container transition-colors duration-200">account_circle</span>
+<span class="material-symbols-outlined text-charcoal cursor-pointer hover:text-primary-container transition-colors duration-200">settings</span>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 w-full max-w-[1280px] mx-auto px-margin-mobile md:px-gutter lg:px-margin-desktop pt-24 md:pt-12 pb-24">
+<!-- Page Header & Actions -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-charcoal">Operational Analytics</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Monthly performance and dispensing metrics.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="h-[52px] px-6 rounded-lg border border-zinc-500/20 bg-transparent text-charcoal font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">download</span>
+                    CSV
+                </button>
+<button class="h-[52px] px-6 rounded-lg bg-primary-container text-on-secondary font-button text-button flex items-center gap-2 hover:bg-primary transition-colors shadow-[0_10px_30px_rgba(30,41,59,0.04)]">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+                    Gov Report PDF
+                </button>
+</div>
+</div>
+<!-- KPI Grid (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<!-- Metric 1 -->
+<div class="bg-off-white p-6 rounded-xl border border-zinc-500/20 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary">medication_liquid</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Monthly Consumption</p>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">14,230</h3>
+<p class="font-label-sm text-label-sm text-emerald-accent flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                    +5.2% vs last month
+                </p>
+</div>
+<!-- Metric 2 -->
+<div class="bg-off-white p-6 rounded-xl border border-zinc-500/20 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary">fact_check</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Dispensing Accuracy</p>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">99.8%</h3>
+<p class="font-label-sm text-label-sm text-emerald-accent flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                    Target: &gt;99.5%
+                </p>
+</div>
+<!-- Metric 3 -->
+<div class="bg-off-white p-6 rounded-xl border border-zinc-500/20 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-[#b45309]">warning</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Stock-out Duration (Avg)</p>
+<h3 class="font-headline-md text-headline-md text-charcoal mb-1">2.4 Hrs</h3>
+<p class="font-label-sm text-label-sm text-[#b45309] flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">trending_down</span>
+                    -0.5 Hrs vs target
+                </p>
+</div>
+<!-- Metric 4 -->
+<div class="bg-off-white p-6 rounded-xl border border-zinc-500/20 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl text-primary">group</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Patients Served</p>
+<h3 class="font-headline-md text-headline-md text-primary mb-1">3,105</h3>
+<p class="font-label-sm text-label-sm text-emerald-accent flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                    +12% vs last month
+                </p>
+</div>
+</div>
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Line Chart: Stock Consumption Trends -->
+<div class="lg:col-span-2 bg-off-white p-6 rounded-xl border border-zinc-500/20 flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-body-lg text-body-lg text-charcoal font-semibold">Stock Consumption Trends</h3>
+<select class="bg-transparent border border-zinc-500/20 rounded-lg px-3 py-1 font-label-sm text-label-sm text-on-surface-variant focus:border-primary focus:ring-0">
+<option>Last 6 Months</option>
+<option>Year to Date</option>
+</select>
+</div>
+<!-- Chart Area Placeholder (CSS visual representation) -->
+<div class="flex-1 relative min-h-[250px] w-full mt-4">
+<!-- Y Axis Labels -->
+<div class="absolute left-0 top-0 h-full flex flex-col justify-between text-on-surface-variant font-label-sm text-[10px] w-8">
+<span>5k</span>
+<span>4k</span>
+<span>3k</span>
+<span>2k</span>
+<span>1k</span>
+<span>0</span>
+</div>
+<!-- Grid Lines & Data Line -->
+<div class="ml-10 h-full relative border-l border-b border-zinc-500/20">
+<div class="absolute top-[20%] w-full border-b border-zinc-500/10 border-dashed"></div>
+<div class="absolute top-[40%] w-full border-b border-zinc-500/10 border-dashed"></div>
+<div class="absolute top-[60%] w-full border-b border-zinc-500/10 border-dashed"></div>
+<div class="absolute top-[80%] w-full border-b border-zinc-500/10 border-dashed"></div>
+<!-- SVG Line mimicking data -->
+<svg class="absolute inset-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<path class="drop-shadow-sm" d="M0,80 L16,70 L33,40 L50,60 L66,30 L83,20 L100,10" fill="none" stroke="#064e3b" stroke-width="2"></path>
+<!-- Area under curve -->
+<path d="M0,80 L16,70 L33,40 L50,60 L66,30 L83,20 L100,10 L100,100 L0,100 Z" fill="url(#grad)" opacity="0.1"></path>
+<defs>
+<lineargradient id="grad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#064e3b" stop-opacity="1"></stop>
+<stop offset="100%" stop-color="#064e3b" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+<!-- X Axis Labels -->
+<div class="ml-10 mt-2 flex justify-between text-on-surface-variant font-label-sm text-[10px]">
+<span>Jan</span>
+<span>Feb</span>
+<span>Mar</span>
+<span>Apr</span>
+<span>May</span>
+<span>Jun</span>
+</div>
+</div>
+</div>
+<!-- Bar Chart: Most Dispensed Items -->
+<div class="lg:col-span-1 bg-off-white p-6 rounded-xl border border-zinc-500/20 flex flex-col">
+<h3 class="font-body-lg text-body-lg text-charcoal font-semibold mb-6">Most Dispensed Items</h3>
+<div class="flex flex-col gap-4 flex-1 justify-center">
+<!-- Item 1 -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1">
+<span class="text-charcoal font-medium">Paracetamol 500mg</span>
+<span class="text-primary font-semibold">2,450</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-primary rounded-full h-2" style="width: 85%"></div>
+</div>
+</div>
+<!-- Item 2 -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1">
+<span class="text-charcoal font-medium">Amoxicillin 250mg</span>
+<span class="text-primary font-semibold">1,820</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-surface-tint rounded-full h-2" style="width: 65%"></div>
+</div>
+</div>
+<!-- Item 3 -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1">
+<span class="text-charcoal font-medium">Ibuprofen 400mg</span>
+<span class="text-primary font-semibold">1,240</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-on-primary-container rounded-full h-2" style="width: 45%"></div>
+</div>
+</div>
+<!-- Item 4 -->
+<div>
+<div class="flex justify-between font-label-sm text-label-sm mb-1">
+<span class="text-charcoal font-medium">ORS Sachets</span>
+<span class="text-primary font-semibold">980</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-secondary-fixed-dim rounded-full h-2" style="width: 35%"></div>
+</div>
+</div>
+</div>
+<button class="mt-6 w-full text-center text-primary font-label-sm text-label-sm hover:underline">View Full List</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-warm-white border-t border-zinc-500/20 flex justify-around items-center h-[72px] z-40 pb-safe">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-[10px]">Overview</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">medication</span>
+<span class="font-label-sm text-[10px]">Queue</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined icon-filled bg-secondary-container/50 px-4 py-1 rounded-full">analytics</span>
+<span class="font-label-sm text-[10px] font-bold">Reports</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-sm text-[10px]">Inventory</span>
+</a>
+</nav>
+</body></html>

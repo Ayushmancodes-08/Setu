@@ -1,0 +1,331 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Setu ASHA - Emergency Response</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface-container-low": "#f4f2fd",
+                        "warm-white": "#fafaf9",
+                        "primary-fixed-dim": "#95d3ba",
+                        "on-background": "#1a1b22",
+                        "surface-variant": "#e3e1ec",
+                        "tertiary": "#442800",
+                        "on-primary-fixed": "#002117",
+                        "on-surface": "#1a1b22",
+                        "surface-container-high": "#e8e7f1",
+                        "on-error": "#ffffff",
+                        "secondary": "#416656",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-container": "#eeedf7",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#064e3b",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "slate": "#475569",
+                        "on-tertiary-container": "#f69f0d",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#2f3038",
+                        "tertiary-container": "#623c00",
+                        "on-primary-container": "#80bea6",
+                        "outline": "#707974",
+                        "charcoal": "#1e293b",
+                        "surface": "#fbf8ff",
+                        "surface-bright": "#fbf8ff",
+                        "on-surface-variant": "#404944",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#2b6954",
+                        "primary": "#003527",
+                        "tertiary-fixed": "#ffddb8",
+                        "emerald-accent": "#10b981",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#95d3ba",
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "outline-variant": "#bfc9c3",
+                        "background": "#fbf8ff",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f1effa",
+                        "surface-container-highest": "#e3e1ec",
+                        "surface-dim": "#dad9e3",
+                        "off-white": "#f5f5f4",
+                        "secondary-fixed": "#c3ecd7",
+                        "on-secondary-fixed": "#002115",
+                        "on-secondary-container": "#476c5b",
+                        "primary-fixed": "#b0f0d6",
+                        "secondary-container": "#c3ecd7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "margin-desktop": "64px",
+                        "unit": "4px",
+                        "container-max": "1280px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "nav-link": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "hero-display-mobile": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "button": ["Inter"],
+                        "hero-display": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "nav-link": ["14px", { "lineHeight": "1", "fontWeight": "500" }],
+                        "body-lg": ["20px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "hero-display-mobile": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "button": ["16px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "hero-display": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-warm-white text-on-surface antialiased flex">
+<!-- Shared Component: SideNavBar -->
+<aside class="bg-surface-container-lowest h-screen w-72 flex-col fixed left-0 top-0 overflow-y-auto border-r border-zinc-500/20 hidden lg:flex py-gutter px-4 z-40">
+<!-- Header -->
+<div class="mb-8 px-2 flex items-center gap-3">
+<div aria-label="ASHA Worker Profile" class="h-10 w-10 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden border border-zinc-500/20">
+<span class="material-symbols-outlined text-primary" data-weight="fill">account_circle</span>
+</div>
+<div>
+<h2 class="text-headline-md font-headline-md font-bold text-primary">Setu Platform</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Maharashtra Public Health</p>
+</div>
+</div>
+<!-- CTA -->
+<button class="mb-6 w-full h-[52px] bg-primary-container text-warm-white rounded-lg font-button text-button flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+            New Household Visit
+        </button>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-1 font-nav-link text-nav-link"><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-primary font-bold border-r-4 border-primary bg-surface-container-low scale-[0.99] transition-transform duration-150" href="#"><span class="material-symbols-outlined">dashboard</span>Overview</a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#"><span class="material-symbols-outlined">assignment</span>Work Queue</a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#"><span class="material-symbols-outlined">home</span>My Households</a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#"><span class="material-symbols-outlined">group</span>Patients</a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#"><span class="material-symbols-outlined">health_and_safety</span>Care Programs</a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#"><span class="material-symbols-outlined">outbound</span>Referrals</a><div class="mt-4 pt-4 border-t border-zinc-500/10"><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#"><span class="material-symbols-outlined">school</span>Health Education</a></div></nav>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex-1 lg:pl-72 flex flex-col min-h-screen">
+<!-- Shared Component: TopNavBar -->
+<header class="bg-warm-white/80 backdrop-blur-md sticky top-0 w-full h-[72px] z-50 border-b border-zinc-500/20 flex justify-between items-center px-gutter font-body-md text-body-md">
+<div class="flex items-center gap-4">
+<button class="lg:hidden text-charcoal hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-headline-lg font-headline-lg text-primary tracking-tight">Setu Health</h1>
+</div>
+<div class="flex items-center gap-4">
+<!-- Trailing Icons -->
+<div class="hidden md:flex items-center gap-2 text-charcoal">
+<button aria-label="location_on" class="p-2 rounded-full hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">location_on</span></button>
+<button aria-label="calendar_today" class="p-2 rounded-full hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">calendar_today</span></button>
+<button aria-label="sync" class="p-2 rounded-full hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">sync</span></button>
+<button aria-label="language" class="p-2 rounded-full hover:bg-surface-container transition-colors"><span class="material-symbols-outlined">language</span></button>
+</div>
+<!-- Primary Action -->
+<button class="h-10 px-4 bg-primary-container text-warm-white rounded-lg font-button text-button hover:opacity-80 transition-opacity">
+                    Sync Data
+                </button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-gutter lg:p-margin-desktop max-w-container-max mx-auto w-full">
+<!-- Page Header -->
+<div class="mb-8 border-b border-zinc-500/20 pb-6 flex items-start justify-between flex-wrap gap-4">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="font-label-sm text-label-sm text-error uppercase tracking-wider">Critical Action Center</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Emergency Quick Actions</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">
+                        High-stress support tools. Use these immediate actions to connect with emergency services, locate facilities, or initiate critical care protocols.
+                    </p>
+</div>
+</div>
+<!-- Primary Actions Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+<!-- Action 1: 108 -->
+<button class="col-span-1 md:col-span-2 lg:col-span-2 h-48 bg-error rounded-xl p-6 flex flex-col justify-between items-start hover:bg-error/90 transition-colors shadow-[0_10px_30px_rgba(186,26,26,0.15)] group text-left">
+<div class="flex justify-between w-full items-start">
+<div class="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
+<span class="material-symbols-outlined text-on-error text-4xl" data-weight="fill">emergency</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-error/80 uppercase">Primary Response</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-error">Call Medical Emergency</h3>
+<p class="font-body-lg text-body-lg text-on-error/90 mt-1 font-bold tracking-widest">DIAL 108</p>
+</div>
+</button>
+<!-- Action 2: 104 -->
+<button class="h-48 bg-error-container rounded-xl p-6 flex flex-col justify-between items-start border border-error/20 hover:bg-error-container/80 transition-colors text-left group">
+<div class="p-3 bg-white/50 rounded-lg">
+<span class="material-symbols-outlined text-on-error-container text-3xl">support_agent</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-error-container font-semibold leading-tight">Call Specialist Guidance</h3>
+<p class="font-body-md text-body-md text-on-error-container/80 mt-1">National Helpline 104</p>
+</div>
+</button>
+<!-- Action 3: ICU -->
+<button class="h-48 bg-surface-container-lowest rounded-xl p-6 flex flex-col justify-between items-start border border-error/20 hover:border-error/50 hover:shadow-[0_10px_30px_rgba(30,41,59,0.04)] transition-all text-left">
+<div class="p-3 bg-error-container/30 rounded-lg">
+<span class="material-symbols-outlined text-error text-3xl">local_hospital</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold leading-tight">Locate Nearest ICU</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 text-sm">Find equipped facilities</p>
+</div>
+</button>
+<!-- Action 4: Alert Supervisor -->
+<button class="col-span-1 md:col-span-2 lg:col-span-4 h-24 bg-surface-container-lowest rounded-xl p-6 flex items-center justify-between border border-error/20 hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-4">
+<div class="p-3 bg-error-container/20 rounded-full">
+<span class="material-symbols-outlined text-error">notifications_active</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold">Send Emergency Alert to Supervisor</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Notifies block coordinator immediately</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">arrow_forward</span>
+</button>
+</section>
+<!-- Information Sections Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Protocols Column (Spans 2 cols) -->
+<section class="lg:col-span-2">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary">medical_information</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">First-Aid Protocols</h2>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Protocol Card: Snake Bite -->
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-6 shadow-[0_10px_30px_rgba(30,41,59,0.02)]">
+<div class="flex items-start gap-4">
+<div class="p-3 bg-surface-container-low rounded-lg text-primary">
+<span class="material-symbols-outlined">pest_control</span>
+</div>
+<div class="flex-1">
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold mb-2">Snake Bite</h3>
+<ul class="font-body-md text-body-md text-on-surface-variant list-disc list-inside space-y-1">
+<li class="">Keep the patient calm and immobilize the bitten limb.</li>
+<li class="">Do not cut, suck, or apply ice to the wound.</li>
+<li class="">Remove tight clothing or jewelry near the bite area.</li>
+<li class="">Arrange immediate transport to a facility with Anti-Snake Venom (ASV).</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Protocol Card: High Fever -->
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-6 shadow-[0_10px_30px_rgba(30,41,59,0.02)]">
+<div class="flex items-start gap-4">
+<div class="p-3 bg-surface-container-low rounded-lg text-primary">
+<span class="material-symbols-outlined">device_thermostat</span>
+</div>
+<div class="flex-1">
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold mb-2">High Fever (Pediatric/Adult)</h3>
+<ul class="font-body-md text-body-md text-on-surface-variant list-disc list-inside space-y-1">
+<li class="">Administer paracetamol as per age/weight guidelines.</li>
+<li class="">Perform tepid sponging if temperature exceeds 103°F.</li>
+<li class="">Ensure adequate fluid intake to prevent dehydration.</li>
+<li class="">Monitor for danger signs (convulsions, lethargy).</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Protocol Card: PPH -->
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-6 shadow-[0_10px_30px_rgba(30,41,59,0.02)]">
+<div class="flex items-start gap-4">
+<div class="p-3 bg-surface-container-low rounded-lg text-primary">
+<span class="material-symbols-outlined">water_drop</span>
+</div>
+<div class="flex-1">
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold mb-2">Postpartum Hemorrhage (PPH)</h3>
+<ul class="font-body-md text-body-md text-on-surface-variant list-disc list-inside space-y-1">
+<li class="">Call for immediate assistance and arrange transport.</li>
+<li class="">Perform continuous uterine massage.</li>
+<li class="">Keep the mother warm and elevate legs if possible.</li>
+<li class="">Prepare for IV fluids if trained and equipped.</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Contacts Column -->
+<section class="lg:col-span-1">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary">directions_car</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Transport Contacts</h2>
+</div>
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(30,41,59,0.02)]">
+<div class="p-4 bg-surface-container-low border-b border-zinc-500/20">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Local 108 Ambulances</p>
+</div>
+<ul class="divide-y divide-zinc-500/10">
+<li class="p-4 flex items-center justify-between hover:bg-surface transition-colors">
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Ramesh Patil</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">North Block Station</p>
+</div>
+<button aria-label="Call Ramesh" class="h-10 w-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">call</span>
+</button>
+</li>
+<li class="p-4 flex items-center justify-between hover:bg-surface transition-colors">
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Sanjay Deshmukh</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Central PHC</p>
+</div>
+<button aria-label="Call Sanjay" class="h-10 w-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">call</span>
+</button>
+</li>
+<li class="p-4 flex items-center justify-between hover:bg-surface transition-colors">
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Vijay Kumar</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">East Village Duty</p>
+</div>
+<button aria-label="Call Vijay" class="h-10 w-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">call</span>
+</button>
+</li>
+</ul>
+</div>
+</section>
+</div>
+</main>
+</div>
+
+
+</body></html>

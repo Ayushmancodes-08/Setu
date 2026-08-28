@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu Healthcare - Consultations</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "warm-white": "#fafaf9",
+                      "tertiary-container": "#623c00",
+                      "surface-tint": "#2b6954",
+                      "primary-container": "#064e3b",
+                      "surface-container-low": "#f4f2fd",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "secondary-container": "#c3ecd7",
+                      "surface-dim": "#dad9e3",
+                      "on-primary-fixed": "#002117",
+                      "outline": "#707974",
+                      "on-tertiary-fixed": "#2a1700",
+                      "on-error": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-high": "#e8e7f1",
+                      "inverse-surface": "#2f3038",
+                      "background": "#fbf8ff",
+                      "on-secondary-fixed-variant": "#294e3f",
+                      "secondary": "#416656",
+                      "tertiary-fixed": "#ffddb8",
+                      "slate": "#475569",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface": "#1a1b22",
+                      "surface": "#fbf8ff",
+                      "outline-variant": "#bfc9c3",
+                      "surface-bright": "#fbf8ff",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "off-white": "#f5f5f4",
+                      "surface-variant": "#e3e1ec",
+                      "secondary-fixed-dim": "#a8cfbc",
+                      "emerald-accent": "#10b981",
+                      "surface-container-highest": "#e3e1ec",
+                      "on-secondary-container": "#476c5b",
+                      "primary-fixed-dim": "#95d3ba",
+                      "on-tertiary-container": "#f69f0d",
+                      "primary": "#003527",
+                      "on-secondary-fixed": "#002115",
+                      "on-background": "#1a1b22",
+                      "charcoal": "#1e293b",
+                      "on-primary-container": "#80bea6",
+                      "inverse-primary": "#95d3ba",
+                      "on-secondary": "#ffffff",
+                      "tertiary": "#442800",
+                      "on-error-container": "#93000a",
+                      "primary-fixed": "#b0f0d6",
+                      "secondary-fixed": "#c3ecd7",
+                      "surface-container": "#eeedf7",
+                      "inverse-on-surface": "#f1effa",
+                      "on-surface-variant": "#404944"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "container-max": "1280px",
+                      "unit": "4px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "hero-display": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "nav-link": [
+                              "Inter"
+                      ],
+                      "hero-display-mobile": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "button": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "hero-display": [
+                              "64px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "nav-link": [
+                              "14px",
+                              {
+                                      "lineHeight": "1",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "hero-display-mobile": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "button": [
+                              "16px",
+                              {
+                                      "lineHeight": "1",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #fafaf9; /* warm-white */
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md text-on-surface antialiased">
+<!-- SideNavBar -->
+<nav class="hidden md:flex fixed left-0 top-0 h-screen w-[240px] flex-col py-8 px-4 bg-surface border-r border-outline/20 bg-warm-white z-50">
+<div class="mb-12 px-4">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Setu Healthcare</h1>
+</div>
+<div class="flex items-center gap-4 mb-8 px-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant flex-shrink-0">
+<img alt="Doctor Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a dignified medical specialist wearing a white coat in a bright, modern clinic setting. The lighting is soft and natural, casting gentle shadows that emphasize a calm, authoritative expression. The background is a slightly blurred, high-end medical office with warm white walls and a hint of deep teal accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDazS01QfUcoS7zni4Ev-UfmHutlP8WevTKon7z5IXBGCWpoe-fgLsqF_TOEfUveMnnGx875vIQ3pNC8SnkgxLZdcQLqr9myDem4VFpksRXWmRpYXrXSwiWhQdXbzQSb_eCWBFxbTFS6AqYL6gi3FFejMiFOm3ud2u2GOVI52kCl33YgYXCnrdxWxVZGiz4ePXGA2GqfKOYNU91I8GVPXQvoig6Elzap45648dgo4H_eSG2LJahl_PiNw"/>
+</div>
+<div>
+<p class="font-button text-button text-on-surface">Dr. Specialist</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Cardiology Dept.</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 flex-grow">
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-nav-link text-nav-link text-on-surface-variant hover:bg-secondary-container/20 hover:text-primary transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Overview
+            </a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-nav-link text-nav-link text-on-surface-variant hover:bg-secondary-container/20 hover:text-primary transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="clinical_notes">clinical_notes</span>
+                Referral Queue
+            </a>
+<!-- Active -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-nav-link text-nav-link text-primary font-bold border-r-4 border-primary bg-secondary-container/30 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="medical_services" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+                Consultations
+            </a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-nav-link text-nav-link text-on-surface-variant hover:bg-secondary-container/20 hover:text-primary transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="event_repeat">event_repeat</span>
+                Follow-ups
+            </a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-nav-link text-nav-link text-on-surface-variant hover:bg-secondary-container/20 hover:text-primary transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+                Patients
+            </a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg font-nav-link text-nav-link text-on-surface-variant hover:bg-secondary-container/20 hover:text-primary transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                Reports
+            </a>
+</div>
+</nav>
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 hidden md:flex justify-between items-center px-margin-desktop w-full ml-[240px] max-w-[calc(100%-240px)] h-[72px] bg-warm-white/80 backdrop-blur-md border-b border-outline/20">
+<div class="flex-1">
+<!-- Search bar could go here based on "search_bar": "on_left" -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-off-white border border-outline/20 rounded-lg focus:outline-none focus:border-primary transition-colors font-body-md text-body-md text-on-surface placeholder-on-surface-variant" placeholder="Search patients..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary-container transition-colors scale-95 active:scale-100">
+<span class="material-symbols-outlined" data-icon="language">language</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary-container transition-colors scale-95 active:scale-100 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary-container transition-colors scale-95 active:scale-100">
+<span class="material-symbols-outlined" data-icon="sync">sync</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="md:ml-[240px] p-margin-mobile md:p-margin-desktop max-w-container-max mx-auto min-h-screen">
+<!-- Page Header -->
+<div class="mb-12">
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">Consultations</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Manage your teleconsultation schedule and review past clinical sessions.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Active/Upcoming Sessions (Bento Grid Style) -->
+<div class="lg:col-span-8 flex flex-col gap-gutter">
+<h3 class="font-headline-md text-headline-md text-charcoal mb-2">Today's Schedule</h3>
+<!-- Active Session Card -->
+<div class="bg-off-white rounded-xl border border-outline/20 p-6 shadow-[0_10px_30px_rgba(30,41,59,0.04)] relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-2 h-full bg-emerald-accent"></div>
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-lg overflow-hidden bg-surface-variant">
+<img alt="Patient Ramesh Patil" class="w-full h-full object-cover" data-alt="A clear, respectful portrait of an elderly Indian farmer, weathered face, wearing traditional modest rural clothing, looking calmly towards the camera. The background is a soft, out-of-focus primary health center with clean white walls and subtle warm lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGePwVokEeZwbhS4G34f9OxoMHYEzO1Fxpa-6OVcWrWQFa_TMwYLsDwYRdjHXQ0e6tZETEGsz7vZTFFV9WmfHJui7QElcNXxVC6FXU80pbT5UfoHZriUGaRuTIaz9AiN1hvsFXe-RJPhUTQb3eaLAaX7J3LDFKQSwoT9MfVcol9PK9Fdbw2A0SeBgyV_SsDEDr1ScOEkMJ1-lgVwHfKN8eV_XP25yMm0-NmgJdZdihVcKvvQowsu-klA"/>
+</div>
+<div>
+<h4 class="font-button text-button text-charcoal">Ramesh Patil</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Age: 62 • Male • ID: MH-24-8891</p>
+</div>
+</div>
+<span class="px-3 py-1 rounded-full bg-secondary-container text-primary font-label-sm text-label-sm flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                            In Waiting Room
+                        </span>
+</div>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">Referral Reason</p>
+<p class="font-body-md text-body-md text-on-surface">Suspected Arrhythmia; Abnormal ECG</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-1">Referred By</p>
+<p class="font-body-md text-body-md text-on-surface">Dr. A. Sharma (PHC Shirur)</p>
+</div>
+</div>
+<button class="w-full h-[52px] bg-primary-container text-warm-white rounded-lg font-button text-button hover:bg-on-primary-fixed-variant transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="videocam">videocam</span>
+                        Start Teleconsultation
+                    </button>
+</div>
+<!-- Upcoming Session -->
+<div class="bg-off-white rounded-xl border border-outline/20 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant font-button text-button">
+                            SG
+                        </div>
+<div>
+<h4 class="font-button text-button text-charcoal">Sunita Gaikwad</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Hypertension Follow-up • 11:30 AM</p>
+</div>
+</div>
+<button class="h-[52px] px-6 bg-transparent border border-outline/20 text-charcoal rounded-lg font-button text-button hover:bg-surface-variant/50 transition-colors">
+                        Review Notes
+                    </button>
+</div>
+</div>
+<!-- Stats / Quick Actions -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<div class="bg-off-white rounded-xl border border-outline/20 p-6">
+<h3 class="font-headline-md text-headline-md text-charcoal mb-6">Session Overview</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center pb-4 border-b border-outline/20">
+<span class="font-body-md text-body-md text-on-surface-variant">Completed Today</span>
+<span class="font-headline-md text-headline-md text-primary">3</span>
+</div>
+<div class="flex justify-between items-center pb-4 border-b border-outline/20">
+<span class="font-body-md text-body-md text-on-surface-variant">Remaining</span>
+<span class="font-headline-md text-headline-md text-charcoal">4</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Avg. Duration</span>
+<span class="font-body-md text-body-md text-charcoal font-semibold">14 min</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-tint/10 rounded-xl border border-outline/20 p-6">
+<div class="flex items-start gap-3 mb-4">
+<span class="material-symbols-outlined text-primary-container" data-icon="info">info</span>
+<p class="font-body-md text-body-md text-charcoal">Network stability is currently optimal for high-resolution diagnostic sharing.</p>
+</div>
+</div>
+</div>
+<!-- History Table -->
+<div class="lg:col-span-12 mt-8">
+<h3 class="font-headline-md text-headline-md text-charcoal mb-6">Past Consultations</h3>
+<div class="bg-off-white rounded-xl border border-outline/20 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-warm-white border-b border-outline/20">
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Patient</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Date &amp; Time</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Reason</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Outcome</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline/20 font-body-md text-body-md text-on-surface">
+<tr class="hover:bg-warm-white/50 transition-colors group">
+<td class="p-4">
+<div class="font-medium text-charcoal">Anil Deshmukh</div>
+<div class="text-sm text-on-surface-variant">ID: MH-11-2093</div>
+</td>
+<td class="p-4 text-on-surface-variant">Oct 24, 2023<br/>09:15 AM</td>
+<td class="p-4">Post-op Review</td>
+<td class="p-4">
+<span class="px-2 py-1 rounded bg-surface-container-high text-charcoal font-label-sm text-label-sm">Recommendation Sent</span>
+</td>
+<td class="p-4">
+<button class="text-primary hover:text-primary-container font-button text-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            View Report <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-warm-white/50 transition-colors group">
+<td class="p-4">
+<div class="font-medium text-charcoal">Kavita Mane</div>
+<div class="text-sm text-on-surface-variant">ID: MH-04-5542</div>
+</td>
+<td class="p-4 text-on-surface-variant">Oct 23, 2023<br/>14:30 PM</td>
+<td class="p-4">Chest Pain Eval</td>
+<td class="p-4">
+<span class="px-2 py-1 rounded bg-secondary-container/50 text-primary-container font-label-sm text-label-sm">Follow-up Scheduled</span>
+</td>
+<td class="p-4">
+<button class="text-primary hover:text-primary-container font-button text-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            View Report <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-warm-white/50 transition-colors group">
+<td class="p-4">
+<div class="font-medium text-charcoal">Vijay Kale</div>
+<div class="text-sm text-on-surface-variant">ID: MH-19-1102</div>
+</td>
+<td class="p-4 text-on-surface-variant">Oct 23, 2023<br/>10:00 AM</td>
+<td class="p-4">Routine Check</td>
+<td class="p-4">
+<span class="px-2 py-1 rounded bg-surface-container-high text-charcoal font-label-sm text-label-sm">Closed - No Action</span>
+</td>
+<td class="p-4">
+<button class="text-primary hover:text-primary-container font-button text-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            View Report <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

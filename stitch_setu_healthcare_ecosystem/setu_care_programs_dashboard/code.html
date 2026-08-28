@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-background antialiased" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu ASHA - Care Programs</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error-container": "#ffdad6",
+                      "surface-variant": "#e3e1ec",
+                      "on-primary": "#ffffff",
+                      "on-surface-variant": "#404944",
+                      "tertiary": "#442800",
+                      "on-secondary-container": "#476c5b",
+                      "inverse-surface": "#2f3038",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "surface-container": "#eeedf7",
+                      "on-tertiary": "#ffffff",
+                      "outline-variant": "#bfc9c3",
+                      "on-tertiary-fixed": "#2a1700",
+                      "secondary-fixed-dim": "#a8cfbc",
+                      "surface-container-highest": "#e3e1ec",
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed": "#c3ecd7",
+                      "primary-container": "#064e3b",
+                      "charcoal": "#1e293b",
+                      "surface-tint": "#2b6954",
+                      "tertiary-container": "#623c00",
+                      "secondary-container": "#c3ecd7",
+                      "surface-bright": "#fbf8ff",
+                      "surface": "#fbf8ff",
+                      "background": "#fbf8ff",
+                      "on-primary-fixed": "#002117",
+                      "slate": "#475569",
+                      "inverse-primary": "#95d3ba",
+                      "off-white": "#f5f5f4",
+                      "on-surface": "#1a1b22",
+                      "surface-dim": "#dad9e3",
+                      "on-tertiary-container": "#f69f0d",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-primary-container": "#80bea6",
+                      "primary-fixed": "#b0f0d6",
+                      "inverse-on-surface": "#f1effa",
+                      "primary": "#003527",
+                      "secondary": "#416656",
+                      "error": "#ba1a1a",
+                      "surface-container-lowest": "#ffffff",
+                      "on-background": "#1a1b22",
+                      "primary-fixed-dim": "#95d3ba",
+                      "tertiary-fixed": "#ffddb8",
+                      "surface-container-high": "#e8e7f1",
+                      "outline": "#707974",
+                      "surface-container-low": "#f4f2fd",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "warm-white": "#fafaf9",
+                      "on-secondary-fixed-variant": "#294e3f",
+                      "on-secondary-fixed": "#002115",
+                      "emerald-accent": "#10b981"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "margin-desktop": "64px",
+                      "container-max": "1280px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "hero-display": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "button": [
+                              "Inter"
+                      ],
+                      "hero-display-mobile": [
+                              "Inter"
+                      ],
+                      "nav-link": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "hero-display": [
+                              "64px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "button": [
+                              "16px",
+                              {
+                                      "lineHeight": "1",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "hero-display-mobile": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "nav-link": [
+                              "14px",
+                              {
+                                      "lineHeight": "1",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="flex h-full w-full bg-warm-white text-on-background font-body-md text-body-md overflow-hidden">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-primary dark:bg-primary-container hidden md:flex flex-col py-6 z-50">
+<!-- Header -->
+<div class="px-6 mb-8 flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full bg-surface-container overflow-hidden mb-4 border-2 border-primary-fixed/30 shadow-[0_10px_30px_rgba(30,41,59,0.04)]">
+<img alt="Sunita Patil" class="w-full h-full object-cover" data-alt="Portrait photo of an Indian community health worker (ASHA) in her early 40s. She has a warm, professional smile, wearing a traditional green saree. The lighting is bright and natural, indicating a modern healthcare environment. The style is highly realistic, high-end, and crisp, suitable for a professional profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHuvZQkhD-2TpTu1NkIUz8l6ffu8-FoEgk-lauCriXFl9sOdt3YXsSlv2l-LzNbPBHGcvf1HYWUStFbrN63Lr3xKF6bIgTChBqsvbGIajcfRC4WuopyIpbNOmWaHnsxRcjXy930EXehFFBJAX1sy89eUX1Hki9s_rI3TNB20qBJlxZsi9sm4OisLmcfnRGrSaRwDnK3baKq3S-rNxk7JRHFye1rBDt6nwZfl3Il1fFFlOpTzUpsPFS3g"/>
+</div>
+<h1 class="text-headline-md font-headline-md font-bold text-on-primary dark:text-on-primary-container tracking-tight">Setu ASHA</h1>
+<p class="text-label-sm font-label-sm text-on-primary/80 mt-1 uppercase tracking-wider">Maharashtra Health</p>
+</div>
+<!-- Main Nav Tabs -->
+<div class="flex-1 overflow-y-auto w-full px-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary rounded-lg mx-2 my-1 hover:bg-on-primary/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-body-md font-body-md font-medium">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary rounded-lg mx-2 my-1 hover:bg-on-primary/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="text-body-md font-body-md font-medium">Work Queue</span>
+</a>
+<!-- ACTIVE TAB -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg mx-2 my-1 opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined icon-fill">clinical_notes</span>
+<span class="text-body-md font-body-md font-medium">Care Programs</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary rounded-lg mx-2 my-1 hover:bg-on-primary/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-body-md font-body-md font-medium">My Households</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary rounded-lg mx-2 my-1 hover:bg-on-primary/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-body-md font-body-md font-medium">Patients</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary rounded-lg mx-2 my-1 hover:bg-on-primary/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">move_up</span>
+<span class="text-body-md font-body-md font-medium">Referrals</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary rounded-lg mx-2 my-1 hover:bg-on-primary/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">import_contacts</span>
+<span class="text-body-md font-body-md font-medium">Health Education</span>
+</a>
+</div>
+<!-- CTA & Footer -->
+<div class="px-4 mt-auto mb-4 w-full">
+<button class="w-full bg-secondary text-on-secondary h-[52px] rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/90 transition-colors text-button font-button shadow-[0_10px_30px_rgba(30,41,59,0.04)] mb-6">
+<span class="material-symbols-outlined">add</span>
+                New Household
+            </button>
+<div class="w-full h-px bg-on-primary/20 mb-4"></div>
+<a class="flex items-center gap-3 px-4 py-2 text-on-primary/70 hover:text-on-primary rounded-lg hover:bg-on-primary/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">sync</span>
+<span class="text-label-sm font-label-sm uppercase tracking-wider">Sync Status</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-primary/70 hover:text-on-primary rounded-lg hover:bg-on-primary/10 transition-colors duration-200 mt-1" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-label-sm font-label-sm uppercase tracking-wider">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas Wrapper -->
+<div class="flex-1 flex flex-col md:ml-64 relative min-h-screen">
+<!-- TopAppBar -->
+<header class="h-[72px] fixed top-0 right-0 left-0 md:left-64 z-40 bg-white/80 backdrop-blur-md flex justify-between items-center px-4 md:px-margin-desktop w-full transition-all border-b-0 shadow-[0_4px_20px_rgba(30,41,59,0.02)]">
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Toggle (Visible only on mobile) -->
+<button class="md:hidden text-on-surface-variant p-2 -ml-2 rounded-lg hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="text-primary font-bold text-label-sm font-label-sm flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-full border border-outline/10">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                    Osmanabad | Wadgaon
+                </div>
+</div>
+<div class="flex items-center gap-2 md:gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors relative" title="sync">
+<span class="material-symbols-outlined">sync</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors relative" title="translate">
+<span class="material-symbols-outlined">translate</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors relative" title="notifications">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-full border-2 border-white"></span>
+</button>
+<div class="h-8 w-px bg-outline/20 mx-2 hidden md:block"></div>
+<button class="hidden md:flex items-center gap-3 hover:bg-surface-container-high p-1 pr-3 rounded-full transition-colors">
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden border border-outline/20">
+<img alt="Sunita Patil Avatar" class="w-full h-full object-cover" data-alt="Small avatar thumbnail of an Indian community health worker (ASHA). Clean, professional lighting. White background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlgp4rT4yRIck9pjuPNXvVpA9pX68I-teBuQVeVtG58K576AwUwlkMTdArcfPYRLREEbVWerQuUWfXgqD6wS0al_u2GwH8RlvrlE7whjVIvrhDsedLNfKhx0usXwmBZkeGVImWMbHNUA_rQiRExJYdVlzsPx8obKL_xvHoMtqpgoYBp3QRJ4B0Ygztw8bVYFy6e_BuCfJuGwK6LvwVC03due85WdXNcKSLzUhFJQjE4nN98atk1G2JPg"/>
+</div>
+<span class="text-label-sm font-label-sm font-medium text-on-surface">Sunita Patil</span>
+</button>
+</div>
+</header>
+<!-- Main Scrollable Content Area -->
+<main class="flex-1 overflow-y-auto pt-[72px] pb-24 md:pb-12 bg-warm-white">
+<div class="max-w-[1280px] mx-auto px-4 md:px-margin-desktop py-8">
+<!-- Page Header -->
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="text-headline-lg font-headline-lg text-charcoal mb-2 tracking-tight">Care Programs</h2>
+<p class="text-body-md font-body-md text-slate">Consolidated view of specialized monitoring programs in your ward.</p>
+</div>
+<button class="h-[52px] px-6 bg-primary-container text-on-primary-container rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-[0_10px_30px_rgba(30,41,59,0.04)] text-button font-button w-full md:w-auto">
+<span class="material-symbols-outlined">person_add</span>
+                        Enroll Patient
+                    </button>
+</div>
+<!-- Summary Cards (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<!-- ANC Follow-ups Card -->
+<div class="bg-off-white rounded-[24px] p-6 border border-zinc-500/20 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-[120px] text-primary">pregnant_woman</span>
+</div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">pregnant_woman</span>
+</div>
+<h3 class="text-headline-md font-headline-md text-charcoal">ANC Care</h3>
+</div>
+<div class="flex items-end gap-3 mb-2">
+<span class="text-hero-display-mobile font-hero-display-mobile text-primary">12</span>
+<span class="text-body-md font-body-md text-slate pb-2">Active</span>
+</div>
+<div class="mt-auto pt-4 flex items-center justify-between border-t border-zinc-500/10">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-error"></span>
+<span class="text-label-sm font-label-sm text-error font-semibold">2 OVERDUE</span>
+</div>
+<button class="text-primary hover:text-primary-container transition-colors p-1">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Child Immunization Card -->
+<div class="bg-off-white rounded-[24px] p-6 border border-zinc-500/20 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-[120px] text-primary">child_care</span>
+</div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">child_care</span>
+</div>
+<h3 class="text-headline-md font-headline-md text-charcoal">Immunization</h3>
+</div>
+<div class="flex items-end gap-3 mb-2">
+<span class="text-hero-display-mobile font-hero-display-mobile text-primary">28</span>
+<span class="text-body-md font-body-md text-slate pb-2">Enrolled</span>
+</div>
+<div class="mt-auto pt-4 flex items-center justify-between border-t border-zinc-500/10">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-[#f69f0d]"></span>
+<span class="text-label-sm font-label-sm text-on-surface-variant font-semibold">5 DUE THIS WEEK</span>
+</div>
+<button class="text-primary hover:text-primary-container transition-colors p-1">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Chronic Care Card -->
+<div class="bg-off-white rounded-[24px] p-6 border border-zinc-500/20 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 transform translate-x-2 -translate-y-2 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-[120px] text-primary">monitor_heart</span>
+</div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">monitor_heart</span>
+</div>
+<h3 class="text-headline-md font-headline-md text-charcoal">Chronic Care</h3>
+</div>
+<div class="flex items-end gap-3 mb-2">
+<span class="text-hero-display-mobile font-hero-display-mobile text-primary">15</span>
+<span class="text-body-md font-body-md text-slate pb-2">Monitoring</span>
+</div>
+<div class="mt-auto pt-4 flex items-center justify-between border-t border-zinc-500/10">
+<div class="flex items-center gap-2">
+<span class="text-label-sm font-label-sm text-slate">HTN &amp; Diabetes</span>
+</div>
+<button class="text-primary hover:text-primary-container transition-colors p-1">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Care Program Registry Section -->
+<div class="mb-6 flex items-center justify-between">
+<h3 class="text-headline-md font-headline-md text-charcoal">Program Registry</h3>
+<!-- Filters/Actions -->
+<div class="flex items-center gap-3">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="h-10 pl-10 pr-4 bg-off-white border-zinc-500/20 rounded-full text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all w-64 placeholder:text-outline-variant" placeholder="Search patients..." type="text"/>
+</div>
+<button class="h-10 px-4 bg-off-white border border-zinc-500/20 rounded-full flex items-center gap-2 text-label-sm font-label-sm text-charcoal hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                            Filter
+                        </button>
+</div>
+</div>
+<!-- List View (Glassmorphism inspired cards) -->
+<div class="flex flex-col gap-3">
+<!-- Patient Row 1: High Risk ANC -->
+<div class="bg-white rounded-2xl p-4 md:p-5 border border-zinc-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-[0_10px_30px_rgba(30,41,59,0.04)] transition-all">
+<div class="flex items-start md:items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-error-container text-on-error-container flex items-center justify-center shrink-0 border border-error/20">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h4 class="text-body-lg font-body-lg font-medium text-charcoal">Aarti Deshmukh</h4>
+<span class="h-6 px-2.5 rounded-full bg-error-container text-on-error-container text-[10px] font-bold tracking-wider flex items-center uppercase">High Risk</span>
+</div>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-label-sm font-label-sm text-slate">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">pregnant_woman</span> ANC - Week 32</span>
+<span class="hidden md:inline text-outline-variant">•</span>
+<span>Last Visit: 14 days ago</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 md:ml-auto md:pl-6 md:border-l border-zinc-500/10">
+<div class="text-right hidden md:block">
+<div class="text-label-sm font-label-sm text-error font-semibold mb-1">DUE YESTERDAY</div>
+<div class="text-body-md font-body-md text-slate">Routine Checkup</div>
+</div>
+<div class="flex items-center gap-2 w-full md:w-auto">
+<button class="flex-1 md:flex-none h-12 px-4 bg-transparent border border-zinc-500/40 text-charcoal rounded-xl text-button font-button hover:bg-surface-container-low transition-colors">Details</button>
+<button class="flex-1 md:flex-none h-12 px-4 bg-primary text-on-primary rounded-xl text-button font-button hover:bg-primary/90 transition-colors shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span> Schedule
+                                </button>
+</div>
+</div>
+</div>
+<!-- Patient Row 2: Chronic Care -->
+<div class="bg-white rounded-2xl p-4 md:p-5 border border-zinc-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-[0_10px_30px_rgba(30,41,59,0.04)] transition-all">
+<div class="flex items-start md:items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">monitor_heart</span>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h4 class="text-body-lg font-body-lg font-medium text-charcoal">Ramesh Pawar</h4>
+<span class="h-6 px-2.5 rounded-full bg-surface-variant text-on-surface-variant text-[10px] font-bold tracking-wider flex items-center uppercase">Routine</span>
+</div>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-label-sm font-label-sm text-slate">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">blood_pressure</span> Type 2 Diabetes, HTN</span>
+<span class="hidden md:inline text-outline-variant">•</span>
+<span>Last BP: 135/85 (Oct 12)</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 md:ml-auto md:pl-6 md:border-l border-zinc-500/10">
+<div class="text-right hidden md:block">
+<div class="text-label-sm font-label-sm text-on-surface-variant font-semibold mb-1">DUE IN 3 DAYS</div>
+<div class="text-body-md font-body-md text-slate">Monthly Refill</div>
+</div>
+<div class="flex items-center gap-2 w-full md:w-auto">
+<button class="flex-1 md:flex-none h-12 px-4 bg-transparent border border-zinc-500/40 text-charcoal rounded-xl text-button font-button hover:bg-surface-container-low transition-colors">Details</button>
+<button class="flex-1 md:flex-none h-12 px-4 bg-primary text-on-primary rounded-xl text-button font-button hover:bg-primary/90 transition-colors shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">medication</span> Log Meds
+                                </button>
+</div>
+</div>
+</div>
+<!-- Patient Row 3: Immunization -->
+<div class="bg-white rounded-2xl p-4 md:p-5 border border-zinc-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:shadow-[0_10px_30px_rgba(30,41,59,0.04)] transition-all opacity-80">
+<div class="flex items-start md:items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">vaccines</span>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h4 class="text-body-lg font-body-lg font-medium text-charcoal">Baby of Sunita</h4>
+<span class="h-6 px-2.5 rounded-full bg-[#d1fae5] text-primary-container text-[10px] font-bold tracking-wider flex items-center uppercase">On Track</span>
+</div>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-label-sm font-label-sm text-slate">
+<span class="flex items-center gap-1">Age: 14 Weeks</span>
+<span class="hidden md:inline text-outline-variant">•</span>
+<span>Last: Pentavalent 1</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 md:ml-auto md:pl-6 md:border-l border-zinc-500/10">
+<div class="text-right hidden md:block">
+<div class="text-label-sm font-label-sm text-outline font-semibold mb-1">UPCOMING (NOV 15)</div>
+<div class="text-body-md font-body-md text-slate">Pentavalent 2, OPV 2</div>
+</div>
+<div class="flex items-center gap-2 w-full md:w-auto">
+<button class="flex-1 md:flex-none w-full md:w-auto h-12 px-6 bg-transparent border border-zinc-500/40 text-charcoal rounded-xl text-button font-button hover:bg-surface-container-low transition-colors">View Card</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full bg-surface border-t border-outline/20 flex justify-around items-center h-[72px] pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">dashboard</span>
+<span class="text-[10px] font-label-sm font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">assignment</span>
+<span class="text-[10px] font-label-sm font-medium">Tasks</span>
+</a>
+<!-- ACTIVE -->
+<a class="flex flex-col items-center justify-center w-full h-full text-primary relative" href="#">
+<div class="absolute top-1 w-12 h-8 bg-secondary-container rounded-full -z-10"></div>
+<span class="material-symbols-outlined icon-fill mb-1 text-on-secondary-container">clinical_notes</span>
+<span class="text-[10px] font-label-sm font-bold">Programs</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="text-[10px] font-label-sm font-medium">Patients</span>
+</a>
+</nav>
+</body></html>

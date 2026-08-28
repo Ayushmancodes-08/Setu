@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu DHO Overview - Command Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#442800",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#002117",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "on-background": "#1a1b22",
+                        "on-tertiary-fixed": "#2a1700",
+                        "charcoal": "#1e293b",
+                        "surface-container-high": "#e8e7f1",
+                        "secondary-container": "#c3ecd7",
+                        "on-primary": "#ffffff",
+                        "background": "#fbf8ff",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "inverse-on-surface": "#f1effa",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "primary-container": "#064e3b",
+                        "on-tertiary-container": "#f69f0d",
+                        "tertiary-container": "#623c00",
+                        "tertiary-fixed": "#ffddb8",
+                        "off-white": "#f5f5f4",
+                        "emerald-accent": "#10b981",
+                        "warm-white": "#fafaf9",
+                        "surface-dim": "#dad9e3",
+                        "secondary": "#416656",
+                        "primary": "#003527",
+                        "on-surface": "#1a1b22",
+                        "on-secondary-fixed": "#002115",
+                        "primary-fixed": "#b0f0d6",
+                        "surface-tint": "#2b6954",
+                        "inverse-surface": "#2f3038",
+                        "on-primary-container": "#80bea6",
+                        "on-secondary-container": "#476c5b",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#bfc9c3",
+                        "surface-bright": "#fbf8ff",
+                        "inverse-primary": "#95d3ba",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f4f2fd",
+                        "surface-variant": "#e3e1ec",
+                        "slate": "#475569",
+                        "secondary-fixed": "#c3ecd7",
+                        "outline": "#707974",
+                        "surface-container": "#eeedf7",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#404944",
+                        "surface": "#fbf8ff",
+                        "primary-fixed-dim": "#95d3ba",
+                        "surface-container-highest": "#e3e1ec"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "button": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "hero-display": ["Inter"],
+                        "hero-display-mobile": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "nav-link": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "button": ["16px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "body-lg": ["20px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "hero-display": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "hero-display-mobile": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "nav-link": ["14px", { "lineHeight": "1", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .glass-panel {
+                @apply bg-white/80 backdrop-blur-md border border-zinc-500/20 shadow-[0_10px_30px_rgba(30,41,59,0.04)];
+            }
+            .ambient-shadow {
+                box-shadow: 0 10px 30px rgba(30, 41, 59, 0.04);
+            }
+            .ghost-border {
+                @apply border border-zinc-500/20;
+            }
+        }
+    </style>
+</head>
+<body class="bg-warm-white text-on-surface font-body-md text-body-md selection:bg-primary-container selection:text-white flex min-h-screen">
+<!-- Side Navigation -->
+<nav class="fixed left-0 top-0 h-full w-64 flex flex-col z-40 bg-warm-white border-r border-zinc-500/20 hidden md:flex">
+<!-- Header -->
+<div class="h-[72px] flex items-center px-6 border-b border-zinc-500/20">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-sm">health_and_safety</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md text-primary" style="font-size: 16px; line-height: 1.2;">Setu Healthcare</h1>
+<p class="font-label-sm text-label-sm text-slate">Maharashtra Health Dept</p>
+</div>
+</div>
+</div>
+<!-- Main Nav -->
+<div class="flex-1 overflow-y-auto py-4">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 text-primary font-bold border-r-4 border-primary bg-secondary-container/30 py-3 px-6 duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-nav-link text-nav-link">Overview</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-charcoal py-3 px-6 hover:bg-secondary-container/20 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">medical_services</span>
+<span class="font-nav-link text-nav-link">Facilities</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-charcoal py-3 px-6 hover:bg-secondary-container/20 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">swap_horiz</span>
+<span class="font-nav-link text-nav-link">Referrals</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-charcoal py-3 px-6 hover:bg-secondary-container/20 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-nav-link text-nav-link">Supplies</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-charcoal py-3 px-6 hover:bg-secondary-container/20 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="font-nav-link text-nav-link">Health Trends</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-charcoal py-3 px-6 hover:bg-secondary-container/20 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-nav-link text-nav-link">Reports</span>
+</a>
+</li>
+</ul>
+</div>
+<!-- Footer Actions -->
+<div class="p-4 border-t border-zinc-500/20">
+<button class="w-full bg-error-container text-on-error-container font-button text-button h-12 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity mb-4">
+<span class="material-symbols-outlined text-xl">emergency</span>
+                Emergency Response
+            </button>
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 text-charcoal py-2 px-2 hover:bg-secondary-container/20 transition-all duration-200 ease-in-out rounded-md" href="#">
+<span class="material-symbols-outlined text-sm">settings</span>
+<span class="font-nav-link text-nav-link">System Settings</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 text-charcoal py-2 px-2 hover:bg-secondary-container/20 transition-all duration-200 ease-in-out rounded-md" href="#">
+<span class="material-symbols-outlined text-sm">help</span>
+<span class="font-nav-link text-nav-link">Help Support</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:ml-64 min-w-0">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-30 flex justify-between items-center h-[72px] px-margin-mobile md:px-margin-desktop w-full bg-surface border-b border-zinc-500/20">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-charcoal p-2 -ml-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-headline-md text-headline-md font-semibold text-primary hidden sm:block">Osmanabad District</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center gap-2 bg-off-white px-4 py-2 rounded-full ghost-border">
+<span class="material-symbols-outlined text-slate text-sm">calendar_today</span>
+<span class="font-label-sm text-label-sm text-charcoal">Today: Jan 30, 2024</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-charcoal hover:bg-surface-container-low transition-colors relative">
+<span class="material-symbols-outlined">sync</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-charcoal hover:bg-surface-container-low transition-colors relative">
+<span class="material-symbols-outlined">language</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-charcoal hover:bg-surface-container-low transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-dim overflow-hidden ghost-border cursor-pointer flex-shrink-0">
+<img alt="District Health Officer Profile" class="w-full h-full object-cover" data-alt="Professional headshot of a District Health Officer in a modern office, wearing a light blue shirt, soft natural lighting, high-end corporate portrait photography, calm and authoritative expression, neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAp-GHcTyOioY9GmVmPrV7UEd8ukLYcep-L_Y53_xK3g4C2gvPchSVIGFWek18yBiS-T2WZc2SirmY2AfhraIbAh7K1yA_qN0NOCu-GieEABYcggq3qEh8OhSHeJV7uyVF8acebo8MI8yiN4IRM6ILTIkI82HKRbKlIGdJF01elW9lmj06AJiJjc2WicEKmgrLQegl_1VsLmW4Oc5aqwmwYMbDQP8-oKLI80A8jSVpDGv5Dd169OeI05w"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="flex-1 overflow-y-auto p-margin-mobile md:p-gutter lg:p-margin-desktop max-w-container-max mx-auto w-full flex flex-col gap-gutter">
+<!-- Headline Metrics (5 Cards) -->
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+<!-- Card 1 -->
+<div class="bg-white rounded-xl p-4 ghost-border flex flex-col gap-2">
+<div class="flex items-center gap-2 text-slate mb-1">
+<span class="material-symbols-outlined text-sm">group</span>
+<span class="font-label-sm text-label-sm">Active Patients Under Care</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-primary">24,680</div>
+<div class="flex items-center gap-1 text-emerald-accent font-label-sm text-label-sm mt-auto pt-2">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+2.4% vs last week</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white rounded-xl p-4 ghost-border flex flex-col gap-2">
+<div class="flex items-center gap-2 text-slate mb-1">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="font-label-sm text-label-sm">Avg Wait Time</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-primary">26 <span class="text-lg font-body-md text-slate">min</span></div>
+<div class="flex items-center gap-1 text-emerald-accent font-label-sm text-label-sm mt-auto pt-2">
+<span class="material-symbols-outlined text-xs">trending_down</span>
+<span>-4 min improved</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white rounded-xl p-4 ghost-border flex flex-col gap-2">
+<div class="flex items-center gap-2 text-slate mb-1">
+<span class="material-symbols-outlined text-sm">task_alt</span>
+<span class="font-label-sm text-label-sm">Referral Completion</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-primary">82%</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full mt-2">
+<div class="bg-primary h-1.5 rounded-full w-[82%]"></div>
+</div>
+</div>
+<!-- Card 4 (Alert State) -->
+<div class="bg-white rounded-xl p-4 ghost-border border-l-4 border-l-tertiary-fixed-dim flex flex-col gap-2">
+<div class="flex items-center gap-2 text-slate mb-1">
+<span class="material-symbols-outlined text-sm text-tertiary-container">inventory_2</span>
+<span class="font-label-sm text-label-sm text-tertiary-container">Facilities with Stock-out</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-tertiary-container">7</div>
+<div class="flex items-center gap-1 text-tertiary-container font-label-sm text-label-sm mt-auto pt-2">
+<span class="material-symbols-outlined text-xs">warning</span>
+<span>Requires attention</span>
+</div>
+</div>
+<!-- Card 5 (Alert State) -->
+<div class="bg-white rounded-xl p-4 ghost-border border-l-4 border-l-tertiary-fixed-dim flex flex-col gap-2">
+<div class="flex items-center gap-2 text-slate mb-1">
+<span class="material-symbols-outlined text-sm text-tertiary-container">flag</span>
+<span class="font-label-sm text-label-sm text-tertiary-container">Active Quality Flags</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-tertiary-container">12</div>
+<div class="flex items-center gap-1 text-slate font-label-sm text-label-sm mt-auto pt-2">
+<span>across 4 PHCs</span>
+</div>
+</div>
+</div>
+<!-- Main Dashboard Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter h-[600px] min-h-[600px]">
+<!-- Map Centerpiece (Spans 2 columns) -->
+<div class="lg:col-span-2 bg-white rounded-xl ghost-border overflow-hidden flex flex-col relative h-full">
+<div class="p-4 border-b border-zinc-500/20 flex justify-between items-center bg-white/90 backdrop-blur-sm absolute top-0 left-0 right-0 z-10">
+<h3 class="font-headline-md text-body-lg text-primary">District Health Map: Osmanabad</h3>
+<div class="flex gap-2">
+<span class="bg-secondary-container text-primary font-label-sm text-label-sm px-3 py-1.5 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">layers</span>
+                                Overlay: Case Load
+                            </span>
+</div>
+</div>
+<div class="flex-1 bg-surface-container relative w-full h-full">
+<!-- Map Placeholder Background -->
+<div class="w-full h-full bg-cover bg-center" data-alt="A detailed, clean, high-end digital map of Osmanabad district in a light UI style. Soft beige and off-white landmasses with subtle grey administrative borders. Scattered across the map are glowing markers in deep teal and amber, indicating primary health centers. A subtle heat-map overlay shows varying density in soft warm tones. The aesthetic is modern, data-driven, and minimal, suitable for a professional dashboard." data-location="Osmanabad" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuArFr3a8gkbk7jDd7Yj3yhto5aCqhmSBAtRF553JtD_5caUCV6rB-ugxpKezoU3gxJw0TU03r5-UHsoJhQZJtKM-FKD39qI1mmhZE6swZDCaTjd826sJR4A9uEIJ7kBIM90AM-afD4aRkMc_CXhC7JE1EiOvLSAa0TXlH9hHpPATMo6ZymdFYTv4V3K2wUQ44Q6mBViIFKBRiGXFmvurz8I0106ra3AemuDZZ3L9GLfQHt0fiWRyFmM_w')"></div>
+<!-- Map Controls / Legend Floating -->
+<div class="absolute bottom-4 left-4 glass-panel p-3 rounded-lg flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-slate mb-1">Legend</span>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="font-nav-link text-nav-link text-charcoal">District Hospital</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-emerald-accent"></div>
+<span class="font-nav-link text-nav-link text-charcoal">Rural Hospital</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="font-nav-link text-nav-link text-charcoal">PHC</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Panel: Alerts -->
+<div class="bg-white rounded-xl ghost-border flex flex-col h-full overflow-hidden">
+<div class="p-4 border-b border-zinc-500/20 bg-warm-white">
+<h3 class="font-headline-md text-body-lg text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-container">notifications_active</span>
+                            Alerts Requiring Attention
+                        </h3>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-3">
+<!-- Alert Item -->
+<div class="p-3 rounded-lg border border-tertiary-fixed-dim bg-tertiary-fixed/10">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-sm text-label-sm text-tertiary-container bg-white px-2 py-0.5 rounded border border-tertiary-fixed-dim">Wait Time Spike</span>
+<span class="text-xs text-slate">10 mins ago</span>
+</div>
+<h4 class="font-nav-link text-nav-link text-charcoal font-semibold mb-1">PHC Wadgaon</h4>
+<p class="text-sm text-slate">Average wait time exceeded 45 mins. Current load: High.</p>
+<button class="mt-2 text-primary font-label-sm text-label-sm flex items-center gap-1 hover:underline">
+                                View Facility <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+<!-- Alert Item -->
+<div class="p-3 rounded-lg border border-error-container bg-error-container/20">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-sm text-label-sm text-error bg-white px-2 py-0.5 rounded border border-error-container">Critical Stock-out</span>
+<span class="text-xs text-slate">1 hr ago</span>
+</div>
+<h4 class="font-nav-link text-nav-link text-charcoal font-semibold mb-1">PHC Kalamb</h4>
+<p class="text-sm text-slate">Paracetamol syrup and ORS packets below minimum threshold.</p>
+<button class="mt-2 text-primary font-label-sm text-label-sm flex items-center gap-1 hover:underline">
+                                Initiate Transfer <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+<!-- Alert Item -->
+<div class="p-3 rounded-lg border border-tertiary-fixed-dim bg-tertiary-fixed/10">
+<div class="flex justify-between items-start mb-1">
+<span class="font-label-sm text-label-sm text-tertiary-container bg-white px-2 py-0.5 rounded border border-tertiary-fixed-dim">Equipment Down</span>
+<span class="text-xs text-slate">3 hrs ago</span>
+</div>
+<h4 class="font-nav-link text-nav-link text-charcoal font-semibold mb-1">Rural Hospital Tuljapur</h4>
+<p class="text-sm text-slate">X-Ray machine reported out of order. Maintenance requested.</p>
+<button class="mt-2 text-primary font-label-sm text-label-sm flex items-center gap-1 hover:underline">
+                                Track Ticket <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Analytics Row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- Referral Drop-off Funnel -->
+<div class="bg-white rounded-xl p-6 ghost-border flex flex-col">
+<h3 class="font-headline-md text-body-lg text-primary mb-6">Referral Drop-off Funnel (30 Days)</h3>
+<div class="flex-1 flex flex-col justify-center space-y-4">
+<div class="relative w-full h-12 bg-surface-container rounded-r-full overflow-hidden flex items-center">
+<div class="absolute left-0 top-0 h-full bg-primary/20 w-full rounded-r-full"></div>
+<div class="relative z-10 px-4 flex justify-between w-full">
+<span class="font-nav-link text-nav-link text-charcoal">Referred (PHC to RH)</span>
+<span class="font-button text-button text-primary">1,240</span>
+</div>
+</div>
+<div class="relative w-[85%] h-12 bg-surface-container rounded-r-full overflow-hidden flex items-center">
+<div class="absolute left-0 top-0 h-full bg-primary/40 w-full rounded-r-full"></div>
+<div class="relative z-10 px-4 flex justify-between w-full">
+<span class="font-nav-link text-nav-link text-charcoal">Arrived at RH</span>
+<span class="font-button text-button text-primary">1,054 (85%)</span>
+</div>
+</div>
+<div class="relative w-[70%] h-12 bg-surface-container rounded-r-full overflow-hidden flex items-center">
+<div class="absolute left-0 top-0 h-full bg-primary/70 w-full rounded-r-full"></div>
+<div class="relative z-10 px-4 flex justify-between w-full">
+<span class="font-nav-link text-nav-link text-white">Treatment Completed</span>
+<span class="font-button text-button text-white">868 (70%)</span>
+</div>
+</div>
+<div class="relative w-[55%] h-12 bg-primary rounded-r-full overflow-hidden flex items-center shadow-sm">
+<div class="relative z-10 px-4 flex justify-between w-full">
+<span class="font-nav-link text-nav-link text-white">Follow-up Recorded</span>
+<span class="font-button text-button text-white">682 (55%)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Facility Performance Table -->
+<div class="bg-white rounded-xl ghost-border overflow-hidden flex flex-col">
+<div class="p-6 border-b border-zinc-500/20 pb-4">
+<h3 class="font-headline-md text-body-lg text-primary">Facility Performance Tracker</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-warm-white border-b border-zinc-500/20">
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase">Facility</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase">Avg Wait</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase">Completion</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase">Stock Status</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-charcoal">
+<tr class="border-b border-zinc-500/10 hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-medium">PHC Kalamb</td>
+<td class="p-4">18 min</td>
+<td class="p-4"><span class="text-emerald-accent">92%</span></td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-error-container text-on-error-container text-xs font-semibold">
+<span class="material-symbols-outlined text-[14px]">warning</span> Critical
+                                        </span>
+</td>
+</tr>
+<tr class="border-b border-zinc-500/10 hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-medium">PHC Wadgaon</td>
+<td class="p-4 text-tertiary-container">48 min <span class="material-symbols-outlined text-[14px] align-middle">trending_up</span></td>
+<td class="p-4">78%</td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-secondary-container text-on-secondary-container text-xs font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Optimal
+                                        </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 font-medium">RH Osmanabad</td>
+<td class="p-4">35 min</td>
+<td class="p-4"><span class="text-emerald-accent">88%</span></td>
+<td class="p-4">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-tertiary-fixed text-on-tertiary-fixed text-xs font-semibold">
+<span class="material-symbols-outlined text-[14px]">info</span> Low (2 items)
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Footer Sections -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter pt-4 border-t border-zinc-500/20">
+<!-- High-risk cohort -->
+<div class="bg-warm-white p-4 rounded-lg flex items-center justify-between">
+<div>
+<h4 class="font-nav-link text-nav-link text-slate mb-1">High-Risk Cohort Overdue</h4>
+<div class="flex gap-4 font-label-sm text-label-sm mt-2">
+<span class="flex items-center gap-1 text-tertiary-container"><div class="w-2 h-2 rounded-full bg-tertiary-container"></div> Maternal: 42</span>
+<span class="flex items-center gap-1 text-tertiary-container"><div class="w-2 h-2 rounded-full bg-tertiary-container"></div> Child: 18</span>
+<span class="flex items-center gap-1 text-charcoal"><div class="w-2 h-2 rounded-full bg-slate"></div> Chronic: 105</span>
+</div>
+</div>
+<button class="text-primary font-nav-link text-nav-link hover:underline">View Details</button>
+</div>
+<!-- Sync Status -->
+<div class="bg-warm-white p-4 rounded-lg flex items-center justify-between">
+<div>
+<h4 class="font-nav-link text-nav-link text-slate mb-1">Network Sync Status</h4>
+<p class="font-body-md text-body-md text-charcoal">
+<span class="font-semibold text-emerald-accent">82/86</span> facilities synced today
+                        </p>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm text-slate mb-1">Last sync: 2 mins ago</span>
+<div class="w-32 bg-surface-dim h-1.5 rounded-full">
+<div class="bg-emerald-accent h-1.5 rounded-full w-[95%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

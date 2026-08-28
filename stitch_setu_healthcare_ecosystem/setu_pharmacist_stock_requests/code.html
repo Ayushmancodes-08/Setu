@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu Healthcare - Stock Requests Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-dim": "#dad9e3",
+                      "secondary-container": "#c3ecd7",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-surface-variant": "#404944",
+                      "secondary-fixed": "#c3ecd7",
+                      "tertiary-fixed": "#ffddb8",
+                      "on-secondary-container": "#476c5b",
+                      "background": "#fbf8ff",
+                      "off-white": "#f5f5f4",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "on-primary-fixed": "#002117",
+                      "on-secondary": "#ffffff",
+                      "inverse-primary": "#95d3ba",
+                      "on-background": "#1a1b22",
+                      "outline": "#707974",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-tertiary-container": "#f69f0d",
+                      "on-primary-container": "#80bea6",
+                      "slate": "#475569",
+                      "on-surface": "#1a1b22",
+                      "primary-container": "#064e3b",
+                      "secondary": "#416656",
+                      "surface-container-high": "#e8e7f1",
+                      "tertiary": "#442800",
+                      "surface-tint": "#2b6954",
+                      "inverse-surface": "#2f3038",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed": "#002115",
+                      "charcoal": "#1e293b",
+                      "on-error-container": "#93000a",
+                      "on-tertiary-fixed": "#2a1700",
+                      "primary-fixed": "#b0f0d6",
+                      "surface": "#fbf8ff",
+                      "surface-container-highest": "#e3e1ec",
+                      "primary": "#003527",
+                      "surface-container-low": "#f4f2fd",
+                      "on-secondary-fixed-variant": "#294e3f",
+                      "error": "#ba1a1a",
+                      "outline-variant": "#bfc9c3",
+                      "surface-variant": "#e3e1ec",
+                      "tertiary-container": "#623c00",
+                      "warm-white": "#fafaf9",
+                      "secondary-fixed-dim": "#a8cfbc",
+                      "surface-bright": "#fbf8ff",
+                      "on-tertiary": "#ffffff",
+                      "primary-fixed-dim": "#95d3ba",
+                      "surface-container": "#eeedf7",
+                      "emerald-accent": "#10b981",
+                      "inverse-on-surface": "#f1effa"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "margin-desktop": "64px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "hero-display-mobile": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "nav-link": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "button": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "hero-display": ["Inter"]
+              },
+              "fontSize": {
+                      "hero-display-mobile": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "nav-link": ["14px", {"lineHeight": "1", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "button": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                      "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "hero-display": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: theme('colors.warm-white'); }
+    </style>
+</head>
+<body class="bg-warm-white text-charcoal min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-64 z-50 bg-surface dark:bg-surface-container border-r border-zinc-500/20 flex flex-col gap-2 py-8 px-4">
+<div class="mb-8 px-4">
+<h1 class="font-headline-lg text-headline-lg text-primary dark:text-primary-fixed-dim">Clinical Portal</h1>
+<p class="font-label-sm text-label-sm text-outline mt-1">Maharashtra Rural Health</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:bg-secondary-fixed/20 hover:text-primary transition-all font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+                Overview
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:bg-secondary-fixed/20 hover:text-primary transition-all font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">medication</span>
+                Dispensing Queue
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:bg-secondary-fixed/20 hover:text-primary transition-all font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">inventory_2</span>
+                Inventory
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary font-bold border-r-4 border-primary bg-secondary-container/30 font-nav-link text-nav-link translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">order_approve</span>
+                Stock Requests
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:bg-secondary-fixed/20 hover:text-primary transition-all font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">analytics</span>
+                Reports
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-outline hover:bg-secondary-fixed/20 hover:text-primary transition-all font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+                Notifications
+            </a>
+</nav>
+<div class="mt-auto px-4 pt-4 border-t border-zinc-500/20 flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover border border-zinc-200" data-alt="A small, professional avatar portrait of an Indian pharmacist wearing a white coat, isolated on a light neutral background, well-lit, sharp focus, high-end corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzq1yojVSGDxc8VhtbG1JoGP3pq2AzC4cNQitHg7LKF22c1Nj_7hhGiiOd56uc7HdDJt3G6m6VkIuCRJye5lvwiwtlDQndxKrFi2et6Lyb-lGjrDwpiUrfODCsbnhNVig56E1to2PTPMdavC8URITB4d_ddET7iDCOGDBxStTAcSHSYoEriCTgBiS57-fu2ckFJQos2ZpqG1NQ1x3_eMY2BLUXZUaCA5P8KvBFMt3E39jcDOzGXu1QTQ"/>
+<div>
+<p class="font-nav-link text-nav-link font-medium">Pharmacist Profile</p>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-64 flex-1 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 bg-warm-white/80 backdrop-blur-md border-b border-zinc-500/20 h-[72px] flex justify-between items-center px-gutter">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim font-bold tracking-tight">Setu Healthcare</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-charcoal hover:text-primary-container transition-colors cursor-pointer duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-charcoal hover:text-primary-container transition-colors cursor-pointer duration-200">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<div class="mt-[72px] p-gutter max-w-container-max mx-auto w-full">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-charcoal mb-2">Stock Requests</h2>
+<p class="font-body-md text-body-md text-outline">Manage inbound and outbound stock transfers.</p>
+</div>
+<button class="h-[52px] px-6 bg-primary-container text-warm-white font-button text-button rounded-xl flex items-center gap-2 hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    New Stock Request
+                </button>
+</div>
+<!-- Tabs -->
+<div class="flex gap-6 border-b border-zinc-500/20 mb-8">
+<button class="pb-3 border-b-2 border-primary text-primary font-bold font-nav-link text-nav-link flex items-center gap-2">
+                    Pending Requests
+                    <span class="bg-secondary-fixed text-primary px-2 py-0.5 rounded-full text-xs">3</span>
+</button>
+<button class="pb-3 border-b-2 border-transparent text-outline hover:text-charcoal font-nav-link text-nav-link transition-colors">
+                    Approved
+                </button>
+<button class="pb-3 border-b-2 border-transparent text-outline hover:text-charcoal font-nav-link text-nav-link transition-colors">
+                    Dispatched
+                </button>
+<button class="pb-3 border-b-2 border-transparent text-outline hover:text-charcoal font-nav-link text-nav-link transition-colors">
+                    History
+                </button>
+</div>
+<!-- Bento Grid Content -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Main Request Table -->
+<div class="col-span-12 lg:col-span-8 bg-off-white border border-zinc-500/20 rounded-xl p-6">
+<h3 class="font-headline-md text-headline-md text-charcoal mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">list_alt</span>
+                        Active Pending Queue
+                    </h3>
+<div class="space-y-4">
+<!-- Request Card 1 -->
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-lg p-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between hover:border-primary-fixed-dim transition-colors">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-sm text-label-sm text-outline font-mono">REQ-2023-089</span>
+<span class="bg-error-container text-on-error-container px-2 py-1 rounded-full font-label-sm text-[10px] uppercase tracking-wider">High Priority</span>
+<span class="text-tertiary-fixed-dim font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">pending_actions</span>
+                                        Pending Review
+                                    </span>
+</div>
+<div class="flex items-center gap-2 font-body-md text-body-md text-charcoal mb-1">
+<span class="font-medium">District Warehouse</span>
+<span class="material-symbols-outlined text-outline text-[16px]">arrow_forward</span>
+<span class="font-medium">Sub-center A</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline">Requested on Oct 24, 2023 • 12 Items</p>
+</div>
+<div class="flex-shrink-0">
+<button class="h-[40px] px-4 bg-transparent border border-zinc-500/20 text-primary-container font-button text-sm rounded-lg hover:bg-secondary-fixed/10 transition-colors flex items-center gap-2">
+                                    Review &amp; Approve
+                                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Request Card 2 -->
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-lg p-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between hover:border-primary-fixed-dim transition-colors">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="font-label-sm text-label-sm text-outline font-mono">REQ-2023-090</span>
+<span class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded-full font-label-sm text-[10px] uppercase tracking-wider">Normal Priority</span>
+<span class="text-tertiary-fixed-dim font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">pending_actions</span>
+                                        Pending Review
+                                    </span>
+</div>
+<div class="flex items-center gap-2 font-body-md text-body-md text-charcoal mb-1">
+<span class="font-medium">Central Hub</span>
+<span class="material-symbols-outlined text-outline text-[16px]">arrow_forward</span>
+<span class="font-medium">Primary Health Center B</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline">Requested on Oct 25, 2023 • 5 Items</p>
+</div>
+<div class="flex-shrink-0">
+<button class="h-[40px] px-4 bg-transparent border border-zinc-500/20 text-primary-container font-button text-sm rounded-lg hover:bg-secondary-fixed/10 transition-colors flex items-center gap-2">
+                                    Review &amp; Approve
+                                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Summary / Info Widget -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-6">
+<h4 class="font-body-lg text-body-lg text-charcoal font-medium mb-4">Urgent Actions Required</h4>
+<div class="p-4 bg-error-container/20 border border-error-container rounded-lg flex gap-3">
+<span class="material-symbols-outlined text-error mt-0.5">warning</span>
+<div>
+<p class="font-body-md text-body-md font-medium text-charcoal mb-1">Critical Low Stock</p>
+<p class="font-nav-link text-nav-link text-outline">Amoxicillin stock at Sub-center A is below minimum threshold. Expedite REQ-2023-089.</p>
+</div>
+</div>
+</div>
+<div class="bg-primary-container text-warm-white rounded-xl p-6 relative overflow-hidden">
+<div class="relative z-10">
+<h4 class="font-body-lg text-body-lg font-medium mb-2">Inventory Health</h4>
+<p class="font-nav-link text-nav-link opacity-80 mb-6">Overall network stock levels are stable, but isolated regional shortages require attention.</p>
+<a class="text-secondary-fixed font-button text-sm flex items-center gap-1 hover:underline" href="#">
+                                View Full Report
+                                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

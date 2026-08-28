@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu Healthcare - Facility Supplies Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#fbf8ff",
+                      "tertiary-fixed": "#ffddb8",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-secondary-container": "#476c5b",
+                      "inverse-on-surface": "#f1effa",
+                      "primary-fixed": "#b0f0d6",
+                      "on-primary-container": "#80bea6",
+                      "on-surface": "#1a1b22",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "warm-white": "#fafaf9",
+                      "surface-container-high": "#e8e7f1",
+                      "error": "#ba1a1a",
+                      "secondary-fixed-dim": "#a8cfbc",
+                      "secondary-fixed": "#c3ecd7",
+                      "charcoal": "#1e293b",
+                      "tertiary": "#442800",
+                      "slate": "#475569",
+                      "background": "#fbf8ff",
+                      "surface-container": "#eeedf7",
+                      "on-primary-fixed": "#002117",
+                      "secondary": "#416656",
+                      "surface": "#fbf8ff",
+                      "outline": "#707974",
+                      "primary-container": "#064e3b",
+                      "on-tertiary": "#ffffff",
+                      "primary-fixed-dim": "#95d3ba",
+                      "on-tertiary-container": "#f69f0d",
+                      "surface-dim": "#dad9e3",
+                      "surface-variant": "#e3e1ec",
+                      "off-white": "#f5f5f4",
+                      "surface-container-low": "#f4f2fd",
+                      "inverse-primary": "#95d3ba",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-fixed-variant": "#294e3f",
+                      "tertiary-container": "#623c00",
+                      "primary": "#003527",
+                      "on-tertiary-fixed": "#2a1700",
+                      "inverse-surface": "#2f3038",
+                      "secondary-container": "#c3ecd7",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-error": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "error-container": "#ffdad6",
+                      "on-background": "#1a1b22",
+                      "emerald-accent": "#10b981",
+                      "surface-container-lowest": "#ffffff",
+                      "outline-variant": "#bfc9c3",
+                      "surface-tint": "#2b6954",
+                      "surface-container-highest": "#e3e1ec",
+                      "on-surface-variant": "#404944",
+                      "on-secondary-fixed": "#002115"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "margin-mobile": "16px",
+                      "unit": "4px",
+                      "container-max": "1280px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "nav-link": [
+                              "Inter"
+                      ],
+                      "hero-display": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "button": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "hero-display-mobile": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "nav-link": [
+                              "14px",
+                              {
+                                      "lineHeight": "1",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "hero-display": [
+                              "64px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "button": [
+                              "16px",
+                              {
+                                      "lineHeight": "1",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "hero-display-mobile": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-warm-white text-on-surface h-full flex font-body-md text-body-md antialiased overflow-hidden">
+<!-- SideNavBar (Hidden on Mobile, Visible on md+) -->
+<aside class="hidden md:flex flex-col h-full w-64 fixed left-0 top-0 bg-surface-container-lowest border-r border-outline/20 p-4 gap-2 z-40 transition-all duration-200 ease-in-out">
+<!-- Header -->
+<div class="flex items-center gap-3 mb-6 px-2">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary-container font-bold overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A clean, minimalist logo mark for a healthcare organization. The design should feature a subtle cross or leaf motif integrated into a geometric shape, using deep emerald teal and soft mint green colors on a pure white background. The style is modern, trustworthy, and precise, reflecting a high-end digital health infrastructure." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBL84HcWwlspW6v1zdE1cd1EcQ6JvQtPzEuv4HeTdPPhZXM0Rx_ohicLdQvA7igzlHLQs2u9bR3UZJu3qPates9lCp9IO0BTRs7ll9QFJeS2COMZT-UMkzO5nWm9UIxXflQjn-eU4-VfdcRZSO0RBMVaJoPBkG_0rbavzuRj5zjcGV3fZlVH7Vk5RRJwZIw_BQnmeRly5D0PSYhyzDddJlUxMT03nD954e-yXPVCUiMW8ljV_QIGjqqRg"/>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Setu Healthcare</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Maharashtra Rural Health</p>
+</div>
+</div>
+<!-- Primary Navigation -->
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out group font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+<span class="group-hover:text-primary transition-colors">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out group font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings_applications</span>
+<span class="group-hover:text-primary transition-colors">Operations</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out group font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">groups</span>
+<span class="group-hover:text-primary transition-colors">Staff</span>
+</a>
+<!-- Active Tab: Supplies -->
+<a class="flex items-center gap-3 px-3 py-2.5 bg-secondary-container text-on-secondary-container font-semibold rounded-lg transition-all duration-200 ease-in-out font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span>Supplies</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out group font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">sync_alt</span>
+<span class="group-hover:text-primary transition-colors">Referrals</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out group font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">analytics</span>
+<span class="group-hover:text-primary transition-colors">Reports</span>
+</a>
+</nav>
+<!-- CTA Button -->
+<div class="mt-auto mb-4 px-2">
+<button class="w-full h-[52px] bg-primary-container text-on-primary font-button text-button rounded-lg flex items-center justify-center gap-2 hover:bg-primary transition-colors shadow-[0_10px_30px_rgba(30,41,59,0.04)]">
+<span class="material-symbols-outlined">add</span>
+                New Entry
+            </button>
+</div>
+<!-- Footer Navigation -->
+<div class="border-t border-outline/20 pt-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out group font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">notifications</span>
+<span class="group-hover:text-primary transition-colors">Notifications</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out group font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">report_problem</span>
+<span class="group-hover:text-primary transition-colors">Issues &amp; Escalations</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all duration-200 ease-in-out group font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">help_outline</span>
+<span class="group-hover:text-primary transition-colors">Help</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full w-full md:ml-64 relative overflow-y-auto">
+<!-- TopNavBar (Visible on all screens) -->
+<header class="sticky top-0 w-full z-30 bg-warm-white/80 backdrop-blur-md border-b border-outline/20 shadow-sm flex justify-between items-center h-[72px] px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto">
+<!-- Mobile Brand Logo / Desktop Title -->
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Button -->
+<button class="md:hidden text-slate p-2 -ml-2 rounded-full hover:bg-surface-container-low active:scale-95 duration-150 transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="font-headline-md text-headline-md font-bold text-primary flex items-center gap-2">
+<span class="md:hidden">Setu</span>
+<span class="hidden md:block text-charcoal">Facility Supplies Dashboard</span>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-slate hover:bg-surface-container-low active:scale-95 duration-150 transition-colors" title="Sync">
+<span class="material-symbols-outlined">sync</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-slate hover:bg-surface-container-low active:scale-95 duration-150 transition-colors" title="Translate">
+<span class="material-symbols-outlined">translate</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-slate hover:bg-surface-container-low active:scale-95 duration-150 transition-colors relative" title="Notifications">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<!-- Profile Avatar -->
+<div class="ml-2 w-10 h-10 rounded-full border border-outline/20 overflow-hidden cursor-pointer hover:ring-2 ring-primary-container transition-all">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a healthcare facility coordinator, an Indian woman in her late 30s wearing a crisp, professional uniform. The lighting is soft and studio-quality, conveying competence and warmth. High resolution, bright background, maintaining a premium healthcare digital infrastructure aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0PW6H9IBpSnHxPI-w7bBoBWQDAo0vM_xK0wcpTEuvvAKDpjt8fb9SmaK491AA5B3bcRfoybG6gdpDBpl1cvp_U1calYKrMtGXe6sY5eoJ7zxOL9Slwao30HEkUGcqHArEKUwtF-zKWpcnptrhA2U-U65ju1gWfIFxoxe4nsy_TIBhuk02ShQhQIlhgDxCPAUtfCJWLuhTYIuV3r4etzQadAWnhOrE1ca6gMptgRvh11CTU1EkQSUq0Q"/>
+</div>
+</div>
+</header>
+<!-- Canvas Content -->
+<div class="flex-1 p-margin-mobile md:p-margin-desktop pb-24 max-w-container-max mx-auto w-full">
+<!-- Page Header / Context -->
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-charcoal mb-2">Supplies Overview</h2>
+<p class="text-slate max-w-2xl">Aggregate operational view of medicine stock, diagnostic consumables, and essential supplies for Phaltan Primary Health Centre.</p>
+</div>
+<div class="flex gap-3">
+<button class="h-[40px] px-4 border border-outline/20 text-charcoal font-button text-sm rounded-lg flex items-center gap-2 hover:bg-surface-container-low transition-colors bg-surface-container-lowest">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+                        Filter
+                    </button>
+<button class="h-[40px] px-4 bg-primary-container text-on-primary font-button text-sm rounded-lg flex items-center gap-2 hover:bg-primary transition-colors shadow-[0_10px_30px_rgba(30,41,59,0.04)]">
+<span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+                        Request Restock
+                    </button>
+</div>
+</div>
+<!-- Metrics Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+<!-- Critical Alert Card (Amoxicillin Stock-out) -->
+<div class="col-span-1 md:col-span-2 bg-error-container rounded-xl p-6 border border-error/20 flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-error/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+<div>
+<div class="flex items-center gap-2 mb-4 text-on-error-container font-semibold">
+<span class="material-symbols-outlined text-error">warning</span>
+                            CRITICAL SHORTAGE
+                        </div>
+<h3 class="font-headline-md text-headline-md text-on-error-container mb-1">Amoxicillin (500mg)</h3>
+<p class="text-on-error-container/80 mb-6">Current Stock: 0 units. Expected delivery delayed.</p>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2 py-1 bg-error text-on-error rounded text-label-sm font-label-sm font-bold">OUT OF STOCK</span>
+<span class="text-sm text-on-error-container/80">Last dispensed: 2 hrs ago</span>
+</div>
+<button class="px-4 py-2 bg-on-error-container text-error-container rounded-lg font-button text-sm hover:opacity-90 transition-opacity">
+                            Escalate
+                        </button>
+</div>
+</div>
+<!-- Low Stock Card (Iron+Folic) -->
+<div class="col-span-1 bg-surface-container-lowest rounded-xl p-6 border border-outline/20 flex flex-col shadow-[0_10px_30px_rgba(30,41,59,0.02)] relative overflow-hidden">
+<div class="absolute top-0 right-0 w-24 h-24 bg-tertiary-fixed/30 rounded-full -mr-8 -mt-8 blur-xl"></div>
+<div class="flex items-center gap-2 mb-4 text-tertiary-container font-semibold">
+<span class="material-symbols-outlined text-on-tertiary-container">info</span>
+                        LOW STOCK
+                    </div>
+<h3 class="font-headline-md text-[20px] font-semibold text-charcoal mb-1">Iron+Folic Acid</h3>
+<p class="text-slate text-sm mb-6">Maternal Health Program</p>
+<div class="mt-auto">
+<div class="flex justify-between items-end mb-2">
+<span class="text-headline-md font-bold text-charcoal">12%</span>
+<span class="text-slate text-sm">~3 days left</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-2">
+<div class="bg-on-tertiary-container h-2 rounded-full" style="width: 12%"></div>
+</div>
+</div>
+</div>
+<!-- Good Stock Summary Card -->
+<div class="col-span-1 bg-surface-container-lowest rounded-xl p-6 border border-outline/20 flex flex-col shadow-[0_10px_30px_rgba(30,41,59,0.02)]">
+<div class="flex items-center gap-2 mb-4 text-primary-container font-semibold">
+<span class="material-symbols-outlined text-primary-container">check_circle</span>
+                        SYSTEM HEALTH
+                    </div>
+<div class="flex-1 flex flex-col justify-center">
+<div class="text-[48px] leading-none font-bold text-charcoal mb-2">84%</div>
+<p class="text-slate">Essential medicines are at optimal stock levels across the facility.</p>
+</div>
+</div>
+</div> <!-- End Bento Grid -->
+<!-- Detailed Categories Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Medicines Section -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline/20 overflow-hidden flex flex-col">
+<div class="p-6 border-b border-outline/20 bg-warm-white/50">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-[20px] font-semibold text-charcoal flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container">pill</span>
+                                Essential Medicines
+                            </h3>
+<button class="text-primary font-button text-sm hover:underline">View All</button>
+</div>
+</div>
+<div class="p-0 flex-1">
+<!-- List Item -->
+<div class="flex items-center justify-between p-4 border-b border-outline/10 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-secondary-fixed/50 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">medication</span>
+</div>
+<div>
+<div class="font-semibold text-charcoal">Paracetamol (500mg)</div>
+<div class="text-sm text-slate">General Ward</div>
+</div>
+</div>
+<div class="text-right flex items-center gap-4">
+<div class="hidden sm:block">
+<div class="text-sm font-semibold text-charcoal">2,450 units</div>
+<div class="text-xs text-slate">Good stock</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-secondary-fixed text-primary-container font-label-sm text-xs font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span> GOOD
+                                </span>
+</div>
+</div>
+<!-- List Item -->
+<div class="flex items-center justify-between p-4 border-b border-outline/10 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-tertiary-fixed/30 flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined">medication</span>
+</div>
+<div>
+<div class="font-semibold text-charcoal">Albendazole (400mg)</div>
+<div class="text-sm text-slate">School Health Program</div>
+</div>
+</div>
+<div class="text-right flex items-center gap-4">
+<div class="hidden sm:block">
+<div class="text-sm font-semibold text-charcoal">120 units</div>
+<div class="text-xs text-slate">Reorder limit reached</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-tertiary-fixed/50 text-tertiary-container font-label-sm text-xs font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span> LOW
+                                </span>
+</div>
+</div>
+<!-- List Item -->
+<div class="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-secondary-fixed/50 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">medication</span>
+</div>
+<div>
+<div class="font-semibold text-charcoal">ORS Packets</div>
+<div class="text-sm text-slate">Pediatric Outpatient</div>
+</div>
+</div>
+<div class="text-right flex items-center gap-4">
+<div class="hidden sm:block">
+<div class="text-sm font-semibold text-charcoal">850 units</div>
+<div class="text-xs text-slate">Good stock</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-secondary-fixed text-primary-container font-label-sm text-xs font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span> GOOD
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Consumables Section -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline/20 overflow-hidden flex flex-col">
+<div class="p-6 border-b border-outline/20 bg-warm-white/50">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-[20px] font-semibold text-charcoal flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container">science</span>
+                                Diagnostics &amp; Consumables
+                            </h3>
+<button class="text-primary font-button text-sm hover:underline">View All</button>
+</div>
+</div>
+<div class="p-0 flex-1">
+<!-- List Item -->
+<div class="flex items-center justify-between p-4 border-b border-outline/10 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-tertiary-fixed/30 flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined">bloodtype</span>
+</div>
+<div>
+<div class="font-semibold text-charcoal">Malaria Rapid Test Kits</div>
+<div class="text-sm text-slate">Pathology Lab</div>
+</div>
+</div>
+<div class="text-right flex items-center gap-4">
+<div class="hidden sm:block">
+<div class="text-sm font-semibold text-charcoal">45 kits</div>
+<div class="text-xs text-slate">Expiring soon (2 weeks)</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-tertiary-fixed/50 text-tertiary-container font-label-sm text-xs font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span> LOW
+                                </span>
+</div>
+</div>
+<!-- List Item -->
+<div class="flex items-center justify-between p-4 border-b border-outline/10 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-secondary-fixed/50 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined">vaccines</span>
+</div>
+<div>
+<div class="font-semibold text-charcoal">Auto-disable Syringes (5ml)</div>
+<div class="text-sm text-slate">Immunization Room</div>
+</div>
+</div>
+<div class="text-right flex items-center gap-4">
+<div class="hidden sm:block">
+<div class="text-sm font-semibold text-charcoal">1,200 units</div>
+<div class="text-xs text-slate">Good stock</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-secondary-fixed text-primary-container font-label-sm text-xs font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span> GOOD
+                                </span>
+</div>
+</div>
+<!-- List Item -->
+<div class="flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-error/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined">masks</span>
+</div>
+<div>
+<div class="font-semibold text-charcoal">N95 Respirator Masks</div>
+<div class="text-sm text-slate">Infection Control</div>
+</div>
+</div>
+<div class="text-right flex items-center gap-4">
+<div class="hidden sm:block">
+<div class="text-sm font-semibold text-charcoal">0 units</div>
+<div class="text-xs text-slate">Awaiting delivery</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-error/10 text-error font-label-sm text-xs font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> OUT
+                                </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div> <!-- End Canvas Content -->
+</main>
+</body></html>

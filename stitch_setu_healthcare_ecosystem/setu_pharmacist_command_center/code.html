@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu Pharmacist Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#fbf8ff",
+                      "on-secondary-fixed": "#002115",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "primary": "#003527",
+                      "primary-fixed-dim": "#95d3ba",
+                      "secondary-container": "#c3ecd7",
+                      "charcoal": "#1e293b",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed-dim": "#a8cfbc",
+                      "outline-variant": "#bfc9c3",
+                      "on-tertiary": "#ffffff",
+                      "inverse-surface": "#2f3038",
+                      "primary-container": "#064e3b",
+                      "on-error": "#ffffff",
+                      "inverse-on-surface": "#f1effa",
+                      "background": "#fbf8ff",
+                      "secondary-fixed": "#c3ecd7",
+                      "warm-white": "#fafaf9",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-surface-variant": "#404944",
+                      "slate": "#475569",
+                      "outline": "#707974",
+                      "on-secondary-fixed-variant": "#294e3f",
+                      "surface-container-high": "#e8e7f1",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed": "#2a1700",
+                      "tertiary": "#442800",
+                      "tertiary-container": "#623c00",
+                      "on-surface": "#1a1b22",
+                      "inverse-primary": "#95d3ba",
+                      "error-container": "#ffdad6",
+                      "surface-container": "#eeedf7",
+                      "on-tertiary-container": "#f69f0d",
+                      "on-primary-container": "#80bea6",
+                      "emerald-accent": "#10b981",
+                      "tertiary-fixed": "#ffddb8",
+                      "surface-tint": "#2b6954",
+                      "off-white": "#f5f5f4",
+                      "secondary": "#416656",
+                      "primary-fixed": "#b0f0d6",
+                      "surface-container-highest": "#e3e1ec",
+                      "surface-variant": "#e3e1ec",
+                      "on-secondary-container": "#476c5b",
+                      "surface-bright": "#fbf8ff",
+                      "surface-dim": "#dad9e3",
+                      "on-background": "#1a1b22",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-primary-fixed": "#002117",
+                      "surface-container-low": "#f4f2fd"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "container-max": "1280px",
+                      "unit": "4px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "64px"
+              },
+              "fontFamily": {
+                      "hero-display": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "hero-display-mobile": [
+                              "Inter"
+                      ],
+                      "nav-link": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "button": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "hero-display": [
+                              "64px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "hero-display-mobile": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "nav-link": [
+                              "14px",
+                              {
+                                      "lineHeight": "1",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "button": [
+                              "16px",
+                              {
+                                      "lineHeight": "1",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+</head>
+<body class="bg-warm-white text-on-surface font-body-md min-h-screen flex flex-col md:flex-row antialiased">
+<!-- Side Navigation -->
+<nav class="fixed left-0 top-0 h-full w-64 z-50 bg-surface border-r border-zinc-500/20 hidden md:flex flex-col gap-2 py-8 px-4">
+<div class="mb-8 px-2">
+<h1 class="font-headline-lg text-headline-lg text-primary">Setu Healthcare</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-2">Clinical Portal</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">Maharashtra Rural Health</p>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-secondary-fixed/20 hover:text-primary transition-all font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+            Overview
+        </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary font-bold border-r-4 border-primary bg-secondary-container/30 transition-transform duration-200 translate-x-1 font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="medication" style="font-variation-settings: 'FILL' 1;">medication</span>
+            Dispensing Queue
+        </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-secondary-fixed/20 hover:text-primary transition-all font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+            Inventory
+        </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-secondary-fixed/20 hover:text-primary transition-all font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="order_approve">order_approve</span>
+            Stock Requests
+        </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-secondary-fixed/20 hover:text-primary transition-all font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+            Reports
+        </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-secondary-fixed/20 hover:text-primary transition-all font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+            Notifications
+        </a>
+<div class="mt-auto px-4 py-4 border-t border-zinc-500/20 flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover border border-zinc-500/20" data-alt="A small, circular profile picture of an Indian pharmacist wearing a white coat, isolated on a light neutral background, well-lit, professional portrait style, modern clinical setting aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC11PbG5e6NyWbdyJvUXF5TQM_kObFFKafx8phhE4DF6Hhbx1agiAyNsGenSyjiTErBs9t2F8omRYdb5lj90YDAp4jyK-XcdXVd8nmpgPAA32n8xLtZHSKGxHXJt2uU86-SoUETLLssyFF-xFTQ7ru5VMBFeM_ZeoVvbSY4g1ubm7Fl9XgRrjQQdVzuOPUL5JgkMD9oycr6aijSj-x7jZO3xiqUXDO8W1MiZMOk-RuMTL2dSVTG-tUp1w"/>
+<div>
+<p class="font-nav-link text-nav-link text-charcoal">Ravi Kumar</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">Lead Pharmacist</p>
+</div>
+</div>
+</nav>
+<!-- Top Navigation (Mobile) -->
+<header class="h-[72px] flex justify-between items-center px-margin-mobile bg-warm-white/80 backdrop-blur-md border-b border-zinc-500/20 fixed top-0 right-0 w-full z-40 md:hidden">
+<div class="font-headline-md text-headline-md text-primary">Setu Healthcare</div>
+<div class="flex items-center gap-4 text-primary">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary-container transition-colors duration-200" data-icon="account_circle">account_circle</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary-container transition-colors duration-200" data-icon="settings">settings</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 pt-[72px] md:pt-0 p-margin-mobile md:p-margin-desktop max-w-container-max mx-auto w-full flex flex-col gap-8">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-charcoal">Good morning, Ravi</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2">Here's what needs attention today.</p>
+</div>
+<div class="flex items-center gap-4 bg-off-white px-4 py-2 rounded-full border border-zinc-500/20 shadow-[0_10px_30px_rgba(30,41,59,0.04)]">
+<span class="flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-emerald-accent opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-accent"></span>
+</span>
+<span class="font-label-sm text-label-sm text-charcoal">Systems Synced</span>
+</div>
+</div>
+<!-- Actionable Metrics Bar -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<!-- Metric 1 -->
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-4 flex flex-col gap-2 shadow-[0_10px_30px_rgba(30,41,59,0.04)] hover:-translate-y-1 transition-transform cursor-pointer">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm">Waiting</span>
+<span class="material-symbols-outlined text-outline" data-icon="hourglass_empty">hourglass_empty</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-charcoal">8</div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-4 flex flex-col gap-2 shadow-[0_10px_30px_rgba(30,41,59,0.04)] hover:-translate-y-1 transition-transform cursor-pointer">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm">Ready</span>
+<span class="material-symbols-outlined text-emerald-accent" data-icon="check_circle">check_circle</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-charcoal">5</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-4 flex flex-col gap-2 shadow-[0_10px_30px_rgba(30,41,59,0.04)] hover:-translate-y-1 transition-transform cursor-pointer">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm">Low Stock</span>
+<span class="material-symbols-outlined text-tertiary-container" data-icon="warning">warning</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-charcoal">4</div>
+</div>
+<!-- Metric 4 -->
+<div class="bg-error-container border border-error/20 rounded-xl p-4 flex flex-col gap-2 shadow-[0_10px_30px_rgba(30,41,59,0.04)] hover:-translate-y-1 transition-transform cursor-pointer">
+<div class="flex items-center justify-between text-on-error-container">
+<span class="font-label-sm text-label-sm">Stock-out</span>
+<span class="material-symbols-outlined" data-icon="error">error</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-on-error-container">1</div>
+</div>
+</div>
+<!-- Main Dispensing Queue -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-charcoal">Dispensing Queue</h3>
+<button class="h-[52px] px-6 bg-transparent border border-zinc-500/20 text-charcoal font-button text-button rounded-xl hover:bg-surface-container transition-colors">
+                    Filter
+                </button>
+</div>
+<div class="bg-off-white border border-zinc-500/20 rounded-xl overflow-hidden shadow-[0_10px_30px_rgba(30,41,59,0.04)]">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-zinc-500/20 bg-warm-white/50">
+<th class="py-4 px-6 font-label-sm text-label-sm text-outline uppercase tracking-wider">Patient</th>
+<th class="py-4 px-6 font-label-sm text-label-sm text-outline uppercase tracking-wider">Prescription</th>
+<th class="py-4 px-6 font-label-sm text-label-sm text-outline uppercase tracking-wider">Status</th>
+<th class="py-4 px-6 font-label-sm text-label-sm text-outline uppercase tracking-wider text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-zinc-500/10">
+<tr class="hover:bg-warm-white/50 transition-colors">
+<td class="py-4 px-6">
+<p class="font-body-md text-body-md font-medium text-charcoal">Sunita Devi</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">ID: #492-A</p>
+</td>
+<td class="py-4 px-6">
+<p class="font-body-md text-body-md text-charcoal">Iron + Folic Acid</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">10 tabs, 1x/day</p>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-secondary-fixed/50 text-primary-container font-label-sm text-label-sm gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-accent"></span>
+                                        Ready
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="h-[40px] px-4 bg-primary-container text-warm-white font-button text-button rounded-lg hover:bg-primary transition-colors">
+                                        Dispense
+                                    </button>
+</td>
+</tr>
+<tr class="hover:bg-warm-white/50 transition-colors">
+<td class="py-4 px-6">
+<p class="font-body-md text-body-md font-medium text-charcoal">Rajesh Kumar</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">ID: #493-B</p>
+</td>
+<td class="py-4 px-6">
+<p class="font-body-md text-body-md text-charcoal">Metformin 500mg</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">30 tabs, 2x/day</p>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-secondary-fixed/50 text-primary-container font-label-sm text-label-sm gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-accent"></span>
+                                        Ready
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="h-[40px] px-4 bg-primary-container text-warm-white font-button text-button rounded-lg hover:bg-primary transition-colors">
+                                        Dispense
+                                    </button>
+</td>
+</tr>
+<tr class="hover:bg-warm-white/50 transition-colors">
+<td class="py-4 px-6">
+<p class="font-body-md text-body-md font-medium text-charcoal">Meena Patil</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">ID: #494-C</p>
+</td>
+<td class="py-4 px-6">
+<p class="font-body-md text-body-md text-charcoal">Amoxicillin 250mg</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">15 caps, 3x/day</p>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-tertiary-fixed/50 text-tertiary-container font-label-sm text-label-sm gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span>
+                                        Partial
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="h-[40px] px-4 bg-transparent border border-zinc-500/20 text-charcoal font-button text-button rounded-lg hover:bg-surface-container transition-colors">
+                                        Review
+                                    </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- Two Column Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Left Column: Stock Requiring Attention -->
+<section class="flex flex-col gap-4">
+<h3 class="font-headline-md text-headline-md text-charcoal">Stock Requiring Attention</h3>
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-4 flex flex-col gap-4 shadow-[0_10px_30px_rgba(30,41,59,0.04)]">
+<div class="flex items-center justify-between border-b border-zinc-500/10 pb-3">
+<div>
+<p class="font-body-md text-body-md text-charcoal font-medium">Metformin 500mg</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">Current: 45 strips</p>
+</div>
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-tertiary-fixed/30 text-tertiary-container font-label-sm text-label-sm border border-tertiary-container/20">
+                            Low Stock
+                        </span>
+</div>
+<div class="flex items-center justify-between border-b border-zinc-500/10 pb-3">
+<div>
+<p class="font-body-md text-body-md text-charcoal font-medium">Amoxicillin 250mg</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">Current: 0 strips</p>
+</div>
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-error-container/50 text-on-error-container font-label-sm text-label-sm border border-error/20">
+                            Stock Out
+                        </span>
+</div>
+<div class="flex items-center justify-between">
+<div>
+<p class="font-body-md text-body-md text-charcoal font-medium">Iron + Folic Acid</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">Current: 12 bottles</p>
+</div>
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-tertiary-fixed/30 text-tertiary-container font-label-sm text-label-sm border border-tertiary-container/20">
+                            Low Stock
+                        </span>
+</div>
+<button class="mt-2 h-[40px] w-full bg-transparent border border-zinc-500/20 text-charcoal font-button text-button rounded-lg hover:bg-surface-container transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add_shopping_cart">add_shopping_cart</span>
+                        Create Indent
+                    </button>
+</div>
+</section>
+<!-- Right Column: Recent Dispensing -->
+<section class="flex flex-col gap-4">
+<h3 class="font-headline-md text-headline-md text-charcoal">Recent Dispensing</h3>
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-4 flex flex-col gap-4 shadow-[0_10px_30px_rgba(30,41,59,0.04)]">
+<div class="flex items-center gap-4 border-b border-zinc-500/10 pb-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container/50 flex items-center justify-center text-primary-container font-bold">
+                            SD
+                        </div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-charcoal font-medium">Sunita Devi</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">Iron + Folic • 10 tabs</p>
+</div>
+<span class="font-label-sm text-label-sm text-outline">10m ago</span>
+</div>
+<div class="flex items-center gap-4 border-b border-zinc-500/10 pb-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container/50 flex items-center justify-center text-primary-container font-bold">
+                            RK
+                        </div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-charcoal font-medium">Rajesh Kumar</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">Metformin • 30 tabs</p>
+</div>
+<span class="font-label-sm text-label-sm text-outline">45m ago</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed/30 flex items-center justify-center text-tertiary-container font-bold">
+                            MP
+                        </div>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-charcoal font-medium">Meena Patil</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">Amoxicillin • Partial Dispense</p>
+</div>
+<span class="font-label-sm text-label-sm text-outline">2h ago</span>
+</div>
+<button class="mt-2 h-[40px] w-full bg-transparent border border-zinc-500/20 text-charcoal font-button text-button rounded-lg hover:bg-surface-container transition-colors flex items-center justify-center gap-2">
+                        View Logbook
+                    </button>
+</div>
+</section>
+</div>
+</main>
+</body></html>

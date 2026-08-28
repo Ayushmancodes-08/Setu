@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu Healthcare - Follow-ups Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "warm-white": "#fafaf9",
+                        "tertiary-container": "#623c00",
+                        "surface-tint": "#2b6954",
+                        "primary-container": "#064e3b",
+                        "surface-container-low": "#f4f2fd",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "secondary-container": "#c3ecd7",
+                        "surface-dim": "#dad9e3",
+                        "on-primary-fixed": "#002117",
+                        "outline": "#707974",
+                        "on-tertiary-fixed": "#2a1700",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e8e7f1",
+                        "inverse-surface": "#2f3038",
+                        "background": "#fbf8ff",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "secondary": "#416656",
+                        "tertiary-fixed": "#ffddb8",
+                        "slate": "#475569",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1a1b22",
+                        "surface": "#fbf8ff",
+                        "outline-variant": "#bfc9c3",
+                        "surface-bright": "#fbf8ff",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "off-white": "#f5f5f4",
+                        "surface-variant": "#e3e1ec",
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "emerald-accent": "#10b981",
+                        "surface-container-highest": "#e3e1ec",
+                        "on-secondary-container": "#476c5b",
+                        "primary-fixed-dim": "#95d3ba",
+                        "on-tertiary-container": "#f69f0d",
+                        "primary": "#003527",
+                        "on-secondary-fixed": "#002115",
+                        "on-background": "#1a1b22",
+                        "charcoal": "#1e293b",
+                        "on-primary-container": "#80bea6",
+                        "inverse-primary": "#95d3ba",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#442800",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#b0f0d6",
+                        "secondary-fixed": "#c3ecd7",
+                        "surface-container": "#eeedf7",
+                        "inverse-on-surface": "#f1effa",
+                        "on-surface-variant": "#404944"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "64px",
+                        "container-max": "1280px",
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "hero-display": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "nav-link": ["Inter"],
+                        "hero-display-mobile": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "button": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "hero-display": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "nav-link": ["14px", { "lineHeight": "1", "fontWeight": "500" }],
+                        "hero-display-mobile": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "button": ["16px", { "lineHeight": "1", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.warm-white');
+            color: theme('colors.on-surface');
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 flex justify-between items-center px-margin-desktop w-full ml-[240px] max-w-[calc(100%-240px)] docked top-0 full-width h-[72px] border-b border-outline/20 bg-warm-white/80 dark:bg-on-surface/80 backdrop-blur-md hidden md:flex">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Setu Healthcare</span>
+</div>
+<!-- Search (on_left logic implies it's near brand or centralized, putting near brand) -->
+<div class="flex-1 max-w-md mx-8 hidden md:block">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-off-white border border-outline/20 rounded-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-body-md font-body-md text-on-surface" placeholder="Search patients, conditions..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button aria-label="language" class="p-2 text-primary dark:text-primary-fixed hover:text-primary-container dark:hover:text-primary-fixed-dim transition-colors scale-95 active:scale-100 transition-transform flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined" data-icon="language">language</span>
+</button>
+<button aria-label="notifications" class="p-2 text-primary dark:text-primary-fixed hover:text-primary-container dark:hover:text-primary-fixed-dim transition-colors scale-95 active:scale-100 transition-transform flex items-center justify-center rounded-full relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button aria-label="sync" class="p-2 text-primary dark:text-primary-fixed hover:text-primary-container dark:hover:text-primary-fixed-dim transition-colors scale-95 active:scale-100 transition-transform flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined" data-icon="sync">sync</span>
+</button>
+<div class="h-10 w-10 rounded-full overflow-hidden border border-outline/20 ml-2">
+<img alt="Specialist Profile Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a dignified medical specialist, a mature Indian doctor with graying hair wearing a white lab coat over a neat shirt. The background is a clean, softly lit modern clinical environment with warm white walls. Lighting is bright, flattering, and high-key, conveying trust, expertise, and authority in a premium healthcare setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDF5s5RRalsGVlLl3tmb2LPWrhqXBd76MW8CYZAadKXRmSTeWernCWBBkbFS7nfsz9L9kiosDNKPMUBwoQYdlfhqYsoUeqIEuliD404ry4OrmmwA1ixzCDpjCzucdcgn1ikdiHVjYFmtgbBqcN_tgzYjQE6YIgYajwVpUy5IKH618pw3RF3TMCJY1Hlw4uwy_0kF5kRrzsNsiMqaGaszm5g7BpGwpnRVAHWSbpHYT5ej4gdKk_dmwRyQ"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-screen flex flex-col py-8 px-4 docked left-0 h-full w-[240px] border-r border-outline/20 bg-warm-white dark:bg-on-surface transition-all duration-200 ease-in-out z-50 hidden md:flex">
+<div class="flex items-center gap-4 mb-10 px-4">
+<div class="h-12 w-12 rounded-full overflow-hidden border border-outline/20 shrink-0">
+<img alt="Doctor Profile" class="w-full h-full object-cover" data-alt="A close-up portrait of Dr. Specialist, a highly experienced senior cardiologist looking directly at the camera with a calm, assuring expression. They are wearing professional medical attire in a bright, modern, minimalist office with subtle warm-white lighting. High-end, dignified, and precise aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYOFq2EcAs2_FcwAQ6pw5DSh3B4wdHA07kNjibSnbzQVaavb-Uc2-0UncxYKf0ap3FMXPOmEcBuoGbRvJsv3WCjVxp0aEAP8FqhcZSyua0UKJqVw5-83JtJ2C97B343DGOwMIDAkwYEzHoA2TvaNtPRo1KwP-4TaqPZA0D98dJvE-pc4iIYWqmOWaI7UpKPTN_XtCqZAq01xCcsq1mik-MHpHPluTjEQRPHocC5jxs3QpFxpuZECRtag"/>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed truncate">Dr. Specialist</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate">Cardiology Dept.</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 flex-1">
+<!-- Overview -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-secondary-container/20 hover:text-primary transition-colors font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Overview
+            </a>
+<!-- Referral Queue -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-secondary-container/20 hover:text-primary transition-colors font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="clinical_notes">clinical_notes</span>
+                Referral Queue
+            </a>
+<!-- Consultations -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-secondary-container/20 hover:text-primary transition-colors font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="medical_services">medical_services</span>
+                Consultations
+            </a>
+<!-- Follow-ups (ACTIVE) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary dark:text-primary-fixed font-bold border-r-4 border-primary dark:border-primary-fixed bg-secondary-container/30 transition-all duration-200 ease-in-out font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="event_repeat" data-weight="fill" style="font-variation-settings: 'FILL' 1;">event_repeat</span>
+                Follow-ups
+            </a>
+<!-- Patients -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-secondary-container/20 hover:text-primary transition-colors font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+                Patients
+            </a>
+<!-- Reports -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-secondary-container/20 hover:text-primary transition-colors font-nav-link text-nav-link" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                Reports
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-[240px] p-margin-mobile md:p-gutter max-w-container-max mx-auto w-full">
+<!-- Header Section -->
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-charcoal mb-2">Follow-ups Review</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage patients requiring specialist attention and ongoing monitoring.</p>
+</div>
+<div class="flex gap-4">
+<button class="h-[52px] px-6 border border-outline/20 rounded-xl text-primary font-button text-button hover:bg-secondary-container/10 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+                    Filter
+                </button>
+</div>
+</div>
+<!-- Dashboard Grid (Bento Style) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Urgent Action Required (Overdue) - Spans full width on top -->
+<div class="lg:col-span-12">
+<div class="bg-off-white border border-error/30 rounded-xl p-6 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-2 h-full bg-error"></div>
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-error" data-icon="warning">warning</span>
+<h2 class="font-headline-md text-headline-md text-error">Overdue Reviews</h2>
+<span class="px-3 py-1 bg-error-container text-on-error-container rounded-full font-label-sm text-label-sm ml-auto">3 Urgent Cases</span>
+</div>
+<div class="space-y-4">
+<!-- Overdue Item 1 -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white border border-outline/20 rounded-lg hover:border-error/50 transition-colors">
+<div class="flex items-center gap-4 mb-4 sm:mb-0">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-bold text-body-lg">
+                                    RP
+                                </div>
+<div>
+<h3 class="font-button text-button text-charcoal">Rajesh Patil</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Post-Op CABG • 65 yrs</p>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full sm:w-auto">
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1 uppercase">Last Visit</p>
+<p class="font-body-md text-body-md text-charcoal">12 Oct 2023</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-error mb-1 uppercase">Due Date</p>
+<p class="font-body-md text-body-md text-error font-medium">12 Nov 2023 (5 days late)</p>
+</div>
+<button class="h-[52px] px-6 bg-error text-on-error rounded-xl font-button text-button hover:bg-error/90 transition-colors w-full sm:w-auto shrink-0 mt-4 sm:mt-0 shadow-[0_10px_30px_rgba(186,26,26,0.15)]">
+                                    Review Case
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Due Today -->
+<div class="lg:col-span-12">
+<div class="bg-off-white border border-outline/20 rounded-xl p-6">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-tertiary-container" data-icon="today">today</span>
+<h2 class="font-headline-md text-headline-md text-charcoal">Due Today</h2>
+<span class="px-3 py-1 bg-surface-container-high text-on-surface rounded-full font-label-sm text-label-sm ml-auto">2 Cases</span>
+</div>
+<div class="space-y-4">
+<!-- Today Item 1 -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white border border-outline/20 rounded-lg hover:border-primary/30 transition-colors">
+<div class="flex items-center gap-4 mb-4 sm:mb-0">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline/10">
+<img alt="Patient photo" class="w-full h-full object-cover" data-alt="A portrait of a middle-aged Indian woman patient, looking calm and rested. She is in a bright, modern, high-end minimalist setting, dressed casually in warm neutral tones. Soft, diffused natural light creates a feeling of gentle recovery and premium care." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVXJmXjYUL7f7po3O1pgSzZkBJfX1MMXeZPqRgIxbvEUFNGpX0pcZYn-6XbfLJ0i6IYHsCTQ4TLIT1a6xGsH2z5cjllaiea7VpX1ZFcD4Nd07A3W6VE_PDxS4Rnd49Lj5qsir8unaUT34ihjI-lhZhVorIEsALqIDgo2cz0IT0cC6niShisuWDsZxDRiIxxRNY0L-9nvZRkjnl87cAR5FScxx6hOvtPIs2xq9trGtBJ5Rl4Dpm6rDyug"/>
+</div>
+<div>
+<h3 class="font-button text-button text-charcoal">Sunita Sharma</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Hypertension Management • 52 yrs</p>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full sm:w-auto">
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1 uppercase">Last Visit</p>
+<p class="font-body-md text-body-md text-charcoal">02 Nov 2023</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1 uppercase">Status</p>
+<span class="px-3 py-1 bg-[#fef3c7] text-[#92400e] rounded-full font-label-sm text-label-sm inline-block">Pending Review</span>
+</div>
+<button class="h-[52px] px-6 bg-primary-container text-on-primary rounded-xl font-button text-button hover:bg-primary transition-colors w-full sm:w-auto shrink-0 mt-4 sm:mt-0 shadow-[0_10px_30px_rgba(6,78,59,0.15)]">
+                                    Review Case
+                                </button>
+</div>
+</div>
+<!-- Today Item 2 -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-white border border-outline/20 rounded-lg hover:border-primary/30 transition-colors">
+<div class="flex items-center gap-4 mb-4 sm:mb-0">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-bold text-body-lg">
+                                    MK
+                                </div>
+<div>
+<h3 class="font-button text-button text-charcoal">Mohan Kumar</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Arrhythmia Assessment • 68 yrs</p>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full sm:w-auto">
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1 uppercase">Last Visit</p>
+<p class="font-body-md text-body-md text-charcoal">28 Oct 2023</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1 uppercase">Status</p>
+<span class="px-3 py-1 bg-secondary-container text-primary rounded-full font-label-sm text-label-sm inline-block">Vitals Uploaded</span>
+</div>
+<button class="h-[52px] px-6 bg-primary-container text-on-primary rounded-xl font-button text-button hover:bg-primary transition-colors w-full sm:w-auto shrink-0 mt-4 sm:mt-0 shadow-[0_10px_30px_rgba(6,78,59,0.15)]">
+                                    Review Case
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Upcoming (Next 7 Days) -->
+<div class="lg:col-span-12">
+<div class="bg-off-white border border-outline/20 rounded-xl p-6">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-secondary" data-icon="upcoming">upcoming</span>
+<h2 class="font-headline-md text-headline-md text-charcoal">Upcoming (Next 7 Days)</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Upcoming Item 1 (Card style) -->
+<div class="p-4 bg-white border border-outline/20 rounded-lg flex flex-col justify-between h-full hover:shadow-[0_10px_30px_rgba(30,41,59,0.04)] transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-bold text-body-md">
+                                        AN
+                                    </div>
+<div>
+<h3 class="font-button text-button text-charcoal">Anita Nair</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Heart Failure Prog.</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-surface-variant text-on-surface rounded font-label-sm text-label-sm">In 2 Days</span>
+</div>
+<div class="flex justify-between items-end mt-4 pt-4 border-t border-outline/10">
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1 uppercase">Due Date</p>
+<p class="font-body-md text-body-md text-charcoal">19 Nov 2023</p>
+</div>
+<button class="text-primary hover:text-primary-container font-button text-button transition-colors flex items-center gap-1">
+                                    View File <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Upcoming Item 2 (Card style) -->
+<div class="p-4 bg-white border border-outline/20 rounded-lg flex flex-col justify-between h-full hover:shadow-[0_10px_30px_rgba(30,41,59,0.04)] transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-bold text-body-md">
+                                        VD
+                                    </div>
+<div>
+<h3 class="font-button text-button text-charcoal">Vikram Desai</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Cholesterol Mgmt.</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-surface-variant text-on-surface rounded font-label-sm text-label-sm">In 5 Days</span>
+</div>
+<div class="flex justify-between items-end mt-4 pt-4 border-t border-outline/10">
+<div>
+<p class="font-label-sm text-label-sm text-outline mb-1 uppercase">Due Date</p>
+<p class="font-body-md text-body-md text-charcoal">22 Nov 2023</p>
+</div>
+<button class="text-primary hover:text-primary-container font-button text-button transition-colors flex items-center gap-1">
+                                    View File <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu Facility Reports Dashboard - PHC Osmanabad</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#fbf8ff",
+                      "tertiary-fixed": "#ffddb8",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-secondary-container": "#476c5b",
+                      "inverse-on-surface": "#f1effa",
+                      "primary-fixed": "#b0f0d6",
+                      "on-primary-container": "#80bea6",
+                      "on-surface": "#1a1b22",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "warm-white": "#fafaf9",
+                      "surface-container-high": "#e8e7f1",
+                      "error": "#ba1a1a",
+                      "secondary-fixed-dim": "#a8cfbc",
+                      "secondary-fixed": "#c3ecd7",
+                      "charcoal": "#1e293b",
+                      "tertiary": "#442800",
+                      "slate": "#475569",
+                      "background": "#fbf8ff",
+                      "surface-container": "#eeedf7",
+                      "on-primary-fixed": "#002117",
+                      "secondary": "#416656",
+                      "surface": "#fbf8ff",
+                      "outline": "#707974",
+                      "primary-container": "#064e3b",
+                      "on-tertiary": "#ffffff",
+                      "primary-fixed-dim": "#95d3ba",
+                      "on-tertiary-container": "#f69f0d",
+                      "surface-dim": "#dad9e3",
+                      "surface-variant": "#e3e1ec",
+                      "off-white": "#f5f5f4",
+                      "surface-container-low": "#f4f2fd",
+                      "inverse-primary": "#95d3ba",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-fixed-variant": "#294e3f",
+                      "tertiary-container": "#623c00",
+                      "primary": "#003527",
+                      "on-tertiary-fixed": "#2a1700",
+                      "inverse-surface": "#2f3038",
+                      "secondary-container": "#c3ecd7",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-error": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "error-container": "#ffdad6",
+                      "on-background": "#1a1b22",
+                      "emerald-accent": "#10b981",
+                      "surface-container-lowest": "#ffffff",
+                      "outline-variant": "#bfc9c3",
+                      "surface-tint": "#2b6954",
+                      "surface-container-highest": "#e3e1ec",
+                      "on-surface-variant": "#404944",
+                      "on-secondary-fixed": "#002115"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "margin-mobile": "16px",
+                      "unit": "4px",
+                      "container-max": "1280px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Inter"],
+                      "nav-link": ["Inter"],
+                      "hero-display": ["Inter"],
+                      "body-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "button": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "hero-display-mobile": ["Inter"]
+              },
+              "fontSize": {
+                      "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "nav-link": ["14px", {"lineHeight": "1", "fontWeight": "500"}],
+                      "hero-display": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "button": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "hero-display-mobile": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.warm-white');
+            color: theme('colors.on-background');
+        }
+        .ambient-shadow {
+            box-shadow: 0 10px 30px rgba(30, 41, 59, 0.04);
+        }
+        .ghost-border {
+            border: 1px solid rgba(113, 113, 122, 0.2);
+        }
+    </style>
+</head>
+<body class="font-body-md antialiased min-h-screen flex flex-col md:flex-row">
+<!-- Mobile TopNav (Visible only on mobile) -->
+<nav class="md:hidden flex justify-between items-center h-[72px] px-margin-mobile w-full bg-warm-white/80 dark:bg-surface/80 backdrop-blur-md sticky top-0 border-b border-outline/20 shadow-sm z-50">
+<div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">
+            Setu
+        </div>
+<div class="flex gap-4 items-center">
+<button class="text-slate hover:bg-surface-container-low transition-colors rounded-full p-2 active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="text-slate hover:bg-surface-container-low transition-colors rounded-full p-2 active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</nav>
+<!-- SideNavBar (Hidden on Mobile, Visible on md+) -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-lowest dark:bg-surface-dim border-r border-outline/20 p-4 gap-2 z-40">
+<!-- Header -->
+<div class="mb-8 px-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold">
+                S
+            </div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Setu Healthcare</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Maharashtra Rural Health</p>
+</div>
+</div>
+<!-- Main Nav -->
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard">dashboard</span>
+<span class="font-nav-link text-nav-link">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings_applications">settings_applications</span>
+<span class="font-nav-link text-nav-link">Operations</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="groups">groups</span>
+<span class="font-nav-link text-nav-link">Staff</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="inventory_2">inventory_2</span>
+<span class="font-nav-link text-nav-link">Supplies</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-surface-variant transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="sync_alt">sync_alt</span>
+<span class="font-nav-link text-nav-link">Referrals</span>
+</a>
+<!-- Active State -->
+<a class="flex items-center gap-3 px-3 py-3 rounded-lg bg-secondary-container dark:bg-primary-container text-on-secondary-container dark:text-on-primary-container font-semibold transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="analytics" data-weight="fill" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-nav-link text-nav-link">Reports</span>
+</a>
+</nav>
+<!-- CTA -->
+<button class="mt-4 mb-6 bg-primary-container text-on-primary font-button text-button py-3 rounded-lg flex justify-center items-center gap-2 hover:bg-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+            New Entry
+        </button>
+<!-- Footer Nav -->
+<div class="mt-auto border-t border-outline/20 pt-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="font-nav-link text-nav-link">Notifications</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="report_problem">report_problem</span>
+<span class="font-nav-link text-nav-link">Issues &amp; Escalations</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help_outline">help_outline</span>
+<span class="font-nav-link text-nav-link">Help</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 w-full md:pl-64 flex flex-col">
+<!-- Desktop TopNav (TopAppBar Context for Main Canvas) -->
+<header class="hidden md:flex justify-between items-center h-[72px] px-margin-desktop w-full max-w-container-max mx-auto sticky top-0 bg-warm-white/95 backdrop-blur-md z-30">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-md text-headline-md font-bold text-charcoal">Facility Reports: PHC Osmanabad</h2>
+<span class="bg-secondary-fixed text-primary px-3 py-1 rounded-full font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                     Online
+                 </span>
+</div>
+<div class="flex items-center gap-4 text-slate">
+<button class="hover:bg-surface-container-low transition-colors rounded-full p-2 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="sync">sync</span>
+</button>
+<button class="hover:bg-surface-container-low transition-colors rounded-full p-2 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="translate">translate</span>
+</button>
+<button class="hover:bg-surface-container-low transition-colors rounded-full p-2 flex items-center justify-center relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden ml-2 ghost-border">
+<img alt="Facility Coordinator Profile" class="w-full h-full object-cover" data-alt="A professional headshot of an Indian rural healthcare facility coordinator in a crisp white shirt, softly lit in a clean modern clinic setting. The lighting is warm and natural, reflecting the high-end minimalist healthcare aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPDu1dG8JnghRvf0nprjPxnAoUnhqyRoGO2Mlt4NoCFQXCyWsrKtNYFQTthBGTlR9kDnNqAT9Dsfmh0V-qgbx-FnoPnlPsmY2g5Bl6OhEBHy9tHAeUyHjQUCgA0P2qeV3JiiFCeHjLb00qlqUrf_sBThSKjinUMgkHBJe4dc5oSpxgpy8XPFV2x3LZQwJgkYwAPdHn7EKIT220FRBPY7OY5vssEYj8WatmKtHhusnAjhS3SV1uLqcH3g"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<div class="p-margin-mobile md:p-margin-desktop md:pt-8 w-full max-w-container-max mx-auto flex flex-col gap-6">
+<!-- Context Header & Date Picker -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-outline/10">
+<div>
+<p class="font-body-md text-body-md text-slate">Monthly Performance Overview</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Last updated: Today, 08:30 AM</p>
+</div>
+<div class="flex items-center gap-2 bg-off-white ghost-border rounded-lg p-1">
+<button class="px-4 py-2 font-label-sm text-label-sm font-medium text-slate hover:text-charcoal transition-colors">Week</button>
+<button class="px-4 py-2 font-label-sm text-label-sm font-medium bg-white ghost-border rounded shadow-sm text-primary-container">Month</button>
+<button class="px-4 py-2 font-label-sm text-label-sm font-medium text-slate hover:text-charcoal transition-colors">Quarter</button>
+</div>
+</div>
+<!-- Bento Grid Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- KPI Card 1: Patient Visits -->
+<div class="col-span-1 md:col-span-4 bg-off-white rounded-xl p-6 ghost-border flex flex-col justify-between min-h-[160px]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed/50 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[18px]" data-icon="groups">groups</span>
+</div>
+<span class="font-label-sm text-label-sm text-slate uppercase tracking-wider">Patient Visits</span>
+</div>
+<span class="flex items-center text-emerald-accent font-label-sm text-label-sm bg-emerald-accent/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+                            +12%
+                        </span>
+</div>
+<div class="mt-4">
+<span class="font-hero-display-mobile md:font-headline-lg text-hero-display-mobile md:text-headline-lg text-charcoal font-bold">1,248</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">vs 1,114 last month</p>
+</div>
+</div>
+<!-- KPI Card 2: Avg Wait Time -->
+<div class="col-span-1 md:col-span-4 bg-off-white rounded-xl p-6 ghost-border flex flex-col justify-between min-h-[160px]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-charcoal">
+<span class="material-symbols-outlined text-[18px]" data-icon="timer">timer</span>
+</div>
+<span class="font-label-sm text-label-sm text-slate uppercase tracking-wider">Avg Wait Time</span>
+</div>
+<span class="flex items-center text-error font-label-sm text-label-sm bg-error/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_up">trending_up</span>
+                            +5m
+                        </span>
+</div>
+<div class="mt-4">
+<div class="flex items-baseline gap-1">
+<span class="font-hero-display-mobile md:font-headline-lg text-hero-display-mobile md:text-headline-lg text-charcoal font-bold">28</span>
+<span class="font-body-md text-body-md text-slate">mins</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Target: &lt; 20 mins</p>
+</div>
+</div>
+<!-- KPI Card 3: Referral Completion -->
+<div class="col-span-1 md:col-span-4 bg-off-white rounded-xl p-6 ghost-border flex flex-col justify-between min-h-[160px]">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed/50 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[18px]" data-icon="assignment_turned_in">assignment_turned_in</span>
+</div>
+<span class="font-label-sm text-label-sm text-slate uppercase tracking-wider">Referral Completion</span>
+</div>
+<span class="flex items-center text-emerald-accent font-label-sm text-label-sm bg-emerald-accent/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px]" data-icon="trending_flat">trending_flat</span>
+                            0%
+                        </span>
+</div>
+<div class="mt-4">
+<div class="flex items-baseline gap-1">
+<span class="font-hero-display-mobile md:font-headline-lg text-hero-display-mobile md:text-headline-lg text-charcoal font-bold">84</span>
+<span class="font-body-md text-body-md text-slate">%</span>
+</div>
+<div class="w-full bg-surface-variant h-1.5 rounded-full mt-2">
+<div class="bg-primary-container h-1.5 rounded-full" style="width: 84%"></div>
+</div>
+</div>
+</div>
+<!-- Main Chart Area -->
+<div class="col-span-1 md:col-span-8 bg-off-white rounded-xl p-6 ghost-border flex flex-col min-h-[400px]">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md font-semibold text-charcoal">Service Utilization Trend</h3>
+<button class="text-slate hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_horiz">more_horiz</span>
+</button>
+</div>
+<!-- Abstract representation of a clean line chart -->
+<div class="flex-1 relative flex items-end justify-between pb-8 pt-4">
+<!-- Y-Axis labels -->
+<div class="absolute left-0 top-0 bottom-8 flex flex-col justify-between text-slate font-label-sm text-label-sm w-8">
+<span>400</span>
+<span>300</span>
+<span>200</span>
+<span>100</span>
+<span>0</span>
+</div>
+<!-- Grid lines -->
+<div class="absolute left-8 right-0 top-0 bottom-8 flex flex-col justify-between">
+<div class="w-full border-b border-outline/10 h-0"></div>
+<div class="w-full border-b border-outline/10 h-0"></div>
+<div class="w-full border-b border-outline/10 h-0"></div>
+<div class="w-full border-b border-outline/10 h-0"></div>
+<div class="w-full border-b border-outline/20 h-0"></div>
+</div>
+<!-- Bar Chart elements (Minimalist) -->
+<div class="relative z-10 w-full pl-12 flex justify-between items-end h-full">
+<!-- Week 1 -->
+<div class="flex flex-col items-center gap-2 group w-1/4">
+<div class="w-8 md:w-12 bg-secondary-fixed hover:bg-primary-fixed-dim transition-colors rounded-t-sm h-[45%] relative">
+<div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-charcoal text-white font-label-sm text-label-sm px-2 py-1 rounded transition-opacity">180</div>
+</div>
+<span class="font-label-sm text-label-sm text-slate">W1</span>
+</div>
+<!-- Week 2 -->
+<div class="flex flex-col items-center gap-2 group w-1/4">
+<div class="w-8 md:w-12 bg-secondary-fixed hover:bg-primary-fixed-dim transition-colors rounded-t-sm h-[65%] relative">
+<div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-charcoal text-white font-label-sm text-label-sm px-2 py-1 rounded transition-opacity">260</div>
+</div>
+<span class="font-label-sm text-label-sm text-slate">W2</span>
+</div>
+<!-- Week 3 -->
+<div class="flex flex-col items-center gap-2 group w-1/4">
+<div class="w-8 md:w-12 bg-secondary-fixed hover:bg-primary-fixed-dim transition-colors rounded-t-sm h-[55%] relative">
+<div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-charcoal text-white font-label-sm text-label-sm px-2 py-1 rounded transition-opacity">220</div>
+</div>
+<span class="font-label-sm text-label-sm text-slate">W3</span>
+</div>
+<!-- Week 4 -->
+<div class="flex flex-col items-center gap-2 group w-1/4">
+<div class="w-8 md:w-12 bg-primary-container hover:bg-primary transition-colors rounded-t-sm h-[85%] relative">
+<div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-charcoal text-white font-label-sm text-label-sm px-2 py-1 rounded transition-opacity">340</div>
+</div>
+<span class="font-label-sm text-label-sm text-charcoal font-semibold">W4</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Panel: Stock-Outs -->
+<div class="col-span-1 md:col-span-4 flex flex-col gap-6">
+<div class="bg-off-white rounded-xl p-6 ghost-border flex-1">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-body-lg text-body-lg font-semibold text-charcoal">Stock-out Incidents</h3>
+<span class="material-symbols-outlined text-slate" data-icon="inventory_2">inventory_2</span>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Item 1 -->
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-bright ghost-border">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+<span class="font-body-md text-body-md font-medium text-charcoal">Paracetamol (500mg)</span>
+</div>
+<span class="font-label-sm text-label-sm text-error bg-error/10 px-2 py-1 rounded">Critical</span>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-bright ghost-border">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></div>
+<span class="font-body-md text-body-md font-medium text-charcoal">ORS Packets</span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary bg-tertiary-fixed/30 px-2 py-1 rounded">Low Stock</span>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between p-3 rounded-lg bg-surface-bright ghost-border">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-slate"></div>
+<span class="font-body-md text-body-md font-medium text-charcoal">Amoxicillin (250mg)</span>
+</div>
+<span class="font-label-sm text-label-sm text-slate bg-surface-variant px-2 py-1 rounded">Resolved</span>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border border-outline/20 rounded-lg font-button text-button text-primary-container hover:bg-surface-container-low transition-colors">
+                            View Inventory
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Nav (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full h-[72px] bg-surface-container-lowest border-t border-outline/20 flex justify-around items-center z-50 px-2 pb-safe">
+<a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-medium leading-none">Home</span>
+</a>
+<a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="groups">groups</span>
+<span class="text-[10px] font-medium leading-none">Staff</span>
+</a>
+<a class="flex flex-col items-center p-2 text-primary font-semibold transition-colors relative" href="#">
+<span class="absolute -top-1 -right-1 w-1.5 h-1.5 bg-primary rounded-full"></span>
+<span class="material-symbols-outlined mb-1" data-icon="analytics" data-weight="fill" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="text-[10px] font-medium leading-none">Reports</span>
+</a>
+<a class="flex flex-col items-center p-2 text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="inventory_2">inventory_2</span>
+<span class="text-[10px] font-medium leading-none">Supplies</span>
+</a>
+</nav>
+</body></html>

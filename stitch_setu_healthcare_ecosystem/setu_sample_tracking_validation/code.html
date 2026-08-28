@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lab Samples Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "off-white": "#f5f5f4",
+                        "on-surface": "#1a1b22",
+                        "charcoal": "#1e293b",
+                        "background": "#fbf8ff",
+                        "surface-container-highest": "#e3e1ec",
+                        "surface-container-high": "#e8e7f1",
+                        "surface-variant": "#e3e1ec",
+                        "outline-variant": "#bfc9c3",
+                        "secondary": "#416656",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f4f2fd",
+                        "outline": "#707974",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#95d3ba",
+                        "primary-fixed-dim": "#95d3ba",
+                        "primary-fixed": "#b0f0d6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#404944",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface": "#fbf8ff",
+                        "secondary-fixed": "#c3ecd7",
+                        "primary-container": "#064e3b",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#f69f0d",
+                        "secondary-container": "#c3ecd7",
+                        "inverse-on-surface": "#f1effa",
+                        "surface-tint": "#2b6954",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "inverse-surface": "#2f3038",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "warm-white": "#fafaf9",
+                        "on-secondary-container": "#476c5b",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#623c00",
+                        "on-background": "#1a1b22",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed": "#002115",
+                        "tertiary": "#442800",
+                        "surface-dim": "#dad9e3",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-primary-fixed": "#002117",
+                        "on-tertiary-fixed": "#2a1700",
+                        "primary": "#003527",
+                        "surface-bright": "#fbf8ff",
+                        "emerald-accent": "#10b981",
+                        "on-primary": "#ffffff",
+                        "slate": "#475569",
+                        "on-primary-container": "#80bea6",
+                        "surface-container": "#eeedf7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "unit": "4px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "nav-link": ["Inter"],
+                        "hero-display-mobile": ["Inter"],
+                        "button": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "hero-display": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["20px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "nav-link": ["14px", { "lineHeight": "1", "fontWeight": "500" }],
+                        "hero-display-mobile": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "button": ["16px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "hero-display": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fafaf9; color: #1a1b22; }
+        .glass-panel { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(113, 113, 122, 0.2); }
+        .ambient-shadow { box-shadow: 0 10px 30px rgba(30, 41, 59, 0.04); }
+    </style>
+</head>
+<body class="bg-warm-white text-on-surface antialiased min-h-screen">
+<!-- TopNavBar (Web & Mobile) -->
+<nav class="bg-warm-white dark:bg-on-surface border-b border-zinc-500/20 fixed top-0 w-full h-[72px] flex justify-between items-center px-margin-desktop z-40">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim font-bold">MahaHealth Lab Portal</span>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-charcoal cursor-pointer hover:text-primary transition-colors" data-icon="sync">sync</span>
+<span class="material-symbols-outlined text-charcoal cursor-pointer hover:text-primary transition-colors" data-icon="calendar_today">calendar_today</span>
+<div class="flex items-center gap-2 cursor-pointer group">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden">
+<img alt="Technician Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a healthcare technician in a clean, brightly lit laboratory environment. The lighting is soft and neutral, reflecting a clinical yet welcoming atmosphere. Deep teal scrubs hint at the brand identity. The image is cropped tightly on the face and shoulders, conveying trust and precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8yh84idNky0Gz4DwoeoTuc0FN8K0VlODVsXT185SbvF-oD5-Y7spWUch9bTNnzJIM4mKlKdi4gFLfcoPg072ZJXBE2arJkKepeV0L7kK4TqEG91OGQZZWwsCMyTqaG7rg2VFLdVEnWFABDGYttMrPzZQUMsSiC37lbmQy6JBHmTys_spTleCsWxu5sb88QXvBxMPPuKScMWXTo2tlk413BT4_XSVyejDPPov8s5jwuKySSMaEj2WBOQ"/>
+</div>
+<span class="font-nav-link text-nav-link text-charcoal group-hover:text-primary transition-colors">Profile</span>
+</div>
+</div>
+</nav>
+<!-- SideNavBar (Web Only) -->
+<aside class="hidden md:flex flex-col h-full w-[280px] bg-surface-container-lowest dark:bg-on-surface border-r border-zinc-500/20 fixed left-0 top-[72px] py-8 px-4 gap-4 z-30">
+<div class="flex items-center gap-3 mb-6 px-4">
+<div class="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center">
+<img alt="Facility Logo" class="w-full h-full object-cover rounded-lg" data-alt="A minimalist logo for a rural clinic, featuring abstract geometric shapes in deep teal and warm white. The design is modern, clean, and professional, embodying digital health infrastructure. Soft, diffused lighting gives it a premium feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPK6JAnqlINBylsx-wX_fYgTUK8I_8tm1tVvMWR_hQ60RpL5CefZBP58VKzaynf7DOehPppazMsGSLI8k6c_S0EMlIGxqAgve3WBBMWDtn8rjETdeqQowcQFDTwtj7jUcRocJzF9JpTLv8qsqcgqzx-dx6JavblJCMxwXuP5sz6OlSb6gN9RduKrDzHcLaRXH1pDyGyjcep1gmEkh0lnmfvsC7gMmAGpsjuEijhfSuOuWzjiuX_1IuWg"/>
+</div>
+<div>
+<h2 class="font-nav-link text-nav-link font-bold text-on-surface">Rural Clinic</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Lab Unit 04</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Overview</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+<span class="font-body-md text-body-md">Test Queue</span>
+</a>
+<!-- Active -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary-container text-on-secondary-container font-bold cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="science">science</span>
+<span class="font-body-md text-body-md">Samples</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+<span class="font-body-md text-body-md">Results</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-body-md text-body-md">Reports</span>
+</a>
+</nav>
+<div class="flex flex-col gap-2 mt-auto border-t border-zinc-500/20 pt-4">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-[280px] pt-[72px] p-margin-mobile md:p-margin-desktop min-h-screen">
+<header class="mb-8">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-2">Sample Management</h1>
+<p class="font-body-md text-body-md text-slate">Track, validate, and manage sample lifecycle.</p>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column: Active Samples List (Takes up 8 columns on large screens) -->
+<div class="lg:col-span-8 space-y-6">
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-6 ambient-shadow">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface">Active Samples</h2>
+<button class="font-button text-button text-primary hover:text-primary-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">filter_list</span> Filter
+                        </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-zinc-500/20 text-on-surface-variant font-label-sm text-label-sm">
+<th class="pb-3 font-medium">Sample ID</th>
+<th class="pb-3 font-medium">Type</th>
+<th class="pb-3 font-medium">Collection Time</th>
+<th class="pb-3 font-medium">Status</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<tr class="border-b border-zinc-500/10 hover:bg-warm-white transition-colors cursor-pointer">
+<td class="py-4 font-medium">#28492</td>
+<td class="py-4">Blood (CBC)</td>
+<td class="py-4 text-slate">08:15 AM</td>
+<td class="py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                                            Processing
+                                        </span>
+</td>
+</tr>
+<tr class="border-b border-zinc-500/10 hover:bg-warm-white transition-colors cursor-pointer">
+<td class="py-4 font-medium">#28493</td>
+<td class="py-4">Urine</td>
+<td class="py-4 text-slate">09:00 AM</td>
+<td class="py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-slate"></span>
+                                            Received
+                                        </span>
+</td>
+</tr>
+<tr class="border-b border-zinc-500/10 hover:bg-warm-white transition-colors cursor-pointer">
+<td class="py-4 font-medium">#28494</td>
+<td class="py-4">Serum</td>
+<td class="py-4 text-slate">09:30 AM</td>
+<td class="py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                                            Rejected
+                                        </span>
+</td>
+</tr>
+<tr class="hover:bg-warm-white transition-colors cursor-pointer">
+<td class="py-4 font-medium">#28496</td>
+<td class="py-4">Blood (Lipid)</td>
+<td class="py-4 text-slate">10:15 AM</td>
+<td class="py-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-slate"></span>
+                                            Received
+                                        </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Rejection History (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="col-span-1 md:col-span-2">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2 mt-4">Recent Rejections</h3>
+</div>
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-5 ambient-shadow flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<span class="font-body-md text-body-md font-medium">#28494</span>
+<span class="material-symbols-outlined text-error">cancel</span>
+</div>
+<p class="font-body-md text-body-md text-slate">Serum</p>
+<div class="mt-auto pt-4 border-t border-zinc-500/10">
+<p class="font-label-sm text-label-sm text-on-error-container font-medium">Reason: Hemolyzed</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-5 ambient-shadow flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<span class="font-body-md text-body-md font-medium">#28470</span>
+<span class="material-symbols-outlined text-error">cancel</span>
+</div>
+<p class="font-body-md text-body-md text-slate">Blood</p>
+<div class="mt-auto pt-4 border-t border-zinc-500/10">
+<p class="font-label-sm text-label-sm text-on-error-container font-medium">Reason: Insufficient volume</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Sample Validation Panel (Takes up 4 columns on large screens) -->
+<div class="lg:col-span-4">
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-6 ambient-shadow sticky top-[100px]">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="pending_actions">pending_actions</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Validation Required</h2>
+</div>
+<div class="bg-warm-white rounded-lg p-4 mb-6 border border-zinc-500/10">
+<div class="mb-4">
+<p class="font-label-sm text-label-sm text-slate uppercase tracking-wider mb-1">Incoming Sample</p>
+<p class="font-headline-md text-headline-md font-bold">#28495</p>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<p class="font-label-sm text-label-sm text-slate">Type</p>
+<p class="font-body-md text-body-md font-medium">Blood</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-slate">Test</p>
+<p class="font-body-md text-body-md font-medium">CBC</p>
+</div>
+<div class="col-span-2">
+<p class="font-label-sm text-label-sm text-slate">Collected</p>
+<p class="font-body-md text-body-md font-medium">Today, 10:45 AM</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<button class="w-full h-[52px] bg-primary-container text-on-primary rounded-xl font-button text-button hover:bg-primary transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+                            Accept Sample
+                        </button>
+<button class="w-full h-[52px] bg-transparent border border-zinc-500/20 text-on-surface rounded-xl font-button text-button hover:bg-error-container hover:text-on-error-container hover:border-error-container transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">block</span>
+                            Reject Sample
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lab Test Queue Workspace - MahaHealth Lab Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed-dim": "#a8cfbc",
+                      "off-white": "#f5f5f4",
+                      "on-surface": "#1a1b22",
+                      "charcoal": "#1e293b",
+                      "background": "#fbf8ff",
+                      "surface-container-highest": "#e3e1ec",
+                      "surface-container-high": "#e8e7f1",
+                      "surface-variant": "#e3e1ec",
+                      "outline-variant": "#bfc9c3",
+                      "secondary": "#416656",
+                      "on-error-container": "#93000a",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-low": "#f4f2fd",
+                      "outline": "#707974",
+                      "error-container": "#ffdad6",
+                      "inverse-primary": "#95d3ba",
+                      "primary-fixed-dim": "#95d3ba",
+                      "primary-fixed": "#b0f0d6",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#404944",
+                      "tertiary-fixed": "#ffddb8",
+                      "surface": "#fbf8ff",
+                      "secondary-fixed": "#c3ecd7",
+                      "primary-container": "#064e3b",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-container": "#f69f0d",
+                      "secondary-container": "#c3ecd7",
+                      "inverse-on-surface": "#f1effa",
+                      "surface-tint": "#2b6954",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "inverse-surface": "#2f3038",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "warm-white": "#fafaf9",
+                      "on-secondary-container": "#476c5b",
+                      "error": "#ba1a1a",
+                      "tertiary-container": "#623c00",
+                      "on-background": "#1a1b22",
+                      "on-secondary-fixed-variant": "#294e3f",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed": "#002115",
+                      "tertiary": "#442800",
+                      "surface-dim": "#dad9e3",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-primary-fixed": "#002117",
+                      "on-tertiary-fixed": "#2a1700",
+                      "primary": "#003527",
+                      "surface-bright": "#fbf8ff",
+                      "emerald-accent": "#10b981",
+                      "on-primary": "#ffffff",
+                      "slate": "#475569",
+                      "on-primary-container": "#80bea6",
+                      "surface-container": "#eeedf7"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-max": "1280px",
+                      "gutter": "24px",
+                      "unit": "4px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "64px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "nav-link": ["Inter"],
+                      "hero-display-mobile": ["Inter"],
+                      "button": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "hero-display": ["Inter"]
+              },
+              "fontSize": {
+                      "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "nav-link": ["14px", {"lineHeight": "1", "fontWeight": "500"}],
+                      "hero-display-mobile": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "button": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "hero-display": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+      }
+          }
+        }
+    </script>
+</head>
+<body class="bg-warm-white text-on-surface font-body-md antialiased overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full h-[72px] flex justify-between items-center px-margin-desktop bg-warm-white border-b border-zinc-500/20 z-40">
+<div class="flex items-center gap-4">
+<h1 class="font-headline-md text-headline-md text-primary">MahaHealth Lab Portal</h1>
+</div>
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors text-charcoal">sync</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors text-charcoal">calendar_today</span>
+<button class="font-nav-link text-nav-link text-primary border-b-2 border-primary pb-1 active:opacity-80 transition-opacity">Profile</button>
+<img alt="Technician Profile" class="w-10 h-10 rounded-full object-cover border border-zinc-500/20" data-alt="A small circular profile picture of a female medical technician with a warm smile, wearing a white lab coat and a teal stethoscope. High-key lighting, bright and modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6LZFWgb7SyU5hlonXrfqMsAEVSUv1x9eRYQD5KwL1QH9v2oR30JuHP3RiApLnWONuRUoE_ypD8j_cFYjYbFcBZeEwe6xoBNZUOt5Cppe6nlY0LkfUNYiSFUG-k0-cqYAwllnmqNMeC08sDSkIfToLLN3Q2bBBAf1wLcmKXzXqRIxaVBgnj8G-Be1XEwYLXPy3iaSWKLeF6DcNXh0ByCZSsSVD9sOYzgC-aydhPE_fXB-ogns6YafIdg"/>
+</div>
+</header>
+<div class="flex pt-[72px] min-h-screen">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-lowest border-r border-zinc-500/20 flex flex-col py-8 px-4 gap-4 pt-[104px] z-30 hidden md:flex">
+<div class="mb-8 px-4 flex items-center gap-4">
+<img alt="Facility Logo" class="w-12 h-12 rounded-lg object-cover" data-alt="A clean, minimalist logo for a rural clinic featuring a stylized green leaf and a medical cross. Set against a white background, embodying modern Indian public health infrastructure." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3LDymD1jdL796pojvZNVoJV20Zm9XgvoGxUQsF6yDU4-wm9soVdc8-feq0tYZ7tFoHcE8CYrhh8-HwqZSvd4eVKNFZYaxtCvbdFz1oL2VXjJ_5EiETeaRykrohKxUaSoIbu2UnJ3iJtjtI1eO9IMagaCL6UeU_o-lPnnTIeFeXhqTtyb5ZMe-_3ziqz5ZpS5eeD6cI35RMSop51kbpqlnET_8xcm_yhZx3ko__eN8aM-pnfXnVyZ4eQ"/>
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Rural Clinic</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Lab Unit 04</p>
+</div>
+</div>
+<div class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md cursor-pointer active:scale-98" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary-container text-on-secondary-container font-bold font-body-md text-body-md cursor-pointer active:scale-98 transition-all" href="#">
+<span class="material-symbols-outlined">biotech</span>
+<span>Test Queue</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md cursor-pointer active:scale-98" href="#">
+<span class="material-symbols-outlined">science</span>
+<span>Samples</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md cursor-pointer active:scale-98" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span>Results</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md cursor-pointer active:scale-98" href="#">
+<span class="material-symbols-outlined">description</span>
+<span>Reports</span>
+</a>
+</div>
+<div class="mt-auto flex flex-col gap-2 pt-4 border-t border-zinc-500/20">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md cursor-pointer active:scale-98" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors font-body-md text-body-md cursor-pointer active:scale-98" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-0 md:ml-[280px] p-margin-mobile md:p-margin-desktop bg-warm-white">
+<div class="max-w-container-max mx-auto">
+<!-- Page Header -->
+<div class="mb-8">
+<h1 class="font-headline-lg text-headline-lg text-charcoal mb-2">Today's Test Queue</h1>
+<p class="font-body-md text-body-md text-slate">Manage diagnostic requests and processing order.</p>
+</div>
+<!-- Filters -->
+<div class="flex flex-wrap gap-2 mb-6">
+<button class="px-4 py-2 bg-primary-container text-warm-white rounded-full font-label-sm text-label-sm shadow-[0_10px_30px_rgba(30,41,59,0.04)]">All</button>
+<button class="px-4 py-2 bg-off-white text-charcoal border border-zinc-500/20 rounded-full font-label-sm text-label-sm hover:border-primary transition-colors">Urgent</button>
+<button class="px-4 py-2 bg-off-white text-charcoal border border-zinc-500/20 rounded-full font-label-sm text-label-sm hover:border-primary transition-colors">Waiting</button>
+<button class="px-4 py-2 bg-off-white text-charcoal border border-zinc-500/20 rounded-full font-label-sm text-label-sm hover:border-primary transition-colors">Processing</button>
+<button class="px-4 py-2 bg-off-white text-charcoal border border-zinc-500/20 rounded-full font-label-sm text-label-sm hover:border-primary transition-colors">Pending Result</button>
+<button class="px-4 py-2 bg-off-white text-charcoal border border-zinc-500/20 rounded-full font-label-sm text-label-sm hover:border-primary transition-colors">Delayed</button>
+</div>
+<!-- Data Table -->
+<div class="bg-off-white rounded-xl border border-zinc-500/20 overflow-hidden shadow-[0_10px_30px_rgba(30,41,59,0.04)]">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-zinc-500/20 bg-warm-white">
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase tracking-wider">Priority</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase tracking-wider">Test ID</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase tracking-wider">Test / Panel</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase tracking-wider">Patient</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase tracking-wider">Requested By</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase tracking-wider">Sample Status</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase tracking-wider">Due</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase tracking-wider">Status</th>
+<th class="p-4 font-label-sm text-label-sm text-slate uppercase tracking-wider text-right">Action</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-charcoal">
+<!-- Row 1: Urgent -->
+<tr class="border-b border-zinc-500/20 hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4">
+<div class="flex items-center gap-1 text-error">
+<span class="material-symbols-outlined text-sm">priority_high</span>
+<span class="font-label-sm text-label-sm">URGENT</span>
+</div>
+</td>
+<td class="p-4 font-mono text-sm text-slate">#RQ-0921</td>
+<td class="p-4 font-medium">Complete Blood Count (CBC)</td>
+<td class="p-4">Arjun Patel</td>
+<td class="p-4 text-slate">Dr. S. Mehta</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-secondary-container text-primary font-label-sm text-label-sm">
+                                            Received
+                                        </span>
+</td>
+<td class="p-4 text-error font-medium">10:30 AM (Overdue)</td>
+<td class="p-4">
+<span class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
+                                            Processing
+                                        </span>
+</td>
+<td class="p-4 text-right">
+<button class="h-8 px-3 text-sm font-button text-primary border border-zinc-500/20 rounded-md hover:border-primary transition-colors">Update</button>
+</td>
+</tr>
+<!-- Row 2: Standard, Received -->
+<tr class="border-b border-zinc-500/20 hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4">
+<span class="font-label-sm text-label-sm text-slate">Normal</span>
+</td>
+<td class="p-4 font-mono text-sm text-slate">#RQ-0922</td>
+<td class="p-4 font-medium">Lipid Panel</td>
+<td class="p-4">Sunita Sharma</td>
+<td class="p-4 text-slate">Dr. R. Desai</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-surface-dim text-charcoal font-label-sm text-label-sm">
+                                            Requested
+                                        </span>
+</td>
+<td class="p-4">02:00 PM</td>
+<td class="p-4">
+<span class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-surface-dim"></span>
+                                            Waiting
+                                        </span>
+</td>
+<td class="p-4 text-right">
+<button class="h-8 px-3 text-sm font-button text-primary border border-zinc-500/20 rounded-md hover:border-primary transition-colors">Start</button>
+</td>
+</tr>
+<!-- Row 3: Standard, Pending Result -->
+<tr class="border-b border-zinc-500/20 hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4">
+<span class="font-label-sm text-label-sm text-slate">Normal</span>
+</td>
+<td class="p-4 font-mono text-sm text-slate">#RQ-0915</td>
+<td class="p-4 font-medium">HbA1c</td>
+<td class="p-4">Ramesh Kumar</td>
+<td class="p-4 text-slate">Clinic OPD</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-secondary-container text-primary font-label-sm text-label-sm">
+                                            Processed
+                                        </span>
+</td>
+<td class="p-4">11:00 AM</td>
+<td class="p-4">
+<span class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-fixed-dim"></span>
+                                            Pending Result
+                                        </span>
+</td>
+<td class="p-4 text-right">
+<button class="h-8 px-3 text-sm font-button bg-primary-container text-warm-white rounded-md hover:opacity-90 transition-opacity">Enter Data</button>
+</td>
+</tr>
+<!-- Row 4: Delayed -->
+<tr class="border-b border-zinc-500/20 hover:bg-surface-container-lowest transition-colors group">
+<td class="p-4">
+<span class="font-label-sm text-label-sm text-slate">Normal</span>
+</td>
+<td class="p-4 font-mono text-sm text-slate">#RQ-0908</td>
+<td class="p-4 font-medium">Thyroid Profile (T3, T4, TSH)</td>
+<td class="p-4">Kavita Joshi</td>
+<td class="p-4 text-slate">Dr. S. Mehta</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm">
+                                            Rejected
+                                        </span>
+</td>
+<td class="p-4">09:00 AM</td>
+<td class="p-4">
+<span class="flex items-center gap-2 text-error">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+                                            Delayed (Recollect)
+                                        </span>
+</td>
+<td class="p-4 text-right">
+<button class="h-8 px-3 text-sm font-button text-charcoal border border-zinc-500/20 rounded-md hover:border-primary transition-colors">Details</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

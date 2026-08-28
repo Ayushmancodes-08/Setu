@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu - Medical Records</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#476c5b",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#fbf8ff",
+                        "primary": "#003527",
+                        "on-surface-variant": "#404944",
+                        "slate": "#475569",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e3e1ec",
+                        "on-secondary-fixed": "#002115",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-background": "#1a1b22",
+                        "on-primary-container": "#80bea6",
+                        "secondary-container": "#c3ecd7",
+                        "emerald-accent": "#10b981",
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "on-tertiary-container": "#f69f0d",
+                        "warm-white": "#fafaf9",
+                        "surface-container-high": "#e8e7f1",
+                        "surface-container-low": "#f4f2fd",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "tertiary-fixed": "#ffddb8",
+                        "primary-fixed-dim": "#95d3ba",
+                        "outline": "#707974",
+                        "secondary-fixed": "#c3ecd7",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#b0f0d6",
+                        "on-tertiary-fixed": "#2a1700",
+                        "background": "#fbf8ff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#623c00",
+                        "outline-variant": "#bfc9c3",
+                        "surface-container": "#eeedf7",
+                        "surface-variant": "#e3e1ec",
+                        "off-white": "#f5f5f4",
+                        "secondary": "#416656",
+                        "inverse-surface": "#2f3038",
+                        "primary-container": "#064e3b",
+                        "inverse-primary": "#95d3ba",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#0b513d",
+                        "surface-tint": "#2b6954",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dad9e3",
+                        "tertiary": "#442800",
+                        "on-primary-fixed": "#002117",
+                        "on-surface": "#1a1b22",
+                        "surface-bright": "#fbf8ff",
+                        "inverse-on-surface": "#f1effa",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "charcoal": "#1e293b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "nav-link": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "button": ["Inter"],
+                        "hero-display": ["Inter"],
+                        "hero-display-mobile": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "nav-link": ["14px", { "lineHeight": "1", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "button": ["16px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "hero-display": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "hero-display-mobile": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["20px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                },
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.warm-white');
+            color: theme('colors.charcoal');
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .ambient-shadow {
+            box-shadow: 0 10px 30px rgba(30, 41, 59, 0.04);
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar -->
+<nav class="hidden md:flex h-screen w-72 fixed left-0 top-0 bg-primary dark:bg-on-primary-fixed-variant flex-col py-gutter px-6 z-50">
+<div class="mb-12 mt-4 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-primary-container flex items-center justify-center">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A dignified and calm professional headshot of an Indian patient, softly lit against a warm neutral background. The lighting is studio quality, emphasizing clarity and approachability, fitting for a modern public health infrastructure application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAO9vZ6S4hM4urxmNqxA8GRts6sWrSOAxi83zsGg-dVAhS3xSFW-v5T4mbI82cWS3HsR4ofaEibVYQy2qo48Gjm4rJ477a1vjQRiHmqd9ZmRyugRYobp7J8CoQPj7AaoLwUbUpvWVlLhahDT4AqipooNu57dHLQEzXOS4qhvt4FD-Iy4XxfoGj9iZX0w2pJk7bzTx0N1p5bDZYZADEXAXLR-5UgktrRr4JjwcsqKZcmQjB5_PYmL9hkFw"/>
+</div>
+<div>
+<h1 class="font-headline-lg text-headline-lg text-warm-white">Setu</h1>
+<p class="font-label-sm text-label-sm text-primary-fixed-dim/80 mt-1">Healthcare Access</p>
+</div>
+</div>
+<div class="flex-1 space-y-2 flex flex-col w-full">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary-fixed-dim/70 font-medium hover:text-warm-white hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-nav-link text-nav-link">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary-fixed-dim/70 font-medium hover:text-warm-white hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">medical_services</span>
+<span class="font-nav-link text-nav-link">Find Care</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary-fixed-dim/70 font-medium hover:text-warm-white hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">event</span>
+<span class="font-nav-link text-nav-link">Appointments</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary-fixed-dim/70 font-medium hover:text-warm-white hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">monitor_heart</span>
+<span class="font-nav-link text-nav-link">My Health</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary-fixed-dim/70 font-medium hover:text-warm-white hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">group_work</span>
+<span class="font-nav-link text-nav-link">Coordination</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-warm-white font-bold border-l-4 border-emerald-accent bg-primary-container/50 opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined fill">description</span>
+<span class="font-nav-link text-nav-link">Medical Records</span>
+</a>
+</div>
+<div class="mt-auto pt-6">
+<button class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-error text-on-error rounded-lg font-button text-button hover:bg-error/90 transition-colors">
+<span class="material-symbols-outlined">emergency</span>
+                Emergency Help
+            </button>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full md:ml-72 flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="sticky top-0 h-[72px] w-full bg-warm-white/80 dark:bg-surface-dim/80 border-b border-zinc-500/20 backdrop-blur-md flex justify-between items-center px-margin-mobile md:px-margin-desktop z-40">
+<div class="flex items-center md:hidden">
+<h1 class="font-headline-md text-headline-md text-primary font-bold">Setu</h1>
+</div>
+<div class="hidden md:flex gap-6">
+<a class="font-label-sm text-label-sm text-charcoal font-medium hover:text-primary transition-colors" href="#">Location</a>
+<a class="font-label-sm text-label-sm text-charcoal font-medium hover:text-primary transition-colors" href="#">Language</a>
+</div>
+<div class="flex items-center gap-4 text-charcoal">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<!-- Page Content -->
+<div class="flex-1 px-margin-mobile md:px-margin-desktop py-8 max-w-container-max mx-auto w-full">
+<div class="mb-10">
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Medical Records</h2>
+<p class="font-body-md text-body-md text-slate mt-2">Manage your lab reports and active prescriptions securely.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Section 1: Recent Lab Reports -->
+<section class="lg:col-span-7 space-y-6">
+<div class="flex items-center justify-between border-b border-zinc-500/20 pb-4">
+<h3 class="font-headline-md text-headline-md text-charcoal flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">science</span>
+                            Recent Lab Reports
+                        </h3>
+<a class="font-label-sm text-label-sm text-primary hover:underline" href="#">View All</a>
+</div>
+<div class="space-y-4">
+<!-- Report Card 1 -->
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-6 hover:shadow-[0_10px_30px_rgba(30,41,59,0.04)] transition-shadow">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<h4 class="font-body-lg text-body-lg text-charcoal font-semibold">Complete Blood Count (CBC)</h4>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-primary-container">
+                                            Ready
+                                        </span>
+</div>
+<div class="flex items-center gap-4 font-body-md text-body-md text-slate">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                                            Aug 28, 2023
+                                        </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">local_hospital</span>
+                                            PHC Osmanabad
+                                        </div>
+</div>
+</div>
+<div>
+<button class="h-12 px-6 rounded-lg border border-zinc-500/20 text-charcoal font-button text-button hover:bg-surface-container transition-colors flex items-center justify-center gap-2 w-full sm:w-auto">
+                                        View Report
+                                        <span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Report Card 2 -->
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-6 hover:shadow-[0_10px_30px_rgba(30,41,59,0.04)] transition-shadow">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<h4 class="font-body-lg text-body-lg text-charcoal font-semibold">Blood Sugar (Fasting)</h4>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-primary-container">
+                                            Ready
+                                        </span>
+</div>
+<div class="flex items-center gap-4 font-body-md text-body-md text-slate">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                                            Aug 21, 2023
+                                        </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">local_hospital</span>
+                                            Gov Diagnostic Centre
+                                        </div>
+</div>
+</div>
+<div>
+<button class="h-12 px-6 rounded-lg border border-zinc-500/20 text-charcoal font-button text-button hover:bg-surface-container transition-colors flex items-center justify-center gap-2 w-full sm:w-auto">
+                                        View Report
+                                        <span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Active Prescriptions -->
+<section class="lg:col-span-5 space-y-6">
+<div class="flex items-center justify-between border-b border-zinc-500/20 pb-4">
+<h3 class="font-headline-md text-headline-md text-charcoal flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">prescriptions</span>
+                            Active Prescriptions
+                        </h3>
+</div>
+<div class="grid grid-cols-1 gap-4">
+<!-- Prescription Card 1 -->
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-5 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-16 h-16 bg-surface-container-high rounded-bl-full -mr-8 -mt-8"></div>
+<h4 class="font-body-lg text-body-lg text-primary-container font-semibold mb-1">Paracetamol 500mg</h4>
+<p class="font-label-sm text-label-sm text-slate mb-4">Prescribed by: Dr. Priya Kulkarni</p>
+<div class="bg-warm-white rounded-lg p-4 border border-zinc-500/10 grid grid-cols-2 gap-4">
+<div>
+<span class="block font-label-sm text-label-sm text-slate mb-1">Instructions</span>
+<span class="font-body-md text-body-md text-charcoal font-medium">1-0-1 <span class="text-sm font-normal text-slate">(After food)</span></span>
+</div>
+<div>
+<span class="block font-label-sm text-label-sm text-slate mb-1">Duration</span>
+<span class="font-body-md text-body-md text-charcoal font-medium">5 Days</span>
+</div>
+</div>
+</div>
+<!-- Prescription Card 2 -->
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-5 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-16 h-16 bg-surface-container-high rounded-bl-full -mr-8 -mt-8"></div>
+<h4 class="font-body-lg text-body-lg text-primary-container font-semibold mb-1">Cetirizine 10mg</h4>
+<p class="font-label-sm text-label-sm text-slate mb-4">Self-reported / Previous Visit</p>
+<div class="bg-warm-white rounded-lg p-4 border border-zinc-500/10 grid grid-cols-2 gap-4">
+<div>
+<span class="block font-label-sm text-label-sm text-slate mb-1">Instructions</span>
+<span class="font-body-md text-body-md text-charcoal font-medium">0-0-1 <span class="text-sm font-normal text-slate">(Before bed)</span></span>
+</div>
+<div>
+<span class="block font-label-sm text-label-sm text-slate mb-1">Duration</span>
+<span class="font-body-md text-body-md text-charcoal font-medium">3 Days</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Mobile Bottom NavBar (Visible only on md:hidden) -->
+<nav class="md:hidden fixed bottom-0 w-full bg-warm-white border-t border-zinc-500/20 px-4 py-2 flex justify-between items-center z-50">
+<a class="flex flex-col items-center p-2 text-slate hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium mt-1">Overview</span>
+</a>
+<a class="flex flex-col items-center p-2 text-slate hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">medical_services</span>
+<span class="text-[10px] font-medium mt-1">Find Care</span>
+</a>
+<a class="flex flex-col items-center p-2 text-primary" href="#">
+<span class="material-symbols-outlined fill">description</span>
+<span class="text-[10px] font-bold mt-1">Records</span>
+</a>
+<a class="flex flex-col items-center p-2 text-slate hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

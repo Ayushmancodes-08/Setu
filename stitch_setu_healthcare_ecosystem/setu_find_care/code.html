@@ -1,0 +1,319 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MahaHealth - Find Care</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#ba1a1a",
+                      "on-secondary-container": "#476c5b",
+                      "surface-bright": "#fbf8ff",
+                      "surface-container": "#eeedf7",
+                      "secondary-container": "#c3ecd7",
+                      "surface-dim": "#dad9e3",
+                      "on-tertiary-container": "#f69f0d",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "off-white": "#f5f5f4",
+                      "warm-white": "#fafaf9",
+                      "inverse-primary": "#95d3ba",
+                      "outline": "#707974",
+                      "surface-container-high": "#e8e7f1",
+                      "background": "#fbf8ff",
+                      "primary": "#003527",
+                      "on-tertiary": "#ffffff",
+                      "surface-tint": "#2b6954",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed-dim": "#95d3ba",
+                      "primary-fixed": "#b0f0d6",
+                      "inverse-surface": "#2f3038",
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#404944",
+                      "surface": "#fbf8ff",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "tertiary-fixed": "#ffddb8",
+                      "outline-variant": "#bfc9c3",
+                      "tertiary": "#442800",
+                      "on-secondary-fixed": "#002115",
+                      "tertiary-container": "#623c00",
+                      "inverse-on-surface": "#f1effa",
+                      "slate": "#475569",
+                      "primary-container": "#064e3b",
+                      "surface-variant": "#e3e1ec",
+                      "on-primary": "#ffffff",
+                      "surface-container-highest": "#e3e1ec",
+                      "on-primary-container": "#80bea6",
+                      "on-secondary-fixed-variant": "#294e3f",
+                      "secondary-fixed-dim": "#a8cfbc",
+                      "charcoal": "#1e293b",
+                      "on-tertiary-fixed": "#2a1700",
+                      "on-error": "#ffffff",
+                      "on-surface": "#1a1b22",
+                      "secondary": "#416656",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#002117",
+                      "surface-container-low": "#f4f2fd",
+                      "on-background": "#1a1b22",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed": "#c3ecd7",
+                      "emerald-accent": "#10b981"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "gutter": "24px",
+                      "container-max": "1280px",
+                      "margin-mobile": "16px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "hero-display-mobile": ["Inter"],
+                      "button": ["Inter"],
+                      "hero-display": ["Inter"],
+                      "nav-link": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-md": ["Inter"]
+              },
+              "fontSize": {
+                      "hero-display-mobile": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "button": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                      "hero-display": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "nav-link": ["14px", {"lineHeight": "1", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: theme('colors.warm-white'); }
+        .ambient-shadow { box-shadow: 0 10px 30px rgba(30, 41, 59, 0.04); }
+        .ghost-border { border: 1px solid rgba(113, 113, 122, 0.2); }
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: theme('colors.outline-variant'); border-radius: theme('borderRadius.full'); }
+        ::-webkit-scrollbar-thumb:hover { background: theme('colors.outline'); }
+    </style>
+</head>
+<body class="text-on-background min-h-screen flex flex-col md:flex-row bg-warm-white">
+<!-- Mobile Top Navigation (md:hidden) -->
+<header class="md:hidden bg-warm-white/80 dark:bg-inverse-surface/80 backdrop-blur-md shadow-sm fixed top-0 w-full h-[72px] z-50">
+<div class="flex justify-between items-center px-margin-mobile h-full">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">health_and_safety</span>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MahaHealth</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-charcoal cursor-pointer">location_on</span>
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A small circular avatar showing a professional looking healthcare user in a bright clean setting, warm white lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyAbQs4Ac4xLDDopzgJYxW-QBNK-t5EklLQz7_wnVqvp2qkw5TdS8pt-9P6qnH7ryeNOugby2LeA0DvlHEABBVFV54YUkZcDBa_27Yl7r79Fm1m6pLqD0Kw_4Lut6CIwowAxbL1JFmvJBEVPRjJDWyrO5NwLhbBzkmdtepJljmT4gLC-Nqg8fx_H7gHPq51czupmTYzGq6hsuZnoPaNZt_zX5HqA2xAh5L5IVCMSK_ueDEP2mXxzfE6g">
+</div>
+</div>
+</header>
+<!-- Sidebar Navigation (hidden md:flex) -->
+<nav class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low dark:bg-inverse-surface border-r border-outline/20 py-8 z-40">
+<div class="px-6 mb-8 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">health_and_safety</span>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">MahaHealth</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Maharashtra Health Dept</p>
+</div>
+</div>
+<ul class="flex-1 space-y-2 px-4 overflow-y-auto">
+<li class="">
+<a class="flex items-center gap-3 font-body-md text-body-md text-on-surface-variant dark:text-surface-variant pl-4 py-3 rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="">Overview</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 font-body-md text-body-md text-primary dark:text-primary-fixed font-bold border-l-4 border-primary pl-4 bg-primary-container/10 py-3 rounded-r-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+<span class="">Find Care</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 font-body-md text-body-md text-on-surface-variant dark:text-surface-variant pl-4 py-3 rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">event</span>
+<span class="">Appointments</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 font-body-md text-body-md text-on-surface-variant dark:text-surface-variant pl-4 py-3 rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">health_and_safety</span>
+<span class="">My Health</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 font-body-md text-body-md text-on-surface-variant dark:text-surface-variant pl-4 py-3 rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span class="">Coordination</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 font-body-md text-body-md text-on-surface-variant dark:text-surface-variant pl-4 py-3 rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+<span class="">Medical Records</span>
+</a>
+</li>
+</ul>
+<div class="px-4 mt-auto space-y-2">
+<a class="flex items-center gap-3 font-body-md text-body-md text-on-surface-variant dark:text-surface-variant pl-4 py-2 rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="">Support</span>
+</a>
+<a class="flex items-center gap-3 font-body-md text-body-md text-on-surface-variant dark:text-surface-variant pl-4 py-2 rounded-lg hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 pt-[72px] md:pt-0 h-screen flex flex-col relative max-w-container-max mx-auto w-full bg-warm-white">
+<!-- Top Search and Filter Bar -->
+<section class="px-margin-mobile md:px-margin-desktop py-6 bg-warm-white z-10 ghost-border border-t-0 border-x-0 border-b flex flex-col gap-4">
+<div class="flex items-center gap-4">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full h-[52px] pl-12 pr-12 rounded-lg ghost-border bg-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-body-md text-body-md placeholder:text-outline-variant" placeholder="Search for hospitals, doctors, PHCs, or labs" type="text">
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-primary hover:text-primary-container transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</button>
+</div>
+<div class="hidden md:flex items-center gap-4">
+<button class="h-[52px] px-6 rounded-xl bg-primary-container text-white font-button text-button hover:bg-primary transition-colors shadow-sm">Search</button>
+</div>
+</div>
+<!-- Chips -->
+<div class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
+<button class="whitespace-nowrap px-4 h-8 rounded-full bg-secondary-container text-primary font-label-sm text-label-sm flex items-center gap-1 border border-primary/20">
+<span class="material-symbols-outlined text-[16px]">near_me</span> Near Me
+                </button>
+<button class="whitespace-nowrap px-4 h-8 rounded-full bg-off-white text-on-surface-variant font-label-sm text-label-sm ghost-border hover:bg-surface-container-low transition-colors">
+                    Open Now
+                </button>
+<button class="whitespace-nowrap px-4 h-8 rounded-full bg-off-white text-on-surface-variant font-label-sm text-label-sm ghost-border hover:bg-surface-container-low transition-colors">
+                    Government
+                </button>
+<button class="whitespace-nowrap px-4 h-8 rounded-full bg-off-white text-on-surface-variant font-label-sm text-label-sm ghost-border hover:bg-surface-container-low transition-colors">
+                    Specialist
+                </button>
+<button class="whitespace-nowrap px-4 h-8 rounded-full bg-error/10 text-error font-label-sm text-label-sm border border-error/20 hover:bg-error/20 transition-colors">
+                    Emergency
+                </button>
+</div>
+</section>
+<!-- Split Pane Layout -->
+<div class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+<!-- Left Pane: List -->
+<div class="w-full md:w-[400px] lg:w-[480px] h-[50vh] md:h-full overflow-y-auto px-margin-mobile md:px-margin-desktop py-6 bg-warm-white border-r ghost-border z-10 flex flex-col gap-4">
+<h2 class="font-headline-md text-headline-md text-charcoal mb-2">Nearby Facilities</h2>
+<!-- Card 1 -->
+<div class="bg-white rounded-xl p-4 ghost-border hover:shadow-sm transition-shadow cursor-pointer relative group">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg text-[20px] font-semibold text-charcoal leading-tight pr-8">Osmanabad District Hospital</h3>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors absolute right-4 top-4">chevron_right</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="font-label-sm text-label-sm text-primary bg-primary-container/10 px-2 py-1 rounded">Public Hospital</span>
+<span class="font-label-sm text-label-sm text-outline flex items-center"><span class="material-symbols-outlined text-[14px] mr-1">location_on</span>2.4 km</span>
+</div>
+<p class="font-body-md text-[14px] text-on-surface-variant mb-3 line-clamp-1">Emergency, Cardiology, Lab Services, Maternity</p>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-accent"></span>
+<span class="font-label-sm text-label-sm text-emerald-accent">Open 24/7</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white rounded-xl p-4 ghost-border hover:shadow-sm transition-shadow cursor-pointer relative group">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg text-[20px] font-semibold text-charcoal leading-tight pr-8">Kalyan City Clinic</h3>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors absolute right-4 top-4">chevron_right</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-2 py-1 rounded">Primary Health Centre</span>
+<span class="font-label-sm text-label-sm text-outline flex items-center"><span class="material-symbols-outlined text-[14px] mr-1">location_on</span>3.8 km</span>
+</div>
+<p class="font-body-md text-[14px] text-on-surface-variant mb-3 line-clamp-1">General OPD, Vaccination, Basic Pathology</p>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-on-tertiary-container"></span>
+<span class="font-label-sm text-label-sm text-on-tertiary-container">Closes at 8 PM</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white rounded-xl p-4 ghost-border hover:shadow-sm transition-shadow cursor-pointer relative group">
+<div class="flex justify-between items-start mb-2">
+<h3 class="font-headline-lg text-[20px] font-semibold text-charcoal leading-tight pr-8">Apex Super Speciality</h3>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors absolute right-4 top-4">chevron_right</span>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-high px-2 py-1 rounded">Private Hospital</span>
+<span class="font-label-sm text-label-sm text-outline flex items-center"><span class="material-symbols-outlined text-[14px] mr-1">location_on</span>5.1 km</span>
+</div>
+<p class="font-body-md text-[14px] text-on-surface-variant mb-3 line-clamp-1">Neurology, Orthopedics, Advanced Imaging</p>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-accent"></span>
+<span class="font-label-sm text-label-sm text-emerald-accent">Open 24/7</span>
+</div>
+</div>
+</div>
+<!-- Right Pane: Map -->
+<div class="flex-1 h-[50vh] md:h-full relative bg-surface-container-low" data-location="Maharashtra">
+<!-- Map Placeholder Image -->
+<div class="w-full h-full bg-cover bg-center absolute inset-0" data-alt="A clean, modern, minimalist digital map of a rural Maharashtra district, featuring soft warm white and off-white tones for landmasses, subtle light teal accents for water bodies, and minimal road networks in light grey. The style is high-end, calm, and uncluttered." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCrbmtl77oPjeBdJk7iMRhEe7Mp_DNxYJ_rJ9rjB9SMRUGn_ddabcyCxhlXMYU9kPMp41BSqsNU2zA9ukrfyTNdJbO3_Wk4zoVTc4FSA1b6b70ztJOKaNTjsG7X4jIV_ic4k4y8OeQSxsqjDYMoZzvDwE-nINen-d-UoY6YKo9LFj6mKapGQtPnD8HQk_uqLSHQf-6Hv38NmmulApch8ZccaBOC6VnLLxvolIDCiR4QYJDqEHopRzSjOg')"></div>
+<!-- Overlay Elements -->
+<div class="absolute inset-0 bg-gradient-to-t from-warm-white/50 to-transparent pointer-events-none"></div>
+<!-- Location Pins (Simulated) -->
+<button class="absolute top-1/3 left-1/4 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform z-20">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">local_hospital</span>
+</button>
+<div class="absolute top-1/3 left-1/4 transform -translate-x-1/2 mt-6 bg-white px-2 py-1 rounded shadow-md text-xs font-semibold text-charcoal z-20 pointer-events-none">Osmanabad Dist...</div>
+<button class="absolute top-1/2 left-2/3 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white text-primary border border-primary flex items-center justify-center shadow hover:scale-110 transition-transform z-20">
+<span class="material-symbols-outlined text-[16px]">medical_services</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Mobile Bottom Navigation (md:hidden) -->
+<nav class="md:hidden fixed bottom-0 w-full h-[72px] bg-warm-white/90 backdrop-blur-md ghost-border border-b-0 border-x-0 border-t flex justify-around items-center px-4 z-50">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-[10px]">Overview</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<div class="bg-primary-container/20 px-4 py-1 rounded-full">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+</div>
+<span class="font-label-sm text-[10px] font-bold">Find Care</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">event</span>
+<span class="font-label-sm text-[10px]">Appts</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">assignment_turned_in</span>
+<span class="font-label-sm text-[10px]">Medical Records</span>
+</a>
+</nav>
+
+
+</body></html>

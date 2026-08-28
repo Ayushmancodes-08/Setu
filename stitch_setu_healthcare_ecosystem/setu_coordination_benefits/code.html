@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setu - Coordination &amp; Benefits</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#476c5b",
+                      "on-secondary-fixed-variant": "#294e3f",
+                      "on-tertiary": "#ffffff",
+                      "surface": "#fbf8ff",
+                      "primary": "#003527",
+                      "on-surface-variant": "#404944",
+                      "slate": "#475569",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-highest": "#e3e1ec",
+                      "on-secondary-fixed": "#002115",
+                      "error": "#ba1a1a",
+                      "on-error": "#ffffff",
+                      "on-background": "#1a1b22",
+                      "on-primary-container": "#80bea6",
+                      "secondary-container": "#c3ecd7",
+                      "emerald-accent": "#10b981",
+                      "secondary-fixed-dim": "#a8cfbc",
+                      "on-tertiary-container": "#f69f0d",
+                      "warm-white": "#fafaf9",
+                      "surface-container-high": "#e8e7f1",
+                      "surface-container-low": "#f4f2fd",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "tertiary-fixed": "#ffddb8",
+                      "primary-fixed-dim": "#95d3ba",
+                      "outline": "#707974",
+                      "secondary-fixed": "#c3ecd7",
+                      "on-error-container": "#93000a",
+                      "primary-fixed": "#b0f0d6",
+                      "on-tertiary-fixed": "#2a1700",
+                      "background": "#fbf8ff",
+                      "on-secondary": "#ffffff",
+                      "tertiary-container": "#623c00",
+                      "outline-variant": "#bfc9c3",
+                      "surface-container": "#eeedf7",
+                      "surface-variant": "#e3e1ec",
+                      "off-white": "#f5f5f4",
+                      "secondary": "#416656",
+                      "inverse-surface": "#2f3038",
+                      "primary-container": "#064e3b",
+                      "inverse-primary": "#95d3ba",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "surface-tint": "#2b6954",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#dad9e3",
+                      "tertiary": "#442800",
+                      "on-primary-fixed": "#002117",
+                      "on-surface": "#1a1b22",
+                      "surface-bright": "#fbf8ff",
+                      "inverse-on-surface": "#f1effa",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "charcoal": "#1e293b"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px",
+                      "margin-desktop": "64px",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "label-sm": ["Inter"],
+                      "body-md": ["Inter"],
+                      "nav-link": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "button": ["Inter"],
+                      "hero-display": ["Inter"],
+                      "hero-display-mobile": ["Inter"],
+                      "body-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "nav-link": ["14px", {"lineHeight": "1", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "button": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                      "hero-display": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "hero-display-mobile": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .ambient-shadow { box-shadow: 0 10px 30px rgba(30, 41, 59, 0.04); }
+    </style>
+</head>
+<body class="bg-warm-white text-on-surface min-h-screen flex selection:bg-emerald-accent/30 selection:text-primary">
+<!-- SideNavBar -->
+<nav class="hidden md:flex h-screen w-72 fixed left-0 top-0 bg-primary dark:bg-on-primary-fixed-variant text-primary-fixed dark:text-primary-fixed-dim flex-col py-gutter px-6 z-50">
+<div class="mb-12 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-emerald-accent/20 flex items-center justify-center overflow-hidden">
+<img alt="Setu" class="w-full h-full object-cover" data-alt="A minimalist, high-end 3D rendering of a generic medical cross or health symbol in deep emerald and warm white tones, soft studio lighting, professional healthcare context, isolated on a light background. 8k resolution, photorealistic style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhRZFtVqCdXeqC565kQFrwPd53ltVqsMLlMjMWBU_3zzGIRA44nhUrHQDx-H5O6VE-_hg6ohlsrcBLAsm9_rgu3f41NB-e6stiaS9ye786EOtqQnD_eKxkduE4kfrY_yPaP1wwSaGE9IiiFkQaJEDADNPM1TXbAs_aHl1mA-y1TXwVuqZMietSqKE8a1ncYp7GNJA5RgTmtbbYA2syG5ZvnAW7AoYLlTGk9MQa_jo1B9QMX5sIdzYz8A"/>
+</div>
+<div>
+<h1 class="font-headline-lg text-headline-lg text-warm-white">Setu</h1>
+<p class="font-label-sm text-label-sm text-primary-fixed-dim/80">Healthcare Access</p>
+</div>
+</div>
+<ul class="flex-1 space-y-2">
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg font-nav-link text-nav-link text-primary-fixed-dim/70 font-medium hover:text-warm-white hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                    Overview
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg font-nav-link text-nav-link text-primary-fixed-dim/70 font-medium hover:text-warm-white hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">medical_services</span>
+                    Find Care
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg font-nav-link text-nav-link text-primary-fixed-dim/70 font-medium hover:text-warm-white hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">event</span>
+                    Appointments
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg font-nav-link text-nav-link text-primary-fixed-dim/70 font-medium hover:text-warm-white hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">monitor_heart</span>
+                    My Health
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg font-nav-link text-nav-link text-warm-white font-bold border-l-4 border-emerald-accent bg-primary-container/50 opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">group_work</span>
+                    Coordination
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg font-nav-link text-nav-link text-primary-fixed-dim/70 font-medium hover:text-warm-white hover:bg-primary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+                    Medical Records
+                </a>
+</li>
+</ul>
+<div class="mt-auto">
+<button class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-error/10 text-error-container hover:bg-error/20 transition-colors font-button text-button">
+<span class="material-symbols-outlined text-[20px]">emergency</span>
+                Emergency Help
+            </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-72 flex flex-col min-h-screen max-w-container-max mx-auto w-full relative">
+<!-- TopAppBar -->
+<header class="sticky top-0 h-[72px] w-full bg-warm-white/80 dark:bg-surface-dim/80 backdrop-blur-md border-b border-zinc-500/20 z-40 flex justify-between items-center px-margin-desktop">
+<div class="flex items-center">
+<!-- Mobile Menu Button (hidden on desktop) -->
+<button class="md:hidden mr-4 text-charcoal">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-headline-md text-headline-md text-primary font-bold">Coordination &amp; Benefits</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-4">
+<a class="font-label-sm text-label-sm text-charcoal font-medium hover:text-primary transition-colors" href="#">Location</a>
+<a class="font-label-sm text-label-sm text-charcoal font-medium hover:text-primary transition-colors" href="#">Language</a>
+</div>
+<div class="flex items-center gap-4 border-l border-zinc-500/20 pl-6 ml-2">
+<button class="text-charcoal hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-charcoal hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 p-margin-mobile md:p-margin-desktop overflow-y-auto space-y-12">
+<!-- Section 1: Active Referrals -->
+<section class="space-y-6">
+<div class="flex items-baseline justify-between">
+<h3 class="font-headline-lg text-headline-lg text-charcoal">Active Referrals</h3>
+<a class="font-nav-link text-nav-link text-primary-container hover:text-emerald-accent transition-colors flex items-center gap-1" href="#">
+                        View History <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-8 ambient-shadow relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-64 h-64 bg-emerald-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-6 relative z-10">
+<div class="space-y-4">
+<div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary-container/50 border border-emerald-accent/20">
+<span class="material-symbols-outlined text-[16px] text-primary-container">sync</span>
+<span class="font-label-sm text-label-sm text-primary-container font-semibold">Active Transfer</span>
+</div>
+<div>
+<h4 class="font-headline-md text-headline-md text-primary">District Hospital Pune</h4>
+<p class="font-body-md text-body-md text-slate mt-1">Specialist Consultation • Orthopedics</p>
+</div>
+<div class="grid grid-cols-2 gap-x-8 gap-y-2 mt-4">
+<div>
+<span class="font-label-sm text-label-sm text-slate block mb-1">Referring Facility</span>
+<span class="font-body-md text-body-md text-charcoal font-medium">PHC Osmanabad</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-slate block mb-1">Date Initiated</span>
+<span class="font-body-md text-body-md text-charcoal font-medium">Oct 10, 2023</span>
+</div>
+</div>
+</div>
+<!-- Timeline -->
+<div class="mt-6 md:mt-0 md:min-w-[300px]">
+<div class="relative space-y-6 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-emerald-accent before:via-zinc-500/20 before:to-transparent">
+<!-- Step 1: Completed -->
+<div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group/step">
+<div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-emerald-accent bg-warm-white z-10 shrink-0 md:order-1 md:group-odd/step:-ml-[11px] md:group-even/step:-mr-[11px]">
+<div class="w-2 h-2 rounded-full bg-emerald-accent"></div>
+</div>
+<div class="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] ml-4 md:ml-0 md:px-4 md:group-odd/step:text-right">
+<p class="font-nav-link text-nav-link text-charcoal">Referral Created</p>
+</div>
+</div>
+<!-- Step 2: Current -->
+<div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group/step">
+<div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-primary-container bg-primary-container z-10 shrink-0 md:order-1 md:group-odd/step:-ml-[11px] md:group-even/step:-mr-[11px] shadow-[0_0_0_4px_rgba(6,78,59,0.1)]">
+<span class="material-symbols-outlined text-[14px] text-warm-white">hourglass_top</span>
+</div>
+<div class="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] ml-4 md:ml-0 md:px-4 md:group-odd/step:text-right">
+<p class="font-nav-link text-nav-link text-primary-container font-semibold">Facility Accepted</p>
+<p class="font-label-sm text-label-sm text-slate mt-0.5">Pending appointment schedule</p>
+</div>
+</div>
+<!-- Step 3: Upcoming -->
+<div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group/step">
+<div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-zinc-500/20 bg-warm-white z-10 shrink-0 md:order-1 md:group-odd/step:-ml-[11px] md:group-even/step:-mr-[11px]">
+</div>
+<div class="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] ml-4 md:ml-0 md:px-4 md:group-odd/step:text-right">
+<p class="font-nav-link text-nav-link text-slate">Consultation</p>
+</div>
+</div>
+<!-- Step 4: Upcoming -->
+<div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group/step">
+<div class="flex items-center justify-center w-6 h-6 rounded-full border-2 border-zinc-500/20 bg-warm-white z-10 shrink-0 md:order-1 md:group-odd/step:-ml-[11px] md:group-even/step:-mr-[11px]">
+</div>
+<div class="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] ml-4 md:ml-0 md:px-4 md:group-odd/step:text-right">
+<p class="font-nav-link text-nav-link text-slate">Follow-up</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Government Schemes -->
+<section class="space-y-6">
+<div class="flex items-baseline justify-between border-b border-zinc-500/20 pb-4">
+<h3 class="font-headline-lg text-headline-lg text-charcoal">Government Health Schemes</h3>
+<span class="font-label-sm text-label-sm text-slate uppercase tracking-wider">Maharashtra Region</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Scheme 1 -->
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-6 flex flex-col h-full hover:border-emerald-accent/30 transition-colors">
+<div class="flex items-start justify-between mb-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary-container shrink-0">
+<span class="material-symbols-outlined text-[24px]">assured_workload</span>
+</div>
+<div class="bg-[#ffb95f]/20 text-[#653e00] px-3 py-1 rounded-full font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">info</span>
+                                Action Required
+                            </div>
+</div>
+<h4 class="font-headline-md text-headline-md text-charcoal mb-2">Mahatma Jyotirao Phule Jan Arogya Yojana</h4>
+<p class="font-body-md text-body-md text-slate flex-1">Comprehensive health cover for identified families across Maharashtra.</p>
+<div class="mt-8 pt-6 border-t border-zinc-500/10">
+<button class="w-full h-[52px] rounded-lg bg-primary-container text-warm-white font-button text-button hover:bg-primary transition-colors flex items-center justify-center gap-2">
+                                Check Eligibility
+                                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Scheme 2 -->
+<div class="bg-off-white border border-zinc-500/20 rounded-xl p-6 flex flex-col h-full relative overflow-hidden">
+<!-- Success accent subtle background -->
+<div class="absolute inset-0 bg-gradient-to-br from-emerald-accent/5 to-transparent pointer-events-none"></div>
+<div class="flex items-start justify-between mb-4 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center text-primary-container shrink-0">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+</div>
+<div class="bg-emerald-accent/10 text-primary-container px-3 py-1 rounded-full font-label-sm text-label-sm flex items-center gap-1 border border-emerald-accent/20">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                Active
+                            </div>
+</div>
+<h4 class="font-headline-md text-headline-md text-charcoal mb-2 relative z-10">Ayushman Bharat (PM-JAY)</h4>
+<p class="font-body-md text-body-md text-slate flex-1 relative z-10">National health protection scheme providing coverage for secondary and tertiary care hospitalization.</p>
+<div class="mt-8 pt-6 border-t border-zinc-500/10 relative z-10 flex items-center justify-between">
+<div class="flex items-center gap-2 text-slate">
+<span class="material-symbols-outlined text-[18px]">link</span>
+<span class="font-label-sm text-label-sm">Linked with ABHA</span>
+</div>
+<button class="h-[52px] px-6 rounded-lg border border-zinc-500/20 text-charcoal font-button text-button hover:bg-surface-container transition-colors flex items-center justify-center gap-2 bg-transparent">
+                                View Card
+                            </button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

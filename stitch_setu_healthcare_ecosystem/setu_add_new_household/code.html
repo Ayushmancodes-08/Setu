@@ -1,0 +1,354 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Setu Health - New Household Registration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#2a1700",
+                      "surface-container-low": "#f4f2fd",
+                      "warm-white": "#fafaf9",
+                      "primary-fixed-dim": "#95d3ba",
+                      "on-background": "#1a1b22",
+                      "surface-variant": "#e3e1ec",
+                      "tertiary": "#442800",
+                      "on-primary-fixed": "#002117",
+                      "on-surface": "#1a1b22",
+                      "surface-container-high": "#e8e7f1",
+                      "on-error": "#ffffff",
+                      "secondary": "#416656",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "surface-container": "#eeedf7",
+                      "on-error-container": "#93000a",
+                      "primary-container": "#064e3b",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-fixed-variant": "#294e3f",
+                      "slate": "#475569",
+                      "on-tertiary-container": "#f69f0d",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-surface": "#2f3038",
+                      "tertiary-container": "#623c00",
+                      "on-primary-container": "#80bea6",
+                      "outline": "#707974",
+                      "charcoal": "#1e293b",
+                      "surface": "#fbf8ff",
+                      "surface-bright": "#fbf8ff",
+                      "on-surface-variant": "#404944",
+                      "on-primary": "#ffffff",
+                      "surface-tint": "#2b6954",
+                      "primary": "#003527",
+                      "tertiary-fixed": "#ffddb8",
+                      "emerald-accent": "#10b981",
+                      "error-container": "#ffdad6",
+                      "error": "#ba1a1a",
+                      "inverse-primary": "#95d3ba",
+                      "secondary-fixed-dim": "#a8cfbc",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-primary-fixed-variant": "#0b513d",
+                      "outline-variant": "#bfc9c3",
+                      "background": "#fbf8ff",
+                      "on-tertiary": "#ffffff",
+                      "inverse-on-surface": "#f1effa",
+                      "surface-container-highest": "#e3e1ec",
+                      "surface-dim": "#dad9e3",
+                      "off-white": "#f5f5f4",
+                      "secondary-fixed": "#c3ecd7",
+                      "on-secondary-fixed": "#002115",
+                      "on-secondary-container": "#476c5b",
+                      "primary-fixed": "#b0f0d6",
+                      "secondary-container": "#c3ecd7"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "margin-desktop": "64px",
+                      "unit": "4px",
+                      "container-max": "1280px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "nav-link": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "hero-display-mobile": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "button": ["Inter"],
+                      "hero-display": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "nav-link": ["14px", {"lineHeight": "1", "fontWeight": "500"}],
+                      "body-lg": ["20px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "hero-display-mobile": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "button": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                      "hero-display": ["64px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-warm-white text-on-surface min-h-screen flex flex-col font-sans">
+<!-- TopNavBar -->
+<header class="bg-warm-white/80 backdrop-blur-md sticky top-0 w-full h-[72px] z-50 border-b border-zinc-500/20 flex justify-between items-center px-gutter w-full lg:pl-[312px]">
+<div class="flex items-center gap-4">
+<!-- Mobile menu button (would trigger sidenav on mobile) -->
+<button class="lg:hidden p-2 -ml-2 text-charcoal hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-headline-lg font-headline-lg text-primary tracking-tight hidden lg:block">Setu Health</h1>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-charcoal">
+<button class="hover:opacity-80 transition-opacity" title="location_on"><span class="material-symbols-outlined">location_on</span></button>
+<button class="hover:opacity-80 transition-opacity" title="calendar_today"><span class="material-symbols-outlined">calendar_today</span></button>
+<button class="hover:opacity-80 transition-opacity" title="sync"><span class="material-symbols-outlined">sync</span></button>
+<button class="hover:opacity-80 transition-opacity" title="language"><span class="material-symbols-outlined">language</span></button>
+</div>
+<button class="hidden md:flex items-center gap-2 h-10 px-4 rounded border border-zinc-500/20 text-primary font-button text-button hover:bg-surface-container transition-colors">
+                Sync Data
+            </button>
+</div>
+</header>
+<div class="flex flex-1 relative">
+<!-- SideNavBar -->
+<aside class="bg-surface-container-lowest text-primary font-nav-link text-nav-link h-screen w-72 flex-col fixed left-0 top-0 overflow-y-auto border-r border-zinc-500/20 hidden lg:flex py-gutter px-4 z-50">
+<div class="mb-12 px-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center overflow-hidden border border-zinc-500/20">
+<span class="material-symbols-outlined text-outline">person</span>
+</div>
+<div>
+<div class="text-headline-md font-headline-md font-bold text-primary">Setu Platform</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Maharashtra Public Health</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<!-- Overview -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="">Overview</span>
+</a>
+<!-- Today's Queue -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="">Work Queue</span>
+</a>
+<!-- My Households (ACTIVE) -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-primary font-bold border-r-4 border-primary bg-surface-container-low transition-transform duration-150 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined filled">home_health</span>
+<span class="">My Households</span>
+</a>
+<!-- Patients -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="">Patients</span>
+</a>
+<!-- Visits -->
+
+<!-- Referrals -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">outbound</span>
+<span class="">Referrals</span>
+</a>
+<!-- Maternal & Child -->
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">health_and_safety</span>
+<span class="">Care Programs</span>
+</a>
+<!-- Chronic Care -->
+
+<!-- Health Education -->
+<div class="mt-4 pt-4 border-t border-zinc-500/20">
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">school</span>
+<span class="">Health Education</span>
+</a>
+</div>
+</nav>
+<div class="mt-8 pt-4 border-t border-zinc-500/20">
+<button class="w-full h-[52px] bg-primary-container text-white rounded-xl font-button text-button flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+                    New Household Visit
+                </button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 w-full lg:ml-72 min-h-screen">
+<div class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12 flex flex-col gap-8">
+<!-- Page Header -->
+<div>
+<div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm mb-4">
+<a class="hover:text-primary transition-colors" href="#">My Households</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-primary font-medium">Add New</span>
+</div>
+<h2 class="font-hero-display-mobile md:font-hero-display text-hero-display-mobile md:text-hero-display text-primary">Register Household</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-2 max-w-2xl">Create a new record in the village registry to begin tracking health outcomes for this dwelling.</p>
+</div>
+<!-- Registration Form -->
+<form class="flex flex-col gap-8" id="registrationForm">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Core Info & Demographics -->
+<div class="lg:col-span-7 flex flex-col gap-6">
+<!-- Basic Information Card -->
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-6 lg:p-8 flex flex-col gap-6 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary-container"></div>
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">description</span>
+                                    Basic Information
+                                </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="houseId">Household ID / House No.</label>
+<input class="h-12 bg-transparent border border-outline-variant rounded focus:border-primary-container focus:ring-1 focus:ring-primary-container px-4 font-body-md text-body-md text-on-surface outline-none transition-colors" id="houseId" placeholder="e.g. H-1042" type="text">
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="headName">Head of Household Name</label>
+<input class="h-12 bg-transparent border border-outline-variant rounded focus:border-primary-container focus:ring-1 focus:ring-primary-container px-4 font-body-md text-body-md text-on-surface outline-none transition-colors" id="headName" placeholder="Full legal name" type="text">
+</div>
+<div class="flex flex-col gap-2 md:col-span-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="householdSize">Estimated Household Size</label>
+<select class="h-12 bg-transparent border border-outline-variant rounded focus:border-primary-container focus:ring-1 focus:ring-primary-container px-4 font-body-md text-body-md text-on-surface outline-none transition-colors appearance-none cursor-pointer" id="householdSize">
+<option disabled="" selected="" value="">Select number of residents</option>
+<option value="1-2">1 - 2 members</option>
+<option value="3-5">3 - 5 members</option>
+<option value="6-8">6 - 8 members</option>
+<option value="9+">9+ members</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Socio-Economic Flags Card -->
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-6 lg:p-8 flex flex-col gap-6 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-secondary"></div>
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">analytics</span>
+                                    Socio-Economic Profiling
+                                </h3>
+<div class="flex flex-col gap-6">
+<!-- BPL Status -->
+<div class="flex flex-col gap-3">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">BPL (Below Poverty Line) Status</label>
+<div class="flex gap-4">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-5 h-5 text-primary-container border-outline-variant focus:ring-primary-container" name="bpl_status" type="radio" value="yes">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Yes</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-5 h-5 text-primary-container border-outline-variant focus:ring-primary-container" name="bpl_status" type="radio" value="no">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">No</span>
+</label>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="rationCard">Ration Card Type</label>
+<select class="h-12 bg-transparent border border-outline-variant rounded focus:border-primary-container focus:ring-1 focus:ring-primary-container px-4 font-body-md text-body-md text-on-surface outline-none transition-colors appearance-none cursor-pointer" id="rationCard">
+<option disabled="" selected="" value="">Select type</option>
+<option value="yellow">Yellow (BPL)</option>
+<option value="orange">Orange</option>
+<option value="white">White (APL)</option>
+<option value="none">None</option>
+</select>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="sanitation">Primary Sanitation Facility</label>
+<select class="h-12 bg-transparent border border-outline-variant rounded focus:border-primary-container focus:ring-1 focus:ring-primary-container px-4 font-body-md text-body-md text-on-surface outline-none transition-colors appearance-none cursor-pointer" id="sanitation">
+<option disabled="" selected="" value="">Select facility</option>
+<option value="private">Private Latrine</option>
+<option value="community">Community Toilet</option>
+<option value="open">Open Defecation</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Location & Context -->
+<div class="lg:col-span-5 flex flex-col gap-6">
+<!-- Location Details Card -->
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-6 lg:p-8 flex flex-col gap-6 h-full relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-tertiary"></div>
+<h3 class="font-headline-md text-headline-md text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">map</span>
+                                    Location Details
+                                </h3>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="village">Village / Hamlet / Colony</label>
+<select class="h-12 bg-transparent border border-outline-variant rounded focus:border-primary-container focus:ring-1 focus:ring-primary-container px-4 font-body-md text-body-md text-on-surface outline-none transition-colors appearance-none cursor-pointer" id="village">
+<option disabled="" selected="" value="">Select administrative area</option>
+<option value="warda_north">Warda North</option>
+<option value="warda_south">Warda South</option>
+<option value="shirpur_colony">Shirpur Colony</option>
+</select>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">GPS Coordinates</label>
+<div class="flex gap-2">
+<input class="flex-1 h-12 bg-surface-container border border-outline-variant rounded px-4 font-body-md text-body-md text-on-surface-variant cursor-not-allowed outline-none" id="gpsCoords" placeholder="Not captured" readonly="" type="text">
+<button class="h-12 px-4 bg-white border border-zinc-500/20 rounded text-primary hover:bg-surface-container transition-colors flex items-center justify-center gap-2 font-button text-button whitespace-nowrap" onclick="document.getElementById('gpsCoords').value = '18.5204° N, 73.8567° E'" type="button">
+<span class="material-symbols-outlined">my_location</span>
+                                            Capture
+                                        </button>
+</div>
+</div>
+<!-- Map Visual Placeholder -->
+<div class="mt-2 flex-1 min-h-[200px] bg-surface-container rounded-lg border border-zinc-500/20 overflow-hidden relative group cursor-crosshair" data-location="Maharashtra Rural Map">
+<div class="w-full h-full bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity" data-alt="A clean, minimalist high-contrast digital map interface showing a rural village layout in Maharashtra. The map uses a sophisticated palette of deep teal, off-whites, and soft grey lines to denote roads and dwellings. The lighting suggests a bright, modern digital screen context. It embodies a calm, precise digital infrastructure aesthetic without clutter or noise." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCG9wvBDlzKyynYmMg8ZJwor5GHE5Gl1dH9ZomNtJlZisJIybT4q0-4fpDlrySQ4rTttmiKuUNq64cv8MaqEmAF-pdrFVjV43VC4y9Yg2WBGoEYwNoQeBo5aANvmg7P-E_Is8ncuuyirFmoHwQnsxX-ux7zUrc-RF1RTG-vturcC75WN2wjwpKIMElPYRBjQSqG8GbsC5NpXNaprZrKgYthJ1w7jvyGP8MpZvO6cRfrt-800XD7xdA_0w')"></div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<span class="material-symbols-outlined text-primary-container text-[48px] drop-shadow-md">location_on</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="bg-surface-container-lowest border border-zinc-500/20 rounded-xl p-4 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 sticky bottom-4 z-40" style="box-shadow: 0 10px 30px rgba(30, 41, 59, 0.04);">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 rounded border-outline-variant text-primary-container focus:ring-primary-container" id="addMembersNext" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface group-hover:text-primary transition-colors">Add Members Immediately</span>
+</label>
+<div class="flex items-center gap-4 w-full sm:w-auto">
+<button class="flex-1 sm:flex-none h-[52px] px-8 rounded-xl border border-zinc-500/20 text-on-surface font-button text-button hover:bg-surface-container transition-colors" type="button">
+                                Cancel
+                            </button>
+<button class="flex-1 sm:flex-none h-[52px] px-8 bg-primary-container text-white rounded-xl font-button text-button hover:opacity-90 transition-opacity flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined">save</span>
+                                Register Household
+                            </button>
+</div>
+</div>
+</form>
+</div>
+</main>
+</div>
+
+
+</body></html>

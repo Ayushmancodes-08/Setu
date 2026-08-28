@@ -1,0 +1,357 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ASHA Worker Command Center - Setu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-fixed-variant": "#0b513d",
+                        "secondary": "#416656",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#2a1700",
+                        "off-white": "#f5f5f4",
+                        "on-surface-variant": "#404944",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-container": "#f69f0d",
+                        "on-secondary-fixed-variant": "#294e3f",
+                        "surface-container-low": "#f4f2fd",
+                        "surface-variant": "#e3e1ec",
+                        "secondary-container": "#c3ecd7",
+                        "on-secondary-container": "#476c5b",
+                        "on-error-container": "#93000a",
+                        "warm-white": "#fafaf9",
+                        "on-background": "#1a1b22",
+                        "charcoal": "#1e293b",
+                        "background": "#fbf8ff",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#a8cfbc",
+                        "tertiary-fixed": "#ffddb8",
+                        "outline-variant": "#bfc9c3",
+                        "primary": "#003527",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface": "#fbf8ff",
+                        "on-primary-container": "#80bea6",
+                        "on-secondary-fixed": "#002115",
+                        "surface-bright": "#fbf8ff",
+                        "inverse-on-surface": "#f1effa",
+                        "tertiary": "#442800",
+                        "slate": "#475569",
+                        "primary-container": "#064e3b",
+                        "surface-dim": "#dad9e3",
+                        "outline": "#707974",
+                        "emerald-accent": "#10b981",
+                        "tertiary-container": "#623c00",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#2b6954",
+                        "primary-fixed": "#b0f0d6",
+                        "surface-container": "#eeedf7",
+                        "on-primary-fixed": "#002117",
+                        "surface-container-highest": "#e3e1ec",
+                        "secondary-fixed": "#c3ecd7",
+                        "surface-container-high": "#e8e7f1",
+                        "primary-fixed-dim": "#95d3ba",
+                        "inverse-surface": "#2f3038",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-surface": "#1a1b22",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#95d3ba"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "margin-desktop": "64px",
+                        "gutter": "24px",
+                        "margin-mobile": "16px",
+                        "container-max": "1280px",
+                        "unit": "4px"
+                    },
+                    fontFamily: {
+                        "hero-display-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "button": ["Inter"],
+                        "nav-link": ["Inter"],
+                        "hero-display": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    fontSize: {
+                        "hero-display-mobile": ["40px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "headline-md": ["24px", { lineHeight: "1.4", fontWeight: "600" }],
+                        "label-sm": ["12px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "body-lg": ["20px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "button": ["16px", { lineHeight: "1", fontWeight: "600" }],
+                        "nav-link": ["14px", { lineHeight: "1", fontWeight: "500" }],
+                        "hero-display": ["64px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-lg": ["32px", { lineHeight: "1.3", fontWeight: "600" }]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        .ghost-border { border: 1px solid rgba(113, 113, 122, 0.2); }
+        .ambient-shadow { box-shadow: 0 10px 30px rgba(30, 41, 59, 0.04); }
+    </style>
+</head>
+<body class="bg-warm-white font-body-md text-on-surface antialiased">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full h-[72px] bg-warm-white/80 dark:bg-charcoal/80 backdrop-blur-md border-b border-charcoal/10 dark:border-white/10 z-50"><div class="flex justify-between items-center px-margin-desktop max-w-container-max mx-auto h-full">
+    <div class="flex items-center gap-8">
+        <div class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">
+            Setu
+        </div>
+        <div class="hidden md:flex items-center gap-4 border-l border-outline-variant/30 pl-8">
+            <div class="flex flex-col">
+                <span class="font-label-sm text-label-sm text-slate uppercase tracking-wider">Location</span>
+                <span class="font-button text-button text-charcoal">Osmanabad | Wadgaon</span>
+            </div>
+            <div class="flex flex-col border-l border-outline-variant/30 pl-4">
+                <span class="font-label-sm text-label-sm text-slate uppercase tracking-wider">Date</span>
+                <span class="font-button text-button text-charcoal">Friday, 28 August</span>
+            </div>
+        </div>
+    </div>
+    <div class="flex items-center gap-6">
+        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-secondary-container rounded-full">
+            <span class="material-symbols-outlined text-[18px] text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+            <span class="font-label-sm text-label-sm text-on-secondary-container">Synced</span>
+        </div>
+        <div class="flex items-center gap-1 text-charcoal font-nav-link text-nav-link">
+            <span class="font-bold">EN</span>
+            <span class="opacity-30">|</span>
+            <span class="hover:text-primary cursor-pointer">मराठी</span>
+            <span class="opacity-30">|</span>
+            <span class="hover:text-primary cursor-pointer">हिंदी</span>
+        </div>
+        <button class="relative text-charcoal hover:text-primary">
+            <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+            <span class="absolute -top-1 -right-1 w-2 h-2 bg-error rounded-full"></span>
+        </button>
+        <div class="flex items-center gap-3 pl-4 border-l border-outline-variant/30">
+            <div class="text-right hidden md:block">
+                <div class="font-button text-[14px] text-charcoal">Sunita Patil</div>
+                <div class="font-label-sm text-[10px] text-slate uppercase">ASHA Worker</div>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-warm-white font-bold">
+                SP
+            </div>
+        </div>
+    </div>
+</div></nav>
+<!-- Main Content -->
+<aside class="fixed left-0 top-[72px] bottom-0 w-64 bg-warm-white border-r border-charcoal/10 hidden lg:flex flex-col p-6 gap-8 z-40">
+    <nav class="flex flex-col gap-2">
+        <a href="#" class="flex items-center gap-3 p-3 rounded-lg bg-secondary-container text-on-secondary-container font-button text-nav-link">
+            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+            <span class="">Overview</span>
+        </a>
+        <div class="mt-4">
+            <h4 class="font-label-sm text-[10px] text-slate uppercase tracking-widest mb-2 px-3">Work Queue</h4>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg text-charcoal hover:bg-surface-variant transition-colors font-button text-nav-link">
+                <span class="material-symbols-outlined">assignment</span>
+                <span class="">Work Queue</span>
+            </a>
+        </div>
+        <div class="mt-4">
+            <h4 class="font-label-sm text-[10px] text-slate uppercase tracking-widest mb-2 px-3">Care Programs</h4>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg text-charcoal hover:bg-surface-variant transition-colors font-button text-nav-link">
+                <span class="material-symbols-outlined">health_and_safety</span>
+                <span class="">Care Programs</span>
+            </a>
+        </div>
+        <div class="mt-4">
+            <h4 class="font-label-sm text-[10px] text-slate uppercase tracking-widest mb-2 px-3">Directory</h4>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg text-charcoal hover:bg-surface-variant transition-colors font-button text-nav-link">
+                <span class="material-symbols-outlined">home</span>
+                <span class="">My Households</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg text-charcoal hover:bg-surface-variant transition-colors font-button text-nav-link">
+                <span class="material-symbols-outlined">group</span>
+                <span class="">Patients</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 p-3 rounded-lg text-charcoal hover:bg-surface-variant transition-colors font-button text-nav-link">
+                <span class="material-symbols-outlined">outbound</span>
+                <span class="">Referrals</span>
+            </a>
+        </div>
+    </nav>
+    <div class="mt-auto pt-6 border-t border-outline-variant/30">
+        <a href="#" class="flex items-center gap-3 p-3 rounded-lg text-charcoal hover:bg-surface-variant transition-colors font-button text-nav-link">
+            <span class="material-symbols-outlined">school</span>
+            <span class="">Health Education</span>
+        </a>
+    </div>
+</aside><main class="pt-[104px] pb-16 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto min-h-screen lg:pl-[320px]">
+<!-- Header & Voice Action -->
+<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+<div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-charcoal mb-2">Command Center</h1>
+<p class="text-slate font-body-md text-body-md">Welcome back, Anjali. Sync status: <span class="text-primary font-medium">Up to date (Just now)</span></p>
+</div>
+<button class="w-full md:w-auto flex items-center justify-center gap-3 bg-primary-container hover:bg-on-primary-fixed-variant text-warm-white px-8 py-4 rounded-xl transition-colors ambient-shadow group">
+<span class="material-symbols-outlined text-2xl group-hover:scale-110 transition-transform" data-icon="mic" style="font-variation-settings: 'FILL' 1;">mic</span>
+<div class="text-left">
+<span class="block font-button text-button">Speak to Setu</span>
+<span class="block font-label-sm text-label-sm opacity-80 mt-1">Register visit or find patient</span>
+</div>
+</button>
+</header>
+<!-- Attention Summary (Top Row) -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+<div class="bg-off-white ghost-border rounded-xl p-4 flex flex-col relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-accent"></div>
+<div class="flex items-center gap-2 mb-2 text-slate">
+<span class="material-symbols-outlined text-[20px]" data-icon="calendar_today">calendar_today</span>
+<h3 class="font-label-sm text-label-sm uppercase">Today's Visits</h3>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-md text-headline-md text-charcoal">8</span>
+<span class="font-label-sm text-label-sm text-slate">3 remaining</span>
+</div>
+</div>
+<div class="bg-off-white ghost-border rounded-xl p-4 flex flex-col relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#f59e0b]"></div>
+<div class="flex items-center gap-2 mb-2 text-slate">
+<span class="material-symbols-outlined text-[20px]" data-icon="schedule">schedule</span>
+<h3 class="font-label-sm text-label-sm uppercase">Overdue</h3>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-md text-headline-md text-charcoal">3</span>
+<span class="font-label-sm text-label-sm text-[#d97706] font-medium">Need attention</span>
+</div>
+</div>
+<div class="bg-off-white ghost-border rounded-xl p-4 flex flex-col relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-error"></div>
+<div class="flex items-center gap-2 mb-2 text-slate">
+<span class="material-symbols-outlined text-[20px]" data-icon="warning">warning</span>
+<h3 class="font-label-sm text-label-sm uppercase">High-Risk</h3>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-md text-headline-md text-charcoal">5</span>
+<span class="font-label-sm text-label-sm text-slate">4 households</span>
+</div>
+</div>
+<div class="bg-off-white ghost-border rounded-xl p-4 flex flex-col relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-[#f59e0b]"></div>
+<div class="flex items-center gap-2 mb-2 text-slate">
+<span class="material-symbols-outlined text-[20px]" data-icon="forward">forward</span>
+<h3 class="font-label-sm text-label-sm uppercase">Referrals</h3>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="font-headline-md text-headline-md text-charcoal">4</span>
+<span class="font-label-sm text-label-sm text-slate">2 await follow-up</span>
+</div>
+</div>
+</div>
+<!-- Two Column Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Center Column: Field Queue -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<div class="flex justify-between items-end border-b border-outline-variant/30 pb-4">
+<h2 class="font-headline-md text-headline-md text-charcoal">Today's Field Work</h2>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm transition-colors">All (8)</button>
+<button class="px-3 py-1.5 rounded-full bg-off-white text-slate ghost-border font-label-sm text-label-sm hover:bg-surface-variant transition-colors">Overdue</button>
+<button class="px-3 py-1.5 rounded-full bg-off-white text-slate ghost-border font-label-sm text-label-sm hover:bg-surface-variant transition-colors">High Risk</button>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Task Card 1 -->
+<div class="bg-off-white rounded-xl p-6 ghost-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden ambient-shadow">
+<div class="absolute left-0 top-0 bottom-0 w-[6px] bg-emerald-accent"></div>
+<div class="pl-2">
+<div class="flex items-center gap-2 mb-1">
+<h3 class="font-button text-button text-charcoal">Sunita Devi</h3>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-label-sm text-[10px] uppercase tracking-wider">Maternal</span>
+</div>
+<p class="text-slate font-body-md text-[14px]">Wadgaon, Household 24</p>
+<p class="text-on-surface-variant font-medium text-[14px] mt-2">Antenatal follow-up — Week 32</p>
+</div>
+<div class="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto pl-2 md:pl-0 mt-2 md:mt-0">
+<span class="text-primary font-label-sm text-label-sm mr-auto md:mr-4">Due Today</span>
+<button class="w-full md:w-auto h-[40px] px-4 ghost-border rounded-lg text-charcoal font-button text-[14px] hover:bg-surface-variant transition-colors">Mark Done</button>
+<button class="w-full md:w-auto h-[40px] px-4 bg-primary-container text-warm-white rounded-lg font-button text-[14px] hover:bg-on-primary-fixed-variant transition-colors">Start Visit</button>
+</div>
+</div>
+<!-- Task Card 2 -->
+<div class="bg-off-white rounded-xl p-6 ghost-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-[6px] bg-error"></div>
+<div class="pl-2">
+<div class="flex items-center gap-2 mb-1">
+<h3 class="font-button text-button text-charcoal">Rajesh Kumar</h3>
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded font-label-sm text-[10px] uppercase tracking-wider">Chronic</span>
+</div>
+<p class="text-slate font-body-md text-[14px]">Kalamb, Household 12</p>
+<p class="text-on-surface-variant font-medium text-[14px] mt-2">Diabetes follow-up</p>
+</div>
+<div class="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto pl-2 md:pl-0 mt-2 md:mt-0">
+<span class="text-error font-label-sm text-label-sm mr-auto md:mr-4 flex items-center gap-1"><span class="material-symbols-outlined text-[16px]" data-icon="error">error</span>Overdue</span>
+<button class="w-full md:w-auto h-[40px] px-4 ghost-border rounded-lg text-charcoal font-button text-[14px] hover:bg-surface-variant transition-colors">Mark Done</button>
+<button class="w-full md:w-auto h-[40px] px-4 bg-primary-container text-warm-white rounded-lg font-button text-[14px] hover:bg-on-primary-fixed-variant transition-colors">Start Visit</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Sidebar Sections -->
+<div class="lg:col-span-4 flex flex-col gap-8">
+<!-- Quick Actions -->
+<div>
+<h3 class="font-label-sm text-label-sm uppercase text-slate mb-4 tracking-wider">Quick Actions</h3>
+<div class="grid grid-cols-2 gap-3">
+<button class="bg-off-white ghost-border p-4 rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-primary text-[28px]" data-icon="person_add">person_add</span>
+<span class="font-button text-[13px] text-charcoal text-center">New Patient</span>
+</button>
+<button class="bg-off-white ghost-border p-4 rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-primary text-[28px]" data-icon="home_work">home_work</span>
+<span class="font-button text-[13px] text-charcoal text-center">New Household</span>
+</button>
+<button class="bg-off-white ghost-border p-4 rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-primary text-[28px]" data-icon="medical_information">medical_information</span>
+<span class="font-button text-[13px] text-charcoal text-center">Digital Triage</span>
+</button>
+<button class="bg-error-container/30 border border-error/20 p-4 rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-error-container/50 transition-colors">
+<span class="material-symbols-outlined text-error text-[28px]" data-icon="emergency">emergency</span>
+<span class="font-button text-[13px] text-on-error-container text-center">Emergency Guidance</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-16 bg-off-white dark:bg-charcoal">
+<div class="max-w-container-max mx-auto px-margin-desktop grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div>
+<div class="font-headline-md text-headline-md text-primary dark:text-primary-fixed mb-4">Setu</div>
+<p class="font-label-sm text-label-sm text-primary dark:text-primary-fixed-dim">© 2024 Setu Rural Healthcare Platform. ABDM Compliant.</p>
+</div>
+<div class="flex flex-col md:flex-row md:justify-end gap-4 md:gap-8 font-label-sm text-label-sm">
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Terms of Service</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Public Health Standards</a>
+<a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-primary-fixed transition-colors" href="#">Contact Support</a>
+</div>
+</div>
+</footer>
+
+
+</body></html>
