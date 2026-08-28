@@ -102,9 +102,9 @@ export const DoctorPortal: React.FC = () => {
     setRxItems(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleIssuePrescription = () => {
+  const handleIssuePrescription = async () => {
     if (!selectedQueueItem) return;
-    completeConsultationAndIssueRx(selectedQueueItem.id, {
+    await completeConsultationAndIssueRx(selectedQueueItem.id, {
       patientId: 'p-001',
       patientName: selectedQueueItem.patientName,
       patientAge: selectedQueueItem.patientAge,
@@ -120,10 +120,10 @@ export const DoctorPortal: React.FC = () => {
     setActiveTab('consultation');
   };
 
-  const handleDispatchLabOrder = () => {
+  const handleDispatchLabOrder = async () => {
     if (!selectedQueueItem || selectedTests.length === 0) return;
-    selectedTests.forEach(testName => {
-      createDiagnosticOrder({
+    for (const testName of selectedTests) {
+      await createDiagnosticOrder({
         patientName: selectedQueueItem.patientName,
         patientAge: selectedQueueItem.patientAge,
         patientGender: selectedQueueItem.gender,
@@ -132,13 +132,13 @@ export const DoctorPortal: React.FC = () => {
         orderingDoctor: 'Dr. Rohini Kulkarni, MD',
         facility: 'Junnar Rural Hospital Diagnostic Wing'
       });
-    });
+    }
     showToast(`Dispatched ${selectedTests.length} diagnostic test requisitions to Central Laboratory`);
   };
 
-  const handleCreateSpecialistReferral = () => {
+  const handleCreateSpecialistReferral = async () => {
     if (!selectedQueueItem) return;
-    createReferral({
+    await createReferral({
       patientId: 'p-001',
       patientName: selectedQueueItem.patientName,
       patientAge: selectedQueueItem.patientAge,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { useHealthData } from '../../context/HealthDataContext';
 import { Role } from '../../types';
 import { 
   HeartHandshake, 
@@ -10,7 +11,6 @@ import {
   ShieldAlert, 
   ArrowRight, 
   CheckCircle2, 
-  Sparkles,
   Lock,
   UserCheck
 } from 'lucide-react';
@@ -128,7 +128,8 @@ const PORTALS: PortalCard[] = [
 ];
 
 export const RolePortalsSection: React.FC = () => {
-  const { setCurrentView, language } = useApp();
+  const { language } = useApp();
+  const { openRoleAuthModal } = useHealthData();
 
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50 border-b border-slate-200">
@@ -144,7 +145,7 @@ export const RolePortalsSection: React.FC = () => {
             Dedicated Portals for Every Healthcare Stakeholder
           </h2>
           <p className="text-xs sm:text-sm text-slate-600">
-            Seamlessly integrated clinical workflows from the remote tribal hamlet to district medical specialists.
+            Click any portal below to authenticate via IndexedDB and access the live role console.
           </p>
         </div>
 
@@ -178,7 +179,7 @@ export const RolePortalsSection: React.FC = () => {
 
                   {/* Capabilities List */}
                   <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                    <span className="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">Key Functional Tools</span>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block tracking-wider">Key Tools</span>
                     {portal.capabilities.map((cap, cidx) => (
                       <div key={cidx} className="flex items-start gap-1.5 text-[11px] text-slate-700 font-medium leading-tight">
                         <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0 mt-0.5" />
@@ -188,12 +189,13 @@ export const RolePortalsSection: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Launch Button */}
+                {/* Launch Button with IndexedDB Authentication */}
                 <button
-                  onClick={() => setCurrentView(portal.id)}
+                  onClick={() => openRoleAuthModal(portal.id)}
                   className={`w-full ${portal.btnColor} text-white font-bold py-3 rounded-2xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-md`}
                 >
-                  <span>Launch Portal</span>
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Authenticate & Launch</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
 

@@ -49,8 +49,8 @@ export const PharmacistPortal: React.FC = () => {
     return matchesCat && matchesSearch;
   });
 
-  const handleDispense = (orderId: string, patientName: string) => {
-    const success = dispensePrescription(orderId, 'Anand Deshmukh, Lead Pharmacist');
+  const handleDispense = async (orderId: string, patientName: string) => {
+    const success = await dispensePrescription(orderId, 'Anand Deshmukh, Lead Pharmacist');
     if (success) {
       showToast(`Prescription dispensed for ${patientName}. Live inventory stock updated.`);
     }

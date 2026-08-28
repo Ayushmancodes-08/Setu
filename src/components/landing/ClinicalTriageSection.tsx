@@ -113,8 +113,8 @@ export const ClinicalTriageSection: React.FC = () => {
     });
   };
 
-  const handleEscalateToTeleconsult = () => {
-    enqueueTeleconsult({
+  const handleEscalateToTeleconsult = async () => {
+    await enqueueTeleconsult({
       patientName: `Triage Case (${patientGender}, ${patientAge}y)`,
       patientAge: patientAge,
       gender: patientGender,

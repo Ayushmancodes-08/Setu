@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from './context/AppContext';
+import { useHealthData } from './context/HealthDataContext';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
 import { HeroSection } from './components/landing/HeroSection';
@@ -10,6 +11,7 @@ import { LivePulseSection } from './components/landing/LivePulseSection';
 import { RolePortalsSection } from './components/landing/RolePortalsSection';
 import { ArogyaSakhiCompanionModal } from './components/landing/ArogyaSakhiCompanionModal';
 import { EmergencyModal } from './components/modals/EmergencyModal';
+import { AuthModal } from './components/modals/AuthModal';
 
 // 8 Official Role Portals
 import { PatientPortal } from './components/roles/PatientPortal';
@@ -21,7 +23,7 @@ import { LabPortal } from './components/roles/LabPortal';
 import { FacilityPortal } from './components/roles/FacilityPortal';
 import { DhoPortal } from './components/roles/DhoPortal';
 
-import { PhoneCall, Volume2, Stethoscope } from 'lucide-react';
+import { PhoneCall, Volume2 } from 'lucide-react';
 
 export const App: React.FC = () => {
   const { 
@@ -30,6 +32,12 @@ export const App: React.FC = () => {
     setIsEmergencyModalOpen, 
     toastMessage 
   } = useApp();
+
+  const { 
+    isAuthModalOpen, 
+    setIsAuthModalOpen, 
+    authTargetRole 
+  } = useHealthData();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#fafaf9] text-slate-900 selection:bg-emerald-600 selection:text-white">
@@ -90,6 +98,11 @@ export const App: React.FC = () => {
       </div>
 
       {/* Global Modals */}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+        targetRole={authTargetRole} 
+      />
       <ArogyaSakhiCompanionModal />
       <EmergencyModal />
 

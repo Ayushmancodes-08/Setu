@@ -48,9 +48,9 @@ export const ChoPortal: React.FC = () => {
   const [testFinding, setTestFinding] = useState<string>('8.2 g/dL (Severe Gestational Anemia)');
   const [isTestPanic, setIsTestPanic] = useState<boolean>(true);
 
-  const handleQueueTeleconsult = (e: React.FormEvent) => {
+  const handleQueueTeleconsult = async (e: React.FormEvent) => {
     e.preventDefault();
-    const queued = enqueueTeleconsult({
+    const queued = await enqueueTeleconsult({
       patientName,
       patientAge,
       gender: patientGender,

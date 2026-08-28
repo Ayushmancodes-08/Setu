@@ -77,11 +77,11 @@ export const AshaPortal: React.FC = () => {
     showToast(`Home visit recorded for ${selectedTask.patientName}. HMIS synced.`);
   };
 
-  const handleRegisterNewBeneficiary = (e: React.FormEvent) => {
+  const handleRegisterNewBeneficiary = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName.trim()) return;
 
-    const newP = registerPatient({
+    const newP = await registerPatient({
       name: regName,
       age: regAge,
       gender: regGender,
