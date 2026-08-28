@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export const PatientPortal: React.FC = () => {
-  const { language, openAiCompanionWithQuery, showToast, setIsEmergencyModalOpen } = useApp();
+  const { language, openAiCompanionWithQuery, showToast, setIsEmergencyModalOpen, setCurrentView } = useApp();
   const [activeTab, setActiveTab] = useState<'records' | 'teleconsult' | 'queue' | 'medicines'>('records');
   const [isTeleconsultCalling, setIsTeleconsultCalling] = useState(false);
 
