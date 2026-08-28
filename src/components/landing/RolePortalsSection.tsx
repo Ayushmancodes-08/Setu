@@ -132,7 +132,7 @@ export const RolePortalsSection: React.FC = () => {
   const { openRoleAuthModal } = useHealthData();
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50 border-b border-slate-200">
+    <section id="role-portals-section" className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50 border-b border-slate-200">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Section Header */}

@@ -50,11 +50,9 @@ export const App: React.FC = () => {
         {currentView === 'landing' && (
           <>
             <HeroSection />
-            <ClinicalTriageSection />
-            <CareFinderSection />
-            <LivePulseSection />
-            <SchemeNavigatorSection />
             <RolePortalsSection />
+            <CareFinderSection />
+            <ClinicalTriageSection />
           </>
         )}
 
