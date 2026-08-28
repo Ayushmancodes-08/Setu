@@ -1,204 +1,255 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useHealthData } from '../../context/HealthDataContext';
+import { Role } from '../../types';
 import { 
-  Sparkles, 
-  Search, 
-  Mic, 
-  MapPin, 
-  ShieldCheck, 
+  Building2, 
+  Stethoscope, 
+  HeartHandshake, 
   Activity, 
-  Clock, 
-  Pill, 
+  Layers, 
+  ShieldCheck, 
+  PhoneCall, 
+  Search, 
+  ArrowRight, 
   CheckCircle2, 
-  ArrowRight,
-  Stethoscope,
-  HeartHandshake
+  Clock, 
+  MapPin, 
+  Users, 
+  FileText,
+  AlertTriangle
 } from 'lucide-react';
 
 export const HeroSection: React.FC = () => {
-  const { t, language, openAiCompanionWithQuery, setCurrentView } = useApp();
-  const [searchInput, setSearchInput] = useState('');
+  const { setCurrentView, language, setIsEmergencyModalOpen, showToast } = useApp();
+  const { patients, facilities, teleconsultQueue } = useHealthData();
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const [lookupQuery, setLookupQuery] = useState('');
+  const [lookupResult, setLookupResult] = useState<any>(null);
+
+  const totalBeds = facilities.reduce((acc, f) => acc + f.availableBeds, 0);
+  const totalIcuBeds = facilities.reduce((acc, f) => acc + f.icuBedsAvailable, 0);
+  const waitingTokens = teleconsultQueue.filter(t => t.status === 'Waiting').length;
+
+  const handleLookup = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchInput.trim()) {
-      openAiCompanionWithQuery(searchInput.trim());
-    } else {
-      openAiCompanionWithQuery('What health services and free medicines are available at my nearest PHC?');
-    }
-  };
-
-  const handleQuickSymptomClick = (symptomQuery: string) => {
-    setSearchInput(symptomQuery);
-    openAiCompanionWithQuery(symptomQuery);
+    if (!lookupQuery.trim()) return;
+    const clean = lookupQuery.toLowerCase().trim();
+    const found = patients.find(p => 
+      p.name.toLowerCase().includes(clean) || 
+      p.abhaId.toLowerCase().includes(clean) || 
+      p.mobile.includes(clean)
+    );
+    setLookupResult(found || 'NONE');
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#003527]/5 via-emerald-50/30 to-warm-white pt-10 pb-20 border-b border-slate-200">
-      {/* Background Decorative Blur Orbs */}
-      <div className="absolute top-10 left-1/4 w-96 h-96 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-20 right-1/4 w-80 h-80 bg-teal-400/15 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center max-w-4xl mx-auto space-y-6">
-          {/* Initiative Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/90 border border-emerald-300/80 shadow-sm px-4 py-1.5 rounded-full text-xs font-bold text-[#003527] animate-fade-in">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span>{t.heroBadge}</span>
+    <section className="bg-gradient-to-b from-slate-900 via-[#07241b] to-slate-900 text-white pt-10 pb-16 px-4 sm:px-6 lg:px-8 border-b border-emerald-950/60">
+      <div className="max-w-7xl mx-auto space-y-10">
+        
+        {/* Top Official Tag & Mission Header */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-emerald-800/40">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 bg-emerald-950/80 border border-emerald-700/60 px-3 py-1 rounded-full text-xs font-semibold text-emerald-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>National Digital Health Mission & Public Health Department, Maharashtra</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
+              SETU <span className="text-emerald-400">ग्रामीण आरोग्य</span> समन्वय मंच
+            </h1>
+            <p className="text-sm sm:text-base text-slate-300 max-w-2xl font-normal leading-relaxed">
+              Unified Rural Health Coordination Hub connecting Sub-Centres, Primary Health Centres, Rural Hospitals, and District Specialists across Maharashtra.
+            </p>
           </div>
 
-          {/* Main Hero Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-[#002117] tracking-tight leading-[1.15]">
-            {t.heroTitle}
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
-            {t.heroSubtitle}
-          </p>
-
-          {/* ArogyaSakhi AI Search & Voice Box */}
-          <div className="pt-2 max-w-3xl mx-auto">
-            <form 
-              onSubmit={handleSearchSubmit}
-              className="bg-white p-2 rounded-2xl shadow-xl shadow-emerald-950/5 border border-emerald-200/80 flex flex-col sm:flex-row items-center gap-2 transition-all focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-emerald-500"
+          {/* Quick SOS & Helpline Dial */}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setIsEmergencyModalOpen(true)}
+              className="bg-red-600 hover:bg-red-700 text-white font-extrabold px-5 py-3 rounded-2xl text-xs shadow-lg shadow-red-950/50 flex items-center gap-2 transition-all hover:scale-105 border border-red-400/40"
             >
-              <div className="flex items-center gap-2 pl-3 w-full">
-                <Sparkles className="w-5 h-5 text-emerald-600 shrink-0 animate-pulse" />
+              <PhoneCall className="w-4 h-4 animate-bounce" />
+              <span>Emergency 108 Ambulance SOS</span>
+            </button>
+            <div className="bg-slate-800/90 border border-slate-700 px-4 py-2.5 rounded-2xl text-xs text-slate-300">
+              <span className="text-[10px] text-slate-400 block uppercase font-mono">Toll-Free Health Line</span>
+              <span className="font-extrabold text-white font-mono text-sm">104 / 1800-120-8040</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Live Operational Health Status Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="bg-slate-800/60 backdrop-blur-xs border border-emerald-800/30 rounded-2xl p-4 space-y-1">
+            <span className="text-xs text-slate-400 flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Network PHCs & Hospitals</span>
+            </span>
+            <div className="text-2xl font-extrabold text-white">{facilities.length} Facilities</div>
+            <div className="text-[11px] text-emerald-400 font-medium">Junnar, Otur, Nandurbar</div>
+          </div>
+
+          <div className="bg-slate-800/60 backdrop-blur-xs border border-emerald-800/30 rounded-2xl p-4 space-y-1">
+            <span className="text-xs text-slate-400 flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-blue-400" />
+              <span>Available Hospital Beds</span>
+            </span>
+            <div className="text-2xl font-extrabold text-white">{totalBeds} General</div>
+            <div className="text-[11px] text-blue-300 font-medium">{totalIcuBeds} ICU / Ventilator Beds Free</div>
+          </div>
+
+          <div className="bg-slate-800/60 backdrop-blur-xs border border-emerald-800/30 rounded-2xl p-4 space-y-1">
+            <span className="text-xs text-slate-400 flex items-center gap-1.5">
+              <Stethoscope className="w-3.5 h-3.5 text-amber-400" />
+              <span>e-Sanjeevani Teleconsults</span>
+            </span>
+            <div className="text-2xl font-extrabold text-white">{waitingTokens} Active Queue</div>
+            <div className="text-[11px] text-amber-300 font-medium">Avg Specialist Wait: 4 Mins</div>
+          </div>
+
+          <div className="bg-slate-800/60 backdrop-blur-xs border border-emerald-800/30 rounded-2xl p-4 space-y-1">
+            <span className="text-xs text-slate-400 flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>ABDM Health Records</span>
+            </span>
+            <div className="text-2xl font-extrabold text-white">{patients.length} Registered</div>
+            <div className="text-[11px] text-emerald-400 font-medium">100% ABHA Linked</div>
+          </div>
+        </div>
+
+        {/* Quick ABHA Lookup & Direct Portal Launcher Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          
+          {/* Direct ABHA & Token Verification Box */}
+          <div className="lg:col-span-5 bg-slate-800/80 border border-slate-700/80 rounded-3xl p-6 flex flex-col justify-between space-y-4">
+            <div>
+              <div className="flex items-center justify-between pb-2 border-b border-slate-700">
+                <h3 className="font-bold text-base text-white flex items-center gap-2">
+                  <Search className="w-4 h-4 text-emerald-400" />
+                  <span>Instant ABHA / Patient Lookup</span>
+                </h3>
+                <span className="text-[10px] bg-emerald-900/80 text-emerald-300 border border-emerald-600/40 px-2 py-0.5 rounded-full font-mono">
+                  ABDM Live
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-2">
+                Verify Ayushman Bharat Health Account (ABHA), active prescriptions, or teleconsultation token status:
+              </p>
+
+              <form onSubmit={handleLookup} className="mt-4 flex gap-2">
                 <input
                   type="text"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder={t.searchPlaceholder}
-                  className="w-full text-sm text-slate-800 placeholder-slate-400 bg-transparent border-none focus:outline-none py-2"
+                  placeholder="Enter ABHA, Name or Mobile..."
+                  value={lookupQuery}
+                  onChange={(e) => setLookupQuery(e.target.value)}
+                  className="flex-1 bg-slate-900/90 border border-slate-600 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
                 />
-              </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end pr-1">
-                <button
-                  type="button"
-                  onClick={() => openAiCompanionWithQuery(language === 'mr' ? 'मला छातीत कळ येत आहे आणि घाम येत आहे' : 'I have high fever and severe headache for 3 days')}
-                  className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 transition-colors flex items-center gap-1.5 border border-emerald-200"
-                  title="Bhashini Voice Input (Marathi / Hindi / English)"
-                >
-                  <Mic className="w-4 h-4 text-emerald-700 animate-pulse" />
-                  <span className="text-xs font-bold hidden sm:inline">भाषिणी Voice</span>
-                </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto bg-[#003527] hover:bg-[#064e3b] text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-emerald-950/20 flex items-center justify-center gap-1.5 whitespace-nowrap"
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all shadow-md"
                 >
-                  <span>{t.askAiBtn}</span>
-                  <ArrowRight className="w-4 h-4" />
+                  Verify
                 </button>
+              </form>
+
+              {lookupResult && lookupResult !== 'NONE' && (
+                <div className="mt-4 bg-emerald-950/90 border border-emerald-600/50 rounded-2xl p-4 text-xs space-y-2.5 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-white text-sm">{lookupResult.name}</div>
+                      <div className="text-slate-400 text-[11px] font-mono">{lookupResult.abhaId}</div>
+                    </div>
+                    <span className="bg-emerald-800 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded">
+                      {lookupResult.riskLevel}
+                    </span>
+                  </div>
+                  <div className="text-slate-300 text-[11px]">
+                    📍 {lookupResult.village}, {lookupResult.taluka} • 🩺 Last BP: <strong>{lookupResult.vitals.bp}</strong>
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={() => setCurrentView('patient')}
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition-all text-center"
+                    >
+                      Open Patient Portal
+                    </button>
+                    <button
+                      onClick={() => setCurrentView('doctor')}
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-xl text-xs transition-all text-center"
+                    >
+                      Doctor Chart
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {lookupResult === 'NONE' && (
+                <div className="mt-4 bg-amber-950/80 border border-amber-600/50 rounded-2xl p-3 text-xs text-amber-200">
+                  No record found for "{lookupQuery}". Search with "Sunita", "Shantabai", "Ganesh" or check the ASHA Portal.
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
+              <span>National Health Authority (NHA) Level 3 M1/M2/M3</span>
+              <span className="text-emerald-400 font-bold">256-bit Encrypted</span>
+            </div>
+          </div>
+
+          {/* Direct 8 Portals Fast Grid */}
+          <div className="lg:col-span-7 bg-slate-800/80 border border-slate-700/80 rounded-3xl p-6 flex flex-col justify-between space-y-4">
+            <div>
+              <div className="flex items-center justify-between pb-2 border-b border-slate-700">
+                <h3 className="font-bold text-base text-white">Direct Role Console Launchpad</h3>
+                <span className="text-xs text-slate-400">Select your active role</span>
               </div>
-            </form>
 
-            {/* Quick Symptom Prompts (ArogyaSakhi Style) */}
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-3 text-xs">
-              <span className="text-slate-500 font-medium">{t.quickSymptoms}</span>
-              <button
-                onClick={() => handleQuickSymptomClick('3 days continuous high fever with chills and body ache')}
-                className="bg-white/80 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 px-3 py-1 rounded-full border border-slate-200 transition-all"
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4">
+                {[
+                  { id: 'patient' as Role, title: 'Patient / Citizen', sub: 'ABHA & Rx', icon: Activity, bg: 'hover:border-teal-400' },
+                  { id: 'asha' as Role, title: 'ASHA Worker', sub: 'Field ANC/NCD', icon: HeartHandshake, bg: 'hover:border-rose-400' },
+                  { id: 'cho' as Role, title: 'CHO Officer', sub: 'Sub-Centre Spoke', icon: Stethoscope, bg: 'hover:border-emerald-400' },
+                  { id: 'doctor' as Role, title: 'Specialist Doctor', sub: 'Teleconsult Hub', icon: Stethoscope, bg: 'hover:border-blue-400' },
+                  { id: 'pharmacist' as Role, title: 'Pharmacist', sub: 'e-Aushadhi Stock', icon: Layers, bg: 'hover:border-amber-400' },
+                  { id: 'lab' as Role, title: 'Diagnostic Lab', sub: 'Test Results', icon: Activity, bg: 'hover:border-purple-400' },
+                  { id: 'facility' as Role, title: 'Hospital Ops', sub: 'Bed & 108 Dispatch', icon: Building2, bg: 'hover:border-indigo-400' },
+                  { id: 'dho' as Role, title: 'DHO Officer', sub: 'District Command', icon: AlertTriangle, bg: 'hover:border-red-400' }
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setCurrentView(item.id)}
+                      className={`bg-slate-900/90 border border-slate-700/80 rounded-2xl p-3 text-left transition-all hover:scale-[1.02] hover:bg-slate-800 ${item.bg} group`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="p-2 rounded-xl bg-slate-800 text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-white transition-colors" />
+                      </div>
+                      <div className="font-bold text-xs text-white leading-tight">{item.title}</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">{item.sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
+              <span>Supports Marathi, Hindi & English Clinical UI</span>
+              <button 
+                onClick={() => setCurrentView('doctor')}
+                className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1"
               >
-                🌡️ {t.symptom1}
-              </button>
-              <button
-                onClick={() => handleQuickSymptomClick('Severe acute chest pain radiating to left arm and sweating')}
-                className="bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1 rounded-full border border-red-200 font-semibold transition-all"
-              >
-                🚨 {t.symptom2}
-              </button>
-              <button
-                onClick={() => handleQuickSymptomClick('How to get free hospital delivery and transport under JSSK scheme in Maharashtra')}
-                className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full border border-emerald-200 font-medium transition-all"
-              >
-                👶 {t.symptom3}
-              </button>
-              <button
-                onClick={() => handleQuickSymptomClick('Check live stock of Paracetamol and Metformin at Otur PHC')}
-                className="bg-white/80 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 px-3 py-1 rounded-full border border-slate-200 transition-all"
-              >
-                💊 {t.symptom4}
+                <span>Launch Doctor Workbench</span>
+                <ArrowRight className="w-3 h-3" />
               </button>
             </div>
           </div>
 
-          {/* Quick Action Navigation Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <a
-              href="#find-care"
-              className="bg-white hover:bg-slate-50 text-[#003527] font-bold px-6 py-3 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center gap-2 text-sm"
-            >
-              <MapPin className="w-4 h-4 text-emerald-600" />
-              <span>{t.findCareBtn}</span>
-            </a>
-            <a
-              href="#schemes"
-              className="bg-emerald-800 hover:bg-emerald-900 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all flex items-center gap-2 text-sm"
-            >
-              <ShieldCheck className="w-4 h-4 text-emerald-300" />
-              <span>{t.checkSchemesBtn}</span>
-            </a>
-            <button
-              onClick={() => setCurrentView('asha')}
-              className="bg-slate-900 hover:bg-black text-white font-semibold px-5 py-3 rounded-xl shadow-sm transition-all flex items-center gap-2 text-sm"
-            >
-              <HeartHandshake className="w-4 h-4 text-pink-400" />
-              <span>{language === 'mr' ? 'आशा सेविका फील्ड मोड' : 'ASHA Worker Field Mode'}</span>
-            </button>
-          </div>
         </div>
 
-        {/* Live System Metrics Strip */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-14 max-w-5xl mx-auto">
-          {/* Card 1 */}
-          <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3.5">
-            <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700 shrink-0">
-              <Activity className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-2xl font-extrabold text-[#002117] tracking-tight">{t.stat1Value}</div>
-              <div className="text-xs text-slate-500 font-medium leading-tight">{t.stat1Label}</div>
-            </div>
-          </div>
-
-          {/* Card 2 */}
-          <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3.5">
-            <div className="p-3 rounded-xl bg-teal-50 text-teal-700 shrink-0">
-              <Clock className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-2xl font-extrabold text-[#002117] tracking-tight">{t.stat2Value}</div>
-              <div className="text-xs text-slate-500 font-medium leading-tight">{t.stat2Label}</div>
-            </div>
-          </div>
-
-          {/* Card 3 */}
-          <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3.5">
-            <div className="p-3 rounded-xl bg-amber-50 text-amber-700 shrink-0">
-              <Pill className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-2xl font-extrabold text-[#002117] tracking-tight">{t.stat3Value}</div>
-              <div className="text-xs text-slate-500 font-medium leading-tight">{t.stat3Label}</div>
-            </div>
-          </div>
-
-          {/* Card 4 */}
-          <div className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3.5">
-            <div className="p-3 rounded-xl bg-blue-50 text-blue-700 shrink-0">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="text-2xl font-extrabold text-[#002117] tracking-tight">{t.stat4Value}</div>
-              <div className="text-xs text-slate-500 font-medium leading-tight">{t.stat4Label}</div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
