@@ -4,10 +4,10 @@ import { useHealthData } from './context/HealthDataContext';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
 import { HeroSection } from './components/landing/HeroSection';
+import { AbhaCardMakerSection } from './components/landing/AbhaCardMakerSection';
+import { HealthAdvisoryBlogSection } from './components/landing/HealthAdvisoryBlogSection';
 import { CareFinderSection } from './components/landing/CareFinderSection';
 import { ClinicalTriageSection } from './components/landing/ClinicalTriageSection';
-import { SchemeNavigatorSection } from './components/landing/SchemeNavigatorSection';
-import { LivePulseSection } from './components/landing/LivePulseSection';
 import { RolePortalsSection } from './components/landing/RolePortalsSection';
 import { ArogyaSakhiCompanionModal } from './components/landing/ArogyaSakhiCompanionModal';
 import { EmergencyModal } from './components/modals/EmergencyModal';
@@ -51,6 +51,8 @@ export const App: React.FC = () => {
           <>
             <HeroSection />
             <RolePortalsSection />
+            <AbhaCardMakerSection />
+            <HealthAdvisoryBlogSection />
             <CareFinderSection />
             <ClinicalTriageSection />
           </>
