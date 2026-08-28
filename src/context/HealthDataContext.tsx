@@ -26,8 +26,7 @@ import {
   DBLabOrder, 
   DBReferral, 
   DBActivity, 
-  DBUser,
-  DEFAULT_ROLE_ACCOUNTS 
+  DBUser 
 } from '../services/db';
 
 export type PatientRecord = DBPatient;

@@ -312,6 +312,28 @@ export const Header: React.FC = () => {
                     );
                   })}
                 </div>
+
+                {/* Additional Quick Empanelment Actions */}
+                <div className="pt-2 mt-1 border-t border-slate-100 grid grid-cols-2 gap-1.5">
+                  <button
+                    onClick={() => {
+                      setRoleDropdownOpen(false);
+                      openRoleAuthModal('doctor');
+                    }}
+                    className="p-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 text-[11px] font-bold text-center transition-colors"
+                  >
+                    Apply as Doctor
+                  </button>
+                  <button
+                    onClick={() => {
+                      setRoleDropdownOpen(false);
+                      openRoleAuthModal('facility');
+                    }}
+                    className="p-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-[11px] font-bold text-center transition-colors"
+                  >
+                    List Hospital
+                  </button>
+                </div>
               </div>
             )}
           </div>

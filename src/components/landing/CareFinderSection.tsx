@@ -19,7 +19,7 @@ import {
 
 export const CareFinderSection: React.FC = () => {
   const { setCurrentView, showToast, setIsEmergencyModalOpen, language } = useApp();
-  const { facilities, createReferral } = useHealthData();
+  const { facilities, createReferral, openRoleAuthModal } = useHealthData();
 
   const [searchDistrict, setSearchDistrict] = useState<string>('All');
   const [selectedType, setSelectedType] = useState<string>('All');
@@ -61,9 +61,15 @@ export const CareFinderSection: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-semibold text-slate-600">Total Live Facilities:</span>
-            <span className="bg-emerald-100 text-emerald-800 font-extrabold px-3 py-1 rounded-xl">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <button
+              onClick={() => openRoleAuthModal('facility')}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Apply for Hospital Listing</span>
+            </button>
+            <span className="bg-emerald-100 text-emerald-800 font-extrabold px-3 py-2 rounded-xl">
               {facilities.length} Active Centers
             </span>
           </div>

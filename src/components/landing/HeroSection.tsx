@@ -293,11 +293,25 @@ export const HeroSection: React.FC = () => {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-slate-700/60 flex items-center justify-between text-[11px] text-slate-400">
-              <span>Supports Marathi, Hindi & English UI</span>
+            <div className="pt-2 border-t border-slate-700/60 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => openRoleAuthModal('doctor')}
+                  className="text-blue-400 hover:text-blue-300 font-bold hover:underline"
+                >
+                  Apply for Doctor Empanelment
+                </button>
+                <span>•</span>
+                <button
+                  onClick={() => openRoleAuthModal('facility')}
+                  className="text-amber-400 hover:text-amber-300 font-bold hover:underline"
+                >
+                  List a Health Facility
+                </button>
+              </div>
               <button 
                 onClick={() => openRoleAuthModal('doctor')}
-                className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1"
+                className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1 ml-auto"
               >
                 <span>Launch Doctor Workbench</span>
                 <ArrowRight className="w-3 h-3" />
