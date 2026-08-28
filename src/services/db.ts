@@ -5,7 +5,7 @@
  * ASHA Tasks, Hospital Beds, Directives & Outbreaks.
  */
 
-import { Role, Facility, AshaTask, TriageUrgency } from '../types';
+import { Role, Facility, AshaTask, TriageUrgency, Appointment } from '../types';
 import { 
   MAHARASHTRA_FACILITIES, 
   DISTRICT_METRICS,
@@ -266,7 +266,7 @@ export interface DBActivity {
   type: 'clinical' | 'pharmacy' | 'lab' | 'referral' | 'admin' | 'emergency';
 }
 
-const DB_NAME = 'SetuMahaHealthDB_v4';
+const DB_NAME = 'SetuMahaHealthDB_v5';
 const DB_VERSION = 1;
 
 class IndexedDBManager {
@@ -319,7 +319,8 @@ class IndexedDBManager {
           'directives', 
           'outbreakAlerts', 
           'pocTests', 
-          'activityLogs'
+          'activityLogs',
+          'appointments'
         ];
 
         stores.forEach(s => {
@@ -328,6 +329,11 @@ class IndexedDBManager {
             if (s === 'patients') {
               os.createIndex('abhaId', 'abhaId', { unique: false });
               os.createIndex('name', 'name', { unique: false });
+            }
+            if (s === 'appointments') {
+              os.createIndex('patientId', 'patientId', { unique: false });
+              os.createIndex('doctorId', 'doctorId', { unique: false });
+              os.createIndex('status', 'status', { unique: false });
             }
           }
         });
@@ -352,7 +358,7 @@ class IndexedDBManager {
     if (facilityCount > 0) return; // Already seeded
 
     const tx = db.transaction(
-      ['users', 'patients', 'teleconsultQueue', 'prescriptions', 'inventory', 'diagnosticOrders', 'referrals', 'facilities', 'ashaTasks', 'directives', 'outbreakAlerts', 'pocTests', 'activityLogs', 'session'],
+      ['users', 'patients', 'teleconsultQueue', 'prescriptions', 'inventory', 'diagnosticOrders', 'referrals', 'facilities', 'ashaTasks', 'directives', 'outbreakAlerts', 'pocTests', 'activityLogs', 'session', 'appointments'],
       'readwrite'
     );
 
@@ -444,6 +450,52 @@ class IndexedDBManager {
       leadEpidemiologist: 'Dr. Sandeep Ghule (MO Otur PHC)'
     };
     outStore.put(o1);
+
+    // 8. Seed Appointments
+    const aptStore = tx.objectStore('appointments');
+    const apt1: Appointment = {
+      id: 'apt-001',
+      appointmentToken: 'TK-APT-8821',
+      patientId: 'p-001',
+      patientName: 'Sunita Ravindra Shinde',
+      patientAge: 24,
+      patientGender: 'Female',
+      patientVillage: 'Khamgaon',
+      patientMobile: '+91 98230 44512',
+      doctorId: 'doc-001',
+      doctorName: 'Dr. Rohini Kulkarni, MD',
+      doctorSpecialty: 'Obstetrics & High-Risk Pregnancy',
+      facilityName: 'Junnar Rural Hospital & Trauma Hub',
+      appointmentDate: 'Today',
+      timeSlot: '11:30 AM - 12:00 PM',
+      mode: 'TELECONSULTATION',
+      complaint: '3rd Trimester Gestational Anemia review & BP follow-up.',
+      status: 'CONFIRMED',
+      createdAt: new Date().toISOString(),
+      videoRoomId: 'tele-room-8821'
+    };
+    const apt2: Appointment = {
+      id: 'apt-002',
+      appointmentToken: 'TK-APT-9942',
+      patientId: 'p-001',
+      patientName: 'Rajesh Kumar Shinde',
+      patientAge: 47,
+      patientGender: 'Male',
+      patientVillage: 'Khamgaon',
+      patientMobile: '+91 98230 44512',
+      doctorId: 'doc-002',
+      doctorName: 'Dr. Sandeep Ghule, MBBS',
+      doctorSpecialty: 'General Medicine & NCD Care',
+      facilityName: 'Otur Primary Health Centre (PHC)',
+      appointmentDate: 'Tomorrow',
+      timeSlot: '02:00 PM - 02:30 PM',
+      mode: 'IN_PERSON_OPD',
+      complaint: 'Hypertension evaluation & Amlodipine refill review.',
+      status: 'CONFIRMED',
+      createdAt: new Date().toISOString()
+    };
+    aptStore.put(apt1);
+    aptStore.put(apt2);
   }
 
   private countItems(db: IDBDatabase, storeName: string): Promise<number> {
@@ -679,6 +731,64 @@ class IndexedDBManager {
     );
 
     return newFacility;
+  }
+
+  public async getAppointments(): Promise<Appointment[]> {
+    return this.getAll<Appointment>('appointments');
+  }
+
+  public async bookAppointment(appointmentData: Partial<Appointment>): Promise<Appointment> {
+    const token = `TK-APT-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newApt: Appointment = {
+      id: `apt-${Date.now()}`,
+      appointmentToken: token,
+      patientId: appointmentData.patientId || 'p-001',
+      patientName: appointmentData.patientName || 'Patient',
+      patientAge: appointmentData.patientAge || 30,
+      patientGender: appointmentData.patientGender || 'Female',
+      patientVillage: appointmentData.patientVillage || 'Khamgaon',
+      patientMobile: appointmentData.patientMobile || '+91 98230 44512',
+      doctorId: appointmentData.doctorId || 'doc-001',
+      doctorName: appointmentData.doctorName || 'Dr. Rohini Kulkarni, MD',
+      doctorSpecialty: appointmentData.doctorSpecialty || 'General Medicine',
+      facilityName: appointmentData.facilityName || 'Junnar Rural Hospital & Trauma Hub',
+      appointmentDate: appointmentData.appointmentDate || 'Today',
+      timeSlot: appointmentData.timeSlot || '11:00 AM - 11:30 AM',
+      mode: appointmentData.mode || 'TELECONSULTATION',
+      complaint: appointmentData.complaint || 'Routine doctor consultation',
+      status: 'CONFIRMED',
+      createdAt: new Date().toISOString(),
+      videoRoomId: appointmentData.mode === 'TELECONSULTATION' ? `tele-room-${Math.floor(1000 + Math.random() * 9000)}` : undefined,
+      notes: appointmentData.notes
+    };
+
+    await this.putItem('appointments', newApt);
+    await this.logActivity(
+      newApt.patientName,
+      'Citizen / Patient',
+      'Appointment Booked',
+      `${newApt.mode} booked with ${newApt.doctorName} for ${newApt.appointmentDate} (${newApt.timeSlot})`,
+      'clinical'
+    );
+
+    return newApt;
+  }
+
+  public async updateAppointmentStatus(appointmentId: string, status: Appointment['status'], notes?: string): Promise<void> {
+    const apt = await this.getById<Appointment>('appointments', appointmentId);
+    if (!apt) return;
+
+    apt.status = status;
+    if (notes) apt.notes = notes;
+    await this.putItem('appointments', apt);
+
+    await this.logActivity(
+      apt.doctorName || 'Medical Officer',
+      'Doctor Hub',
+      'Appointment Status Updated',
+      `Appointment ${apt.appointmentToken} marked as ${status}`,
+      'clinical'
+    );
   }
 
   public async logoutSession(): Promise<void> {

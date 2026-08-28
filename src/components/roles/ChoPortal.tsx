@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export const ChoPortal: React.FC = () => {
-  const { showToast, language, setCurrentView } = useApp();
+  const { showToast, language, setCurrentView, t } = useApp();
   const { 
     patients, 
     enqueueTeleconsult, 
@@ -132,9 +132,9 @@ export const ChoPortal: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-slate-900">Pooja Jadhav, CHO (Community Health Officer)</h1>
+                <h1 className="text-xl font-black text-slate-900">Pooja Jadhav, CHO</h1>
                 <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
-                  Ayushman Arogya Mandir (Sub-Centre Spoke)
+                  {t.role_cho}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -149,7 +149,7 @@ export const ChoPortal: React.FC = () => {
               className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
             >
               <Video className="w-3.5 h-3.5" />
-              <span>Doctor Hub Console</span>
+              <span>{t.role_doctor} Hub</span>
             </button>
           </div>
         </div>
@@ -157,15 +157,15 @@ export const ChoPortal: React.FC = () => {
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Active Teleconsult Queue</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">{t.teleconsultQueueTitle}</span>
             <div className="text-2xl font-black text-emerald-800">
-              {teleconsultQueue.filter(t => t.status === 'Waiting').length} Cases
+              {teleconsultQueue.filter(item => item.status === 'Waiting').length} Cases
             </div>
-            <span className="text-[11px] text-emerald-600 font-medium">Doctor Hub Connected</span>
+            <span className="text-[11px] text-emerald-600 font-medium">{t.teleconsultActive}</span>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Registered Patients</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">{t.householdRoster}</span>
             <div className="text-2xl font-black text-slate-900">{patients.length} Citizens</div>
             <span className="text-[11px] text-slate-500 font-medium">ABDM ABHA Linked</span>
           </div>
@@ -173,11 +173,11 @@ export const ChoPortal: React.FC = () => {
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
             <span className="text-[10px] uppercase font-bold text-slate-400 block">POC Tests Logged</span>
             <div className="text-2xl font-black text-blue-700">{pocTests.length} Tests</div>
-            <span className="text-[11px] text-blue-600 font-medium">Rapid Hb, Malaria, RBS</span>
+            <span className="text-[11px] text-blue-600 font-medium">Sub-Centre Lab</span>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Drug Kit A & B Stock</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">{t.medicineStock}</span>
             <div className="text-2xl font-black text-emerald-700">96.4%</div>
             <span className="text-[11px] text-emerald-600 font-medium">Zero Stockout</span>
           </div>
@@ -191,7 +191,7 @@ export const ChoPortal: React.FC = () => {
               activeTab === 'opd_queue' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            Live OPD Queue ({teleconsultQueue.length})
+            {t.teleconsultQueueTitle} ({teleconsultQueue.length})
           </button>
           <button
             onClick={() => setActiveTab('triage_intake')}
@@ -199,7 +199,7 @@ export const ChoPortal: React.FC = () => {
               activeTab === 'triage_intake' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            + Triage & Teleconsult Intake
+            + {t.subCenterTriage}
           </button>
           <button
             onClick={() => setActiveTab('rapid_tests')}
@@ -215,7 +215,7 @@ export const ChoPortal: React.FC = () => {
               activeTab === 'subcenter_stock' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            Sub-Centre Drug Kit
+            Drug Kit Stock
           </button>
         </div>
 

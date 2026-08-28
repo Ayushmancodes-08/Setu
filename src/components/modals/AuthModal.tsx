@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useHealthData } from '../../context/HealthDataContext';
-import { Role } from '../../types';
+import { Role, Language } from '../../types';
 import { setuDB } from '../../services/db';
 import { 
   Lock, 
@@ -17,112 +17,242 @@ import {
   ShieldAlert,
   UserPlus,
   Hospital,
-  Award
+  Award,
+  Sparkles,
+  KeyRound,
+  ShieldCheck,
+  Smartphone,
+  Check
 } from 'lucide-react';
 
 interface RoleConfig {
-  titleEn: string;
-  titleMr: string;
+  id: Role;
+  titles: Record<Language, string>;
   badge: string;
   icon: any;
-  theme: string;
-  loginIdLabel: string;
+  themeColor: string;
+  loginIdLabel: Record<Language, string>;
   loginIdPlaceholder: string;
-  signupTitle: string;
+  demoId: string;
+  demoName: string;
+  demoRoleText: string;
 }
 
-const ROLE_CONFIGS: Record<Role, RoleConfig> = {
-  patient: {
-    titleEn: 'Citizen & Patient Portal',
-    titleMr: 'नागरिक व रुग्ण पोर्टल',
-    badge: 'Public / Citizen Access',
+const PRIMARY_ROLES: RoleConfig[] = [
+  {
+    id: 'patient',
+    titles: {
+      en: 'Citizen & Patient Portal',
+      mr: 'नागरिक व रुग्ण पोर्टल',
+      hi: 'नागरिक एवं मरीज पोर्टल',
+      or: 'ନାଗରିକ ଏବଂ ରୋଗୀ ପୋର୍ଟାଲ୍',
+      bn: 'নাগরিক ও রোগী পোর্টাল',
+      ur: 'شہری اور مریض پورٹل'
+    },
+    badge: 'Primary • Citizen Layer',
     icon: Activity,
-    theme: 'text-teal-700 bg-teal-50 border-teal-200',
-    loginIdLabel: 'ABHA Number or Registered Mobile',
-    loginIdPlaceholder: 'e.g. 91-4821-9902-3312 or +91 98230 44512',
-    signupTitle: 'New Citizen / Patient ABHA Registration'
+    themeColor: 'emerald',
+    loginIdLabel: {
+      en: 'ABHA Number or Mobile Phone',
+      mr: 'आभा क्रमांक किंवा मोबाईल नंबर',
+      hi: 'आभा संख्या या मोबाइल नंबर',
+      or: 'ଆଭା ନମ୍ବର କିମ୍ବା ମୋବାଇଲ୍ ନମ୍ବର',
+      bn: 'আভা নম্বর বা মোবাইল নম্বর',
+      ur: 'آبھا نمبر یا موبائل فون'
+    },
+    loginIdPlaceholder: 'e.g. 91-4821-9902-3312 or 9823044512',
+    demoId: '9823044512',
+    demoName: 'Rajesh Kumar Shinde',
+    demoRoleText: 'Citizen (Khamgaon Village)'
   },
-  asha: {
-    titleEn: 'ASHA Frontline Field Worker Portal',
-    titleMr: 'आशा सेविका फील्ड पोर्टल',
-    badge: 'Community Frontline Level',
+  {
+    id: 'asha',
+    titles: {
+      en: 'ASHA / CHO Field Worker',
+      mr: 'आशा व समुदाय आरोग्य अधिकारी',
+      hi: 'आशा व सामुदायिक स्वास्थ्य कार्यकर्ता',
+      or: 'ଆଶା ଓ ସିଏଚଓ କ୍ଷେତ୍ର କର୍ମୀ',
+      bn: 'আশা ও সিএইচও ফিল্ড কর্মী',
+      ur: 'آشا / سی ایچ او فیلڈ ورکر'
+    },
+    badge: 'Primary • Field Layer',
     icon: HeartHandshake,
-    theme: 'text-rose-700 bg-rose-50 border-rose-200',
-    loginIdLabel: 'ASHA Worker ID or Registered Mobile',
-    loginIdPlaceholder: 'e.g. ASHA-PUN-0482 or +91 98901 23412',
-    signupTitle: 'New ASHA Worker Registration'
+    themeColor: 'rose',
+    loginIdLabel: {
+      en: 'ASHA ID or Registered Mobile',
+      mr: 'आशा आयडी किंवा नोंदणीकृत मोबाईल',
+      hi: 'आशा आईडी या पंजीकृत मोबाइल',
+      or: 'ଆଶା ଆଇଡି କିମ୍ବା ପଞ୍ଜୀକୃତ ମୋବାଇଲ୍',
+      bn: 'আশা আইডি বা মোবাইল নম্বর',
+      ur: 'آشا شناختی کارڈ یا موبائل'
+    },
+    loginIdPlaceholder: 'e.g. ASHA-PUN-0482 or 9890123412',
+    demoId: '9890123412',
+    demoName: 'Manisha Kadam',
+    demoRoleText: 'Frontline ASHA Worker (Sector 4)'
   },
-  cho: {
-    titleEn: 'Community Health Officer (CHO) Console',
-    titleMr: 'समुदाय आरोग्य अधिकारी (CHO) कन्सोल',
-    badge: 'Ayushman Arogya Mandir Spoke',
+  {
+    id: 'dho',
+    titles: {
+      en: 'District Health Officer (DHO)',
+      mr: 'जिल्हा आरोग्य अधिकारी (DHO)',
+      hi: 'जिला स्वास्थ्य अधिकारी (DHO)',
+      or: 'ଜିଲ୍ଲା ସ୍ୱାସ୍ଥ୍ୟ ଅଧିକାରୀ (DHO)',
+      bn: 'জেলা স্বাস্থ্য কর্মকর্তা (DHO)',
+      ur: 'ڈسٹرکٹ ہیلتھ آفیسر (DHO)'
+    },
+    badge: 'Primary • District Intelligence',
+    icon: ShieldAlert,
+    themeColor: 'red',
+    loginIdLabel: {
+      en: 'DHS Administrative Key or Mobile',
+      mr: 'डीएचएस प्रशासकीय की किंवा मोबाईल',
+      hi: 'डीएचएस प्रशासनिक कुंजी या मोबाइल',
+      or: 'ପ୍ରଶାସନିକ କି କିମ୍ବା ମୋବାଇଲ୍',
+      bn: 'প্রশাসনিক কী বা মোবাইল নম্বর',
+      ur: 'انتظامی کی یا موبائل فون'
+    },
+    loginIdPlaceholder: 'e.g. DHS-MH-DIR-009 or 9820011223',
+    demoId: '9820011223',
+    demoName: 'Dr. Ramchandra Hankare',
+    demoRoleText: 'District Health Officer (Pune)'
+  }
+];
+
+const SUPPORTING_ROLES: RoleConfig[] = [
+  {
+    id: 'doctor',
+    titles: {
+      en: 'Specialist Medical Officer',
+      mr: 'तज्ज्ञ डॉक्टर कन्सोल',
+      hi: 'विशेषज्ञ चिकित्सा अधिकारी',
+      or: 'ବିଶେଷଜ୍ଞ ଡାକ୍ତର',
+      bn: 'বিশেষজ্ঞ চিকিৎসক কনসোল',
+      ur: 'ماہر ڈاکٹر پورٹل'
+    },
+    badge: 'Hospital Specialist Hub',
     icon: Stethoscope,
-    theme: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-    loginIdLabel: 'CHO Registration Number or Mobile',
-    loginIdPlaceholder: 'e.g. CHO-MH-8819 or +91 94220 88312',
-    signupTitle: 'New CHO Officer Registration'
+    themeColor: 'blue',
+    loginIdLabel: {
+      en: 'MMC / MCI Medical Reg No or Phone',
+      mr: 'एमएमसी नोंदणी क्रमांक किंवा मोबाईल',
+      hi: 'एमएमसी मेडिकल पंजीकरण संख्या या फोन',
+      or: 'ଡାକ୍ତରୀ ପଞ୍ଜୀକରଣ ନମ୍ବର',
+      bn: 'মেডিকেল রেজিস্ট্রেশন নম্বর',
+      ur: 'میڈیکل رجسٹریشن نمبر'
+    },
+    loginIdPlaceholder: 'e.g. MMC-2016-99410 or 9822411092',
+    demoId: '9822411092',
+    demoName: 'Dr. Rohini Kulkarni, MD',
+    demoRoleText: 'Specialist Hub Consultant'
   },
-  doctor: {
-    titleEn: 'Specialist Medical Officer & Doctor Console',
-    titleMr: 'तज्ज्ञ डॉक्टर व वैद्यकीय अधिकारी कन्सोल',
-    badge: 'Rural Hospital Specialist Hub',
+  {
+    id: 'cho',
+    titles: {
+      en: 'CHO Health Officer',
+      mr: 'सीएचओ अधिकारी',
+      hi: 'सीएचओ अधिकारी',
+      or: 'ସିଏଚଓ ଅଧିକାରୀ',
+      bn: 'সিএইচও কর্মকর্তা',
+      ur: 'سی ایچ او افسر'
+    },
+    badge: 'Ayushman Arogya Mandir',
     icon: Stethoscope,
-    theme: 'text-blue-700 bg-blue-50 border-blue-200',
-    loginIdLabel: 'MCI / MMC Medical Registration Number or Mobile',
-    loginIdPlaceholder: 'e.g. MMC-2016-99410 or +91 98224 11092',
-    signupTitle: 'Doctor Empanelment & License Verification'
+    themeColor: 'teal',
+    loginIdLabel: {
+      en: 'CHO Registration Number',
+      mr: 'सीएचओ नोंदणी क्रमांक',
+      hi: 'सीएचओ पंजीकरण संख्या',
+      or: 'ସିଏଚଓ ପଞ୍ଜୀକରଣ ନମ୍ବର',
+      bn: 'সিএইচও রেজিস্ট্রেশন নম্বর',
+      ur: 'سی ایچ او رجسٹریشن نمبر'
+    },
+    loginIdPlaceholder: 'e.g. CHO-MH-8819 or 9422088312',
+    demoId: '9422088312',
+    demoName: 'Pooja Jadhav, CHO',
+    demoRoleText: 'Sub-Centre Clinical Spoke'
   },
-  specialist: {
-    titleEn: 'Civil Hospital Specialist Consultant Console',
-    titleMr: 'जिल्हा रुग्णालय तज्ज्ञ कन्सोल',
-    badge: 'District Civil Hospital Level',
-    icon: Stethoscope,
-    theme: 'text-blue-700 bg-blue-50 border-blue-200',
-    loginIdLabel: 'Medical Council Reg No or Employee ID',
-    loginIdPlaceholder: 'e.g. MMC-2011-44109',
-    signupTitle: 'Specialist Consultant Registration'
-  },
-  pharmacist: {
-    titleEn: 'Pharmacy & e-Aushadhi Console',
-    titleMr: 'औषध निर्माण व साठा कक्ष',
-    badge: 'Facility Central Dispensary',
-    icon: Layers,
-    theme: 'text-amber-700 bg-amber-50 border-amber-200',
-    loginIdLabel: 'Pharmacy License Number or Mobile',
-    loginIdPlaceholder: 'e.g. PHARM-MH-2018-4412 or +91 97630 11982',
-    signupTitle: 'Pharmacist Registration & Dispensary Setup'
-  },
-  lab: {
-    titleEn: 'Diagnostic Laboratory Wing (LIS)',
-    titleMr: 'प्रयोगशाळा तंत्रज्ञ पोर्टल',
-    badge: 'Pathology & Diagnostic Lab',
-    icon: Activity,
-    theme: 'text-purple-700 bg-purple-50 border-purple-200',
-    loginIdLabel: 'Lab Technician ID or Mobile',
-    loginIdPlaceholder: 'e.g. LIS-TECH-8812 or +91 94055 22910',
-    signupTitle: 'Lab Technician Registration'
-  },
-  facility: {
-    titleEn: 'Hospital Bed & 108 Command Console',
-    titleMr: 'रुग्णालय व रुग्णवाहिका समन्वय',
+  {
+    id: 'facility',
+    titles: {
+      en: 'Hospital Bed & 108 Command',
+      mr: 'रुग्णालय खाटा व १०८ कक्ष',
+      hi: 'अस्पताल बेड एवं 108 कमांड',
+      or: 'ଡାକ୍ତରଖାନା ବେଡ୍ ପରିଚାଳନା',
+      bn: 'হাসপাতাল বেড ও ১০৮ কমান্ড',
+      ur: 'ہسپتال بیڈ اور 108 کمانڈ'
+    },
     badge: 'Hospital Operations Command',
     icon: Building2,
-    theme: 'text-indigo-700 bg-indigo-50 border-indigo-200',
-    loginIdLabel: 'Facility Code or Admin Phone',
-    loginIdPlaceholder: 'e.g. FAC-PUN-0104 or +91 2132 222108',
-    signupTitle: 'Apply for Hospital / Health Facility Listing'
+    themeColor: 'indigo',
+    loginIdLabel: {
+      en: 'Hospital Code or Admin Mobile',
+      mr: 'रुग्णालय कोड किंवा प्रशासकीय मोबाईल',
+      hi: 'अस्पताल कोड या एडमिन मोबाइल',
+      or: 'ଡାକ୍ତରଖାନା କୋଡ୍ କିମ୍ବା ମୋବାଇଲ୍',
+      bn: 'হাসপাতাল কোড বা মোবাইল নম্বর',
+      ur: 'ہسپتال کوڈ یا موبائل نمبر'
+    },
+    loginIdPlaceholder: 'e.g. FAC-PUN-0104 or 9422077182',
+    demoId: '9422077182',
+    demoName: 'Vinayak Shinde',
+    demoRoleText: 'Hospital Bed Manager'
   },
-  dho: {
-    titleEn: 'District Health Officer (DHO) Command',
-    titleMr: 'जिल्हा आरोग्य अधिकारी कन्सोल',
-    badge: 'District Public Health Directorate',
-    icon: ShieldAlert,
-    theme: 'text-red-700 bg-red-50 border-red-200',
-    loginIdLabel: 'DHS Administrative Key or Official Mobile',
-    loginIdPlaceholder: 'e.g. DHS-MH-DIR-009 or +91 20 2612 3450',
-    signupTitle: 'District Public Health Officer Registration'
+  {
+    id: 'pharmacist',
+    titles: {
+      en: 'Pharmacy & Drug Dispensary',
+      mr: 'औषध वितरण अधिकारी',
+      hi: 'फार्मेसी एवं दवा वितरण',
+      or: 'ଫାର୍ମାସିଷ୍ଟ ପୋର୍ଟାଲ୍',
+      bn: 'ফার্মাসি ও ওষুধ বিতরণ',
+      ur: 'فارمیسی اور ادویات کی تقسیم'
+    },
+    badge: 'e-Aushadhi Stock Hub',
+    icon: Layers,
+    themeColor: 'emerald',
+    loginIdLabel: {
+      en: 'Pharmacy License / Mobile Number',
+      mr: 'फार्मसी परवाना किंवा मोबाईल क्रमांक',
+      hi: 'फार्मेसी लाइसेंस या मोबाइल नंबर',
+      or: 'ଫାର୍ମାସି ଲାଇସେନ୍ସ ନମ୍ବର',
+      bn: 'ফার্মেসি লাইসেন্স নম্বর',
+      ur: 'فارمیسی لائسنس نمبر'
+    },
+    loginIdPlaceholder: 'e.g. PHARM-MH-9921 or 9823055412',
+    demoId: '9823055412',
+    demoName: 'Ganesh More',
+    demoRoleText: 'Chief Pharmacist (Otur PHC)'
+  },
+  {
+    id: 'lab',
+    titles: {
+      en: 'Diagnostic Wing & Pathology',
+      mr: 'निदान प्रयोगशाळा तंत्रज्ञ',
+      hi: 'डायग्नोस्टिक एवं पैथोलॉजी लैब',
+      or: 'ଡାଇଗ୍ନୋଷ୍ଟିକ୍ ଲ୍ୟାବ୍ ପୋର୍ଟାଲ୍',
+      bn: 'ডায়াগনস্টিক ও প্যাথলজি ল্যাব',
+      ur: 'لیبارٹری اور پیتھالوجی'
+    },
+    badge: 'Diagnostic Lab Portal',
+    icon: Activity,
+    themeColor: 'purple',
+    loginIdLabel: {
+      en: 'Lab Technician ID / Mobile',
+      mr: 'लॅब तंत्रज्ञ आयडी किंवा मोबाईल',
+      hi: 'लैब तकनीशियन आईडी या मोबाइल',
+      or: 'ଲ୍ୟାବ୍ ଆଇଡି କିମ୍ବା ମୋବାଇଲ୍',
+      bn: 'ল্যাব টেকনিশিয়ান আইডি',
+      ur: 'لیب ٹیکنیشن شناختی کارڈ'
+    },
+    loginIdPlaceholder: 'e.g. LAB-PUN-0881 or 9823066712',
+    demoId: '9823066712',
+    demoName: 'Sachin Kamble',
+    demoRoleText: 'Senior Lab Technologist'
   }
-};
+];
+
+const ALL_ROLES = [...PRIMARY_ROLES, ...SUPPORTING_ROLES];
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -134,84 +264,56 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, targetRol
   const { setCurrentView, showToast, language } = useApp();
   const { setCurrentUser } = useHealthData();
 
-  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [selectedRole, setSelectedRole] = useState<Role>(targetRole);
+
+  // Form Fields
+  const [loginIdentifier, setLoginIdentifier] = useState<string>('');
+  const [loginPin, setLoginPin] = useState<string>('4421');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // Common Login States
-  const [loginIdentifier, setLoginIdentifier] = useState('');
-  const [loginPin, setLoginPin] = useState('4421');
-
-  // Role-Specific Sign Up States:
-  // Citizen / Patient
-  const [patientName, setPatientName] = useState('');
-  const [patientPhone, setPatientPhone] = useState('');
-  const [patientAge, setPatientAge] = useState<number>(26);
-  const [patientGender, setPatientGender] = useState<'Male' | 'Female' | 'Other'>('Female');
-  const [patientVillage, setPatientVillage] = useState('Khamgaon');
-  const [patientTaluka, setPatientTaluka] = useState('Junnar');
-  const [patientCategory, setPatientCategory] = useState<'Maternal ANC' | 'NCD Patient' | 'Pediatric' | 'General OPD' | 'Elderly Care'>('Maternal ANC');
-
-  // Doctor / Specialist
-  const [docName, setDocName] = useState('');
-  const [docRegNo, setDocRegNo] = useState('');
-  const [docCouncil, setDocCouncil] = useState('Maharashtra Medical Council (MMC)');
-  const [docSpecialty, setDocSpecialty] = useState('General Medicine');
-  const [docDegree, setDocDegree] = useState('MBBS / MD');
-  const [docHospital, setDocHospital] = useState('');
-  const [docPhone, setDocPhone] = useState('');
-  const [docEmail, setDocEmail] = useState('');
-  const [docTaluka, setDocTaluka] = useState('Junnar');
-
-  // Hospital / Facility Listing
-  const [facName, setFacName] = useState('');
-  const [facType, setFacType] = useState<'phc' | 'rh' | 'dh' | 'sdh' | 'mjpjay_private'>('rh');
-  const [facLevel, setFacLevel] = useState('Rural Hospital & Trauma Hub');
-  const [facDistrict, setFacDistrict] = useState('Pune');
-  const [facTaluka, setFacTaluka] = useState('Junnar');
-  const [facTotalBeds, setFacTotalBeds] = useState(50);
-  const [facIcuBeds, setFacIcuBeds] = useState(8);
-  const [facOxygen, setFacOxygen] = useState(true);
-  const [facBloodBank, setFacBloodBank] = useState(true);
-  const [facAmbulances, setFacAmbulances] = useState(2);
-  const [facNodalName, setFacNodalName] = useState('');
-  const [facNodalPhone, setFacNodalPhone] = useState('');
-
-  // ASHA / CHO / Pharmacist / Lab / DHO General Worker States
-  const [workerName, setWorkerName] = useState('');
-  const [workerPhone, setWorkerPhone] = useState('');
-  const [workerIdNumber, setWorkerIdNumber] = useState('');
-  const [workerFacility, setWorkerFacility] = useState('');
-  const [workerTaluka, setWorkerTaluka] = useState('Junnar');
-  const [workerDistrict, setWorkerDistrict] = useState('Pune');
-  const [workerDesignation, setWorkerDesignation] = useState('');
+  // Registration Fields
+  const [fullName, setFullName] = useState<string>('');
+  const [mobileNumber, setMobileNumber] = useState<string>('');
+  const [district, setDistrict] = useState<string>('Pune');
+  const [taluka, setTaluka] = useState<string>('Junnar');
+  const [village, setVillage] = useState<string>('Khamgaon');
+  const [gender, setGender] = useState<'Female' | 'Male'>('Female');
+  const [age, setAge] = useState<number>(32);
+  const [hospitalName, setHospitalName] = useState<string>('');
+  const [licenseNumber, setLicenseNumber] = useState<string>('');
 
   useEffect(() => {
     if (isOpen) {
-      setActiveTab('login');
-      setLoginIdentifier('');
+      const activeR = targetRole || 'patient';
+      setSelectedRole(activeR);
+      const cfg = ALL_ROLES.find(r => r.id === activeR) || PRIMARY_ROLES[0];
+      setLoginIdentifier(cfg.demoId);
       setLoginPin('4421');
     }
   }, [isOpen, targetRole]);
 
   if (!isOpen) return null;
 
-  const currentConfig = ROLE_CONFIGS[targetRole] || ROLE_CONFIGS.patient;
+  const currentConfig = ALL_ROLES.find(r => r.id === selectedRole) || PRIMARY_ROLES[0];
   const Icon = currentConfig.icon;
+  const currentTitle = currentConfig.titles[language] || currentConfig.titles.en;
+  const currentLoginLabel = currentConfig.loginIdLabel[language] || currentConfig.loginIdLabel.en;
 
-  // Handle Login for this specific role
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!loginIdentifier.trim()) {
-      showToast(`Please enter your ${currentConfig.loginIdLabel}.`);
-      return;
-    }
+  const handle1ClickQuickLogin = (demoRole: RoleConfig) => {
+    setSelectedRole(demoRole.id);
+    setLoginIdentifier(demoRole.demoId);
+    setLoginPin('4421');
+    executeAuth(demoRole.demoId, demoRole.id);
+  };
 
+  const executeAuth = async (identifier: string, roleToAuth: Role) => {
     setIsLoading(true);
     try {
-      const user = await setuDB.loginUser(loginIdentifier.trim(), targetRole);
+      const user = await setuDB.loginUser(identifier.trim(), roleToAuth);
       setCurrentUser(user);
       showToast(`Authenticated as ${user.fullName} (${user.designation}).`);
-      setCurrentView(targetRole);
+      setCurrentView(roleToAuth);
       onClose();
     } catch (err) {
       console.error(err);
@@ -221,180 +323,109 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, targetRol
     }
   };
 
-  // Handle Role-Specific Sign Up
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!loginIdentifier.trim()) {
+      showToast(`Please enter your ${currentLoginLabel}.`);
+      return;
+    }
+    executeAuth(loginIdentifier, selectedRole);
+  };
+
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!fullName.trim() || !mobileNumber.trim()) {
+      showToast('Please fill in your full legal name and mobile number.');
+      return;
+    }
+
     setIsLoading(true);
-
     try {
-      if (targetRole === 'patient') {
-        if (!patientName.trim() || !patientPhone.trim()) {
-          showToast('Please enter full name and mobile number.');
-          setIsLoading(false);
-          return;
-        }
-
+      if (selectedRole === 'patient') {
         const generatedAbha = `91-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`;
         
-        // Register Citizen as User
         const newUser = await setuDB.signupUser({
           role: 'patient',
-          username: patientPhone.replace(/[\s-+]/g, ''),
-          fullName: patientName.trim(),
-          phone: patientPhone.trim(),
-          identifierNumber: `${generatedAbha} (ABHA ID)`,
-          facilityName: `${patientVillage} Ayushman Arogya Mandir`,
-          taluka: patientTaluka,
-          district: 'Pune',
-          designation: `Citizen / ${patientCategory}`,
-          avatarInitials: patientName.slice(0, 2).toUpperCase()
+          username: mobileNumber.replace(/[\s-+]/g, ''),
+          fullName: fullName.trim(),
+          phone: mobileNumber.trim(),
+          identifierNumber: generatedAbha,
+          facilityName: `${village} Ayushman Arogya Mandir`,
+          taluka,
+          district,
+          designation: 'Citizen (ABHA Verified)',
+          avatarInitials: fullName.slice(0, 2).toUpperCase()
         });
 
-        // Add to Live Patient Registry
         await setuDB.putItem('patients', {
-          id: `p-${Date.now()}`,
+          id: `pat-${Date.now()}`,
           abhaId: generatedAbha,
-          name: patientName.trim(),
-          age: Number(patientAge),
-          gender: patientGender,
-          mobile: patientPhone.trim(),
-          village: patientVillage,
-          taluka: patientTaluka,
-          district: 'Pune',
-          category: patientCategory,
+          name: fullName.trim(),
+          age,
+          gender,
+          mobile: mobileNumber.trim(),
+          village,
+          taluka,
+          district,
+          category: gender === 'Female' && age < 40 ? 'Maternal ANC' : 'General OPD',
           riskLevel: 'Low',
           vitals: {
             bp: '120/80 mmHg',
-            pulse: '78 bpm',
-            spo2: '98%',
+            pulse: '72 bpm',
+            spo2: '99%',
             temp: '98.4 °F',
-            weight: '56 kg',
-            lastRecordedAt: 'Just registered'
+            weight: '55 kg',
+            lastRecordedAt: 'Just Now'
           },
           diagnoses: ['General Health Checkup'],
-          allergies: ['None Known'],
+          allergies: [],
           assignedAsha: 'Manisha Kadam',
           assignedCho: 'Pooja Jadhav, CHO',
           activePrescriptions: [],
           recentLabReports: [],
-          schemeEligibility: ['PM-JAY', 'MJPJAY', 'JSSK Free Delivery'],
+          schemeEligibility: ['MJPJAY', 'PM-JAY'],
           createdAt: new Date().toISOString()
         });
 
         setCurrentUser(newUser);
-        showToast(`ABHA Account Created! ABHA ID: ${generatedAbha}.`);
+        showToast(`ABHA Registered! Welcome ${newUser.fullName}.`);
         setCurrentView('patient');
         onClose();
-
-      } else if (targetRole === 'doctor' || targetRole === 'specialist') {
-        if (!docName.trim() || !docRegNo.trim() || !docPhone.trim()) {
-          showToast('Please fill in doctor name, medical council registration no, and phone.');
-          setIsLoading(false);
-          return;
-        }
-
-        const docUser = await setuDB.applyForDoctorEmpanelment({
-          fullName: docName.trim(),
-          medicalRegNumber: docRegNo.trim(),
-          councilName: docCouncil,
-          specialization: docSpecialty,
-          degree: docDegree,
-          affiliatedHospital: docHospital.trim() || 'Junnar Rural Hospital Tele-Hub',
-          taluka: docTaluka,
-          district: 'Pune',
-          phone: docPhone.trim(),
-          email: docEmail.trim() || `${docRegNo.toLowerCase()}@mahahealth.gov.in`
-        });
-
-        setCurrentUser(docUser);
-        showToast(`Medical license verified! Doctor console activated for ${docUser.fullName}.`);
-        setCurrentView(targetRole);
-        onClose();
-
-      } else if (targetRole === 'facility') {
-        if (!facName.trim() || !facNodalName.trim() || !facNodalPhone.trim()) {
-          showToast('Please complete hospital name and nodal officer contact.');
-          setIsLoading(false);
-          return;
-        }
-
-        const newFacility = await setuDB.applyForHospitalListing({
-          name: facName.trim(),
-          type: facType,
-          level: facLevel,
-          taluka: facTaluka,
-          district: facDistrict,
-          totalBeds: Number(facTotalBeds),
-          availableBeds: Math.floor(Number(facTotalBeds) * 0.4),
-          icuBedsTotal: Number(facIcuBeds),
-          icuBedsAvailable: Math.floor(Number(facIcuBeds) * 0.3),
-          hasOxygenPlant: facOxygen,
-          hasBloodBank: facBloodBank,
-          ambulancesStationed: Number(facAmbulances),
-          nodalOfficerName: facNodalName.trim(),
-          nodalOfficerPhone: facNodalPhone.trim()
-        });
-
-        const facUser = await setuDB.signupUser({
-          role: 'facility',
-          username: facNodalPhone.replace(/[\s-+]/g, ''),
-          fullName: facNodalName.trim(),
-          phone: facNodalPhone.trim(),
-          identifierNumber: `FAC-${facTaluka.toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`,
-          facilityName: newFacility.name,
-          taluka: facTaluka,
-          district: facDistrict,
-          designation: 'Hospital Superintendent & 108 Coordinator',
-          avatarInitials: facNodalName.slice(0, 2).toUpperCase()
-        });
-
-        setCurrentUser(facUser);
-        showToast(`Hospital empanelled! ${newFacility.name} is now live in Care Finder.`);
-        setCurrentView('facility');
-        onClose();
-
       } else {
-        // ASHA, CHO, Pharmacist, Lab, DHO
-        if (!workerName.trim() || !workerPhone.trim()) {
-          showToast('Please fill in your full name and mobile number.');
-          setIsLoading(false);
-          return;
-        }
-
         const workerUser = await setuDB.signupUser({
-          role: targetRole,
-          username: workerPhone.replace(/[\s-+]/g, ''),
-          fullName: workerName.trim(),
-          phone: workerPhone.trim(),
-          identifierNumber: workerIdNumber.trim() || `${targetRole.toUpperCase()}-MH-${Math.floor(1000 + Math.random() * 9000)}`,
-          facilityName: workerFacility.trim() || 'Maharashtra Rural Health Network',
-          taluka: workerTaluka,
-          district: workerDistrict,
-          designation: workerDesignation.trim() || currentConfig.badge,
-          avatarInitials: workerName.slice(0, 2).toUpperCase()
+          role: selectedRole,
+          username: mobileNumber.replace(/[\s-+]/g, ''),
+          fullName: fullName.trim(),
+          phone: mobileNumber.trim(),
+          identifierNumber: licenseNumber.trim() || `${selectedRole.toUpperCase()}-MH-${Math.floor(1000 + Math.random() * 9000)}`,
+          facilityName: hospitalName.trim() || `${village} Ayushman Arogya Mandir`,
+          taluka,
+          district,
+          designation: currentConfig.badge,
+          avatarInitials: fullName.slice(0, 2).toUpperCase()
         });
 
         setCurrentUser(workerUser);
-        showToast(`Account registered! Welcome to the ${currentConfig.titleEn}.`);
-        setCurrentView(targetRole);
+        showToast(`Account registered! Welcome to ${currentTitle}.`);
+        setCurrentView(selectedRole);
         onClose();
       }
     } catch (err) {
       console.error(err);
-      showToast('Registration failed.');
+      showToast('Registration failed. Please retry.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/75 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 my-auto animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5 my-auto animate-in fade-in zoom-in-95 duration-200">
         
-        {/* Role-Specific Header */}
+        {/* Header with ABDM Trust Badge */}
         <div className="flex items-start justify-between pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#003527] text-white flex items-center justify-center font-bold shadow-md">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-[#003527] text-white flex items-center justify-center font-black shadow-md shrink-0">
               <Icon className="w-6 h-6 text-emerald-400" />
             </div>
             <div>
@@ -402,462 +433,243 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, targetRol
                 <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-300">
                   {currentConfig.badge}
                 </span>
-                <span className="text-[10px] font-bold text-slate-400 font-mono">ABDM L3</span>
+                <span className="text-[10px] font-bold text-slate-400 font-mono flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                  ABDM Verified
+                </span>
               </div>
               <h2 className="text-xl font-black text-slate-900 mt-0.5">
-                {language === 'mr' ? currentConfig.titleMr : currentConfig.titleEn}
+                {currentTitle}
               </h2>
             </div>
           </div>
+
           <button 
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
+            className="text-slate-400 hover:text-slate-700 p-2 rounded-xl hover:bg-slate-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* 2 Scoped Tabs Only: Login vs Sign Up for THIS Role */}
+        {/* 1-Click Fast Demonstration Login Banner */}
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-3.5 space-y-2 text-xs">
+          <div className="flex items-center justify-between text-emerald-950 font-bold">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
+              <span>
+                {language === 'mr' ? '१-क्लिक चाचणी प्रवेश:' : language === 'hi' ? '1-क्लिक फास्ट डेमो प्रवेश:' : language === 'or' ? '୧-କ୍ଲିକ୍ ଡେମୋ ପ୍ରବେଶ:' : language === 'bn' ? '১-ক্লিক ডেমো লগইন:' : language === 'ur' ? '1 کلک فاسٹ ڈیمو لاگ ان:' : '1-Click Fast Demo Login:'}
+              </span>
+            </div>
+            <span className="text-[10px] text-emerald-700 font-mono bg-emerald-100 px-2 py-0.5 rounded">PIN: 4421</span>
+          </div>
+
+          <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-emerald-200 text-xs">
+            <div>
+              <div className="font-extrabold text-slate-900">{currentConfig.demoName}</div>
+              <div className="text-[11px] text-slate-500">{currentConfig.demoRoleText} • {currentConfig.demoId}</div>
+            </div>
+            <button
+              onClick={() => handle1ClickQuickLogin(currentConfig)}
+              disabled={isLoading}
+              className="bg-[#003527] hover:bg-[#064e3b] text-white font-black text-xs px-3.5 py-2 rounded-xl transition-all shadow-xs flex items-center gap-1"
+            >
+              <span>{language === 'mr' ? 'थेट प्रवेश' : language === 'hi' ? 'सीधे लॉगिन' : language === 'or' ? 'ସିଧାସଳଖ ପ୍ରବେଶ' : language === 'bn' ? 'লগইন করুন' : language === 'ur' ? 'لاگ ان' : 'Sign In Now'}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Tab Switcher: Login vs Register */}
         <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold">
           <button
-            onClick={() => setActiveTab('login')}
-            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
-              activeTab === 'login' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            type="button"
+            onClick={() => setAuthMode('login')}
+            className={`flex-1 py-2 rounded-xl transition-all ${
+              authMode === 'login' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Lock className="w-3.5 h-3.5 text-emerald-700" />
-            <span>Login to Console</span>
+            {language === 'mr' ? 'सुरक्षित भूमिका लॉगिन' : language === 'hi' ? 'सुरक्षित भूमिका लॉगिन' : language === 'or' ? 'ସୁରକ୍ଷିତ ଲଗଇନ୍' : language === 'bn' ? 'সুরক্ষিত লগইন' : language === 'ur' ? 'محفوظ لاگ ان' : 'Secure Role Login'}
           </button>
-
           <button
-            onClick={() => setActiveTab('signup')}
-            className={`flex-1 py-2.5 rounded-xl transition-all flex items-center justify-center gap-1.5 ${
-              activeTab === 'signup' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            type="button"
+            onClick={() => setAuthMode('signup')}
+            className={`flex-1 py-2 rounded-xl transition-all ${
+              authMode === 'signup' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <UserPlus className="w-3.5 h-3.5 text-blue-700" />
-            <span>{targetRole === 'facility' ? 'List Hospital' : targetRole === 'doctor' ? 'Apply for Empanelment' : 'New Sign Up'}</span>
+            {selectedRole === 'patient' 
+              ? (language === 'mr' ? 'नवीन आभा नोंदणी' : language === 'hi' ? 'नया आभा पंजीकरण' : language === 'or' ? 'ନୂତନ ଆଭା ପଞ୍ଜୀକରଣ' : language === 'bn' ? 'নতুন আভা রেজিস্ট্রেশন' : language === 'ur' ? 'نیا آبھا رجسٹریشن' : 'New ABHA Registration')
+              : (language === 'mr' ? 'नवीन कर्मचारी नोंदणी' : language === 'hi' ? 'नया स्वास्थ्यकर्मी पंजीकरण' : language === 'or' ? 'ନୂତନ ପଞ୍ଜୀକରଣ' : language === 'bn' ? 'নতুন রেজিস্ট্রেশন' : language === 'ur' ? 'نیا رجسٹریشن' : 'New Health Worker Registration')}
           </button>
         </div>
 
-        {/* TAB 1: ROLE-SCOPED LOGIN */}
-        {activeTab === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-bold text-slate-800 block mb-1">
-                  {currentConfig.loginIdLabel} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder={currentConfig.loginIdPlaceholder}
-                  value={loginIdentifier}
-                  onChange={(e) => setLoginIdentifier(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                  required
-                  autoFocus
-                />
-              </div>
+        {/* LOGIN FORM */}
+        {authMode === 'login' && (
+          <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
+            <div>
+              <label className="font-bold text-slate-800 block mb-1">
+                {currentLoginLabel} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder={currentConfig.loginIdPlaceholder}
+                value={loginIdentifier}
+                onChange={(e) => setLoginIdentifier(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-mono font-medium focus:outline-none transition-colors"
+                required
+              />
+            </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-800 block mb-1">
-                  Security PIN / 6-Digit OTP <span className="text-red-500">*</span>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="font-bold text-slate-800">
+                  {language === 'mr' ? 'सुरक्षा पिन' : language === 'hi' ? 'सुरक्षा पिन' : language === 'or' ? 'ସୁରକ୍ଷା ପିନ୍' : language === 'bn' ? 'সুরক্ষা পিন' : language === 'ur' ? 'سیکیورٹی پن' : 'Security PIN'}
                 </label>
-                <input
-                  type="password"
-                  placeholder="Enter PIN or OTP"
-                  value={loginPin}
-                  onChange={(e) => setLoginPin(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-mono font-bold focus:outline-none"
-                  required
-                />
+                <span className="text-[10px] text-emerald-800 font-mono font-bold">Demo Default: 4421</span>
               </div>
+              <input
+                type="password"
+                placeholder="4-digit PIN (4421)"
+                value={loginPin}
+                onChange={(e) => setLoginPin(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 focus:border-emerald-600 focus:bg-white rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-mono font-bold tracking-widest focus:outline-none transition-colors"
+                maxLength={6}
+                required
+              />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#003527] hover:bg-[#064e3b] text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2"
+              className="w-full bg-[#003527] hover:bg-[#064e3b] text-white font-black py-3 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2"
             >
-              <UserCheck className="w-4 h-4 text-emerald-400" />
-              <span>{isLoading ? 'Verifying Credentials...' : `Authenticate as ${targetRole.toUpperCase()}`}</span>
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? (
+                <span>Authenticating with ABDM...</span>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4 text-emerald-400" />
+                  <span>
+                    {language === 'mr' ? 'प्रवेश करा व डॅशबोर्ड उघडा' : language === 'hi' ? 'प्रवेश करें एवं डैशबोर्ड खोलें' : language === 'or' ? 'ପ୍ରବେଶ କରନ୍ତୁ' : language === 'bn' ? 'ড্যাশবোর্ডে প্রবেশ করুন' : language === 'ur' ? 'ڈیش بورڈ کھولیں' : 'Authenticate & Open Dashboard'}
+                  </span>
+                </>
+              )}
             </button>
-
-            <div className="text-center pt-2">
-              <button 
-                type="button" 
-                onClick={() => setActiveTab('signup')}
-                className="text-xs text-emerald-700 hover:underline font-bold"
-              >
-                Don't have an account? {targetRole === 'facility' ? 'Apply to list your hospital' : targetRole === 'doctor' ? 'Apply for doctor verification' : 'Create a new account here'}
-              </button>
-            </div>
           </form>
         )}
 
-        {/* TAB 2: ROLE-SCOPED SIGN UP */}
-        {activeTab === 'signup' && (
-          <form onSubmit={handleSignup} className="space-y-4">
-            
-            {/* CITIZEN / PATIENT SIGN UP */}
-            {targetRole === 'patient' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="sm:col-span-2">
-                  <label className="font-bold text-slate-800 block mb-1">Full Legal Name <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Sunita Ravindra Shinde"
-                    value={patientName}
-                    onChange={(e) => setPatientName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                    required
-                  />
-                </div>
+        {/* REGISTRATION FORM */}
+        {authMode === 'signup' && (
+          <form onSubmit={handleSignupSubmit} className="space-y-3.5 text-xs">
+            <div>
+              <label className="font-bold text-slate-800 block mb-1">Full Legal Name (as on Aadhaar) *</label>
+              <input
+                type="text"
+                placeholder="e.g. Sunita Ravindra Shinde"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs text-slate-900"
+                required
+              />
+            </div>
 
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Mobile Number <span className="text-red-500">*</span></label>
-                  <input
-                    type="tel"
-                    placeholder="+91 98XXX XXXXX"
-                    value={patientPhone}
-                    onChange={(e) => setPatientPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-medium"
-                    required
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="font-bold text-slate-800 block mb-1">Mobile Phone Number *</label>
+                <input
+                  type="tel"
+                  placeholder="+91 98XXX XXXXX"
+                  value={mobileNumber}
+                  onChange={(e) => setMobileNumber(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono"
+                  required
+                />
+              </div>
 
+              {selectedRole === 'patient' ? (
                 <div>
-                  <label className="font-bold text-slate-800 block mb-1">Age & Gender</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      value={patientAge}
-                      onChange={(e) => setPatientAge(Number(e.target.value))}
-                      className="w-16 bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 text-xs text-slate-900 font-bold text-center"
-                      min={1}
-                      max={120}
-                    />
+                  <label className="font-bold text-slate-800 block mb-1">Gender & Age</label>
+                  <div className="flex gap-1.5">
                     <select
-                      value={patientGender}
-                      onChange={(e) => setPatientGender(e.target.value as any)}
-                      className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 text-xs text-slate-900 font-bold"
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value as any)}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 text-xs font-bold text-slate-900"
                     >
                       <option value="Female">Female</option>
                       <option value="Male">Male</option>
-                      <option value="Other">Other</option>
                     </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Village / Habitat</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Khamgaon"
-                    value={patientVillage}
-                    onChange={(e) => setPatientVillage(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Taluka</label>
-                  <input
-                    type="text"
-                    value={patientTaluka}
-                    onChange={(e) => setPatientTaluka(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="font-bold text-slate-800 block mb-1">Healthcare Category</label>
-                  <select
-                    value={patientCategory}
-                    onChange={(e) => setPatientCategory(e.target.value as any)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-bold"
-                  >
-                    <option value="Maternal ANC">Maternal ANC (Pregnant Mother)</option>
-                    <option value="NCD Patient">NCD (Diabetes / Blood Pressure)</option>
-                    <option value="Pediatric">Pediatric / Child Care</option>
-                    <option value="Elderly Care">Elderly Healthcare</option>
-                    <option value="General OPD">General OPD Patient</option>
-                  </select>
-                </div>
-              </div>
-            )}
-
-            {/* DOCTOR / SPECIALIST SIGN UP & EMPANELMENT */}
-            {(targetRole === 'doctor' || targetRole === 'specialist') && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Doctor Full Name <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Dr. Swapnil Deshmukh"
-                    value={docName}
-                    onChange={(e) => setDocName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Medical Reg Number <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    placeholder="e.g. MMC-2018-99410"
-                    value={docRegNo}
-                    onChange={(e) => setDocRegNo(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-bold"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Medical Council</label>
-                  <select
-                    value={docCouncil}
-                    onChange={(e) => setDocCouncil(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                  >
-                    <option value="Maharashtra Medical Council (MMC)">Maharashtra Medical Council (MMC)</option>
-                    <option value="National Medical Commission (NMC)">National Medical Commission (NMC)</option>
-                    <option value="Maharashtra Council of Indian Medicine (MCIM)">Maharashtra Council of Indian Medicine (MCIM)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Specialization</label>
-                  <select
-                    value={docSpecialty}
-                    onChange={(e) => setDocSpecialty(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-bold"
-                  >
-                    <option value="General Medicine">General Medicine</option>
-                    <option value="Obstetrics & Gynecology (OBGYN)">Obstetrics & Gynecology (OBGYN)</option>
-                    <option value="Pediatrics & Child Health">Pediatrics & Child Health</option>
-                    <option value="General Surgery">General Surgery</option>
-                    <option value="Cardiology">Cardiology</option>
-                    <option value="Orthopedics">Orthopedics</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Highest Degree</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. MBBS, MD (Medicine), MS"
-                    value={docDegree}
-                    onChange={(e) => setDocDegree(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Phone Number <span className="text-red-500">*</span></label>
-                  <input
-                    type="tel"
-                    placeholder="+91 98224 11092"
-                    value={docPhone}
-                    onChange={(e) => setDocPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-medium"
-                    required
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="font-bold text-slate-800 block mb-1">Affiliated Hospital / Telemedicine Hub</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Junnar Rural Hospital & Trauma Centre"
-                    value={docHospital}
-                    onChange={(e) => setDocHospital(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* HOSPITAL / FACILITY LISTING */}
-            {targetRole === 'facility' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="sm:col-span-2">
-                  <label className="font-bold text-slate-800 block mb-1">Hospital / Facility Name <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Otur Community Health Center & Trauma Hub"
-                    value={facName}
-                    onChange={(e) => setFacName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Facility Level</label>
-                  <select
-                    value={facType}
-                    onChange={(e) => setFacType(e.target.value as any)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-bold"
-                  >
-                    <option value="rh">Rural Hospital (RH)</option>
-                    <option value="phc">Primary Health Centre (PHC)</option>
-                    <option value="sdh">Sub-District Hospital (SDH)</option>
-                    <option value="dh">District Civil Hospital (DH)</option>
-                    <option value="mjpjay_private">Empaneled Private Hospital (MJPJAY)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">District / Taluka</label>
-                  <div className="flex gap-2">
                     <input
-                      type="text"
-                      value={facDistrict}
-                      onChange={(e) => setFacDistrict(e.target.value)}
-                      className="w-1/2 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                      placeholder="District"
-                    />
-                    <input
-                      type="text"
-                      value={facTaluka}
-                      onChange={(e) => setFacTaluka(e.target.value)}
-                      className="w-1/2 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                      placeholder="Taluka"
+                      type="number"
+                      value={age}
+                      onChange={(e) => setAge(parseInt(e.target.value, 10))}
+                      className="w-16 bg-slate-50 border border-slate-300 rounded-xl px-2 py-2 text-xs font-bold text-slate-900 text-center"
+                      min={1}
+                      max={120}
                     />
                   </div>
                 </div>
-
+              ) : (
                 <div>
-                  <label className="font-bold text-slate-800 block mb-1">Total General Beds</label>
-                  <input
-                    type="number"
-                    value={facTotalBeds}
-                    onChange={(e) => setFacTotalBeds(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-bold"
-                    min={5}
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">ICU & HDU Bed Capacity</label>
-                  <input
-                    type="number"
-                    value={facIcuBeds}
-                    onChange={(e) => setFacIcuBeds(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-bold"
-                    min={0}
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Nodal Officer / MS Name <span className="text-red-500">*</span></label>
+                  <label className="font-bold text-slate-800 block mb-1">License / Reg Number</label>
                   <input
                     type="text"
-                    placeholder="e.g. Dr. S. K. Shinde"
-                    value={facNodalName}
-                    onChange={(e) => setFacNodalName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                    required
+                    placeholder="e.g. MMC-2018-0912"
+                    value={licenseNumber}
+                    onChange={(e) => setLicenseNumber(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono"
                   />
                 </div>
+              )}
+            </div>
 
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Nodal Contact Number <span className="text-red-500">*</span></label>
-                  <input
-                    type="tel"
-                    placeholder="+91 94220 XXXXX"
-                    value={facNodalPhone}
-                    onChange={(e) => setFacNodalPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-medium"
-                    required
-                  />
-                </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">District</label>
+                <input
+                  type="text"
+                  value={district}
+                  onChange={(e) => setDistrict(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-900"
+                />
               </div>
-            )}
-
-            {/* ASHA, CHO, PHARMACIST, LAB, DHO GENERAL WORKER SIGN UP */}
-            {['asha', 'cho', 'pharmacist', 'lab', 'dho'].includes(targetRole) && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="sm:col-span-2">
-                  <label className="font-bold text-slate-800 block mb-1">Full Legal Name <span className="text-red-500">*</span></label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Smt. Pooja Jadhav"
-                    value={workerName}
-                    onChange={(e) => setWorkerName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Mobile Number <span className="text-red-500">*</span></label>
-                  <input
-                    type="tel"
-                    placeholder="+91 94220 88312"
-                    value={workerPhone}
-                    onChange={(e) => setWorkerPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-medium"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Employee / License ID</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. REG-MH-8819"
-                    value={workerIdNumber}
-                    onChange={(e) => setWorkerIdNumber(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-bold"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">District</label>
-                  <input
-                    type="text"
-                    value={workerDistrict}
-                    onChange={(e) => setWorkerDistrict(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-800 block mb-1">Taluka</label>
-                  <input
-                    type="text"
-                    value={workerTaluka}
-                    onChange={(e) => setWorkerTaluka(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="font-bold text-slate-800 block mb-1">Facility / Workplace Name</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Khamgaon Ayushman Arogya Mandir / Junnar Central Lab"
-                    value={workerFacility}
-                    onChange={(e) => setWorkerFacility(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-medium"
-                  />
-                </div>
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Taluka</label>
+                <input
+                  type="text"
+                  value={taluka}
+                  onChange={(e) => setTaluka(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-900"
+                />
               </div>
-            )}
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Village / Town</label>
+                <input
+                  type="text"
+                  value={village}
+                  onChange={(e) => setVillage(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs text-slate-900"
+                />
+              </div>
+            </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#003527] hover:bg-[#064e3b] text-white font-bold py-3.5 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2"
+              className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-black py-3 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2 mt-2"
             >
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>{isLoading ? 'Creating Account...' : targetRole === 'facility' ? 'Empanel Hospital & Activate Bed Command' : targetRole === 'doctor' ? 'Verify License & Activate Practice' : `Register as ${targetRole.toUpperCase()}`}</span>
+              {isLoading ? (
+                <span>Registering on National ABDM Registry...</span>
+              ) : (
+                <>
+                  <UserCheck className="w-4 h-4 text-emerald-300" />
+                  <span>
+                    {selectedRole === 'patient' 
+                      ? (language === 'mr' ? 'नोंदणी पूर्ण करा व आभा मिळवा' : language === 'hi' ? 'पंजीकरण पूरा करें एवं आभा प्राप्त करें' : language === 'or' ? 'ପଞ୍ଜୀକରଣ ସମ୍ପୂର୍ଣ୍ଣ କରନ୍ତୁ' : language === 'bn' ? 'রেজিস্ট্রেশন সম্পন্ন করুন' : language === 'ur' ? 'رجسٹریشن مکمل کریں' : 'Complete Registration & Generate ABHA')
+                      : (language === 'mr' ? 'आरोग्य कर्मचारी नोंदणी पूर्ण करा' : language === 'hi' ? 'स्वास्थ्यकर्मी पंजीकरण पूरा करें' : language === 'or' ? 'କର୍ମୀ ପଞ୍ଜୀକରଣ କରନ୍ତୁ' : language === 'bn' ? 'কর্মী রেজিস্ট্রেশন করুন' : language === 'ur' ? 'ہیلتھ ورکر رجسٹریشن مکمل کریں' : 'Complete Healthcare Worker Registration')}
+                  </span>
+                </>
+              )}
             </button>
-
           </form>
         )}
 

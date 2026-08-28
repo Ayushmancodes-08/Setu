@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export const AbhaCardMakerSection: React.FC = () => {
-  const { setCurrentView, showToast, language } = useApp();
+  const { setCurrentView, showToast, language, t } = useApp();
   const { registerPatient, setCurrentUser } = useHealthData();
 
   const [fullName, setFullName] = useState('');
@@ -35,7 +35,7 @@ export const AbhaCardMakerSection: React.FC = () => {
   const handleGenerateAbha = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim() || !mobile.trim()) {
-      showToast('Please enter your full legal name and mobile number.');
+      showToast(language === 'mr' ? 'कृपया पूर्ण नाव व मोबाईल क्रमांक टाका' : 'Please enter your full legal name and mobile number.');
       return;
     }
 
@@ -75,7 +75,7 @@ export const AbhaCardMakerSection: React.FC = () => {
       showToast(`ABHA Card generated successfully for ${newPatient.name}!`);
     } catch (err) {
       console.error(err);
-      showToast('Failed to create ABHA card.');
+      showToast(t.error);
     } finally {
       setIsGenerating(false);
     }
@@ -100,10 +100,10 @@ export const AbhaCardMakerSection: React.FC = () => {
             <span>Ayushman Bharat Digital Mission (ABDM)</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
-            Generate Your Instant Digital ABHA Health Card
+            {t.abhaMakerTitle}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600">
-            Create your unique 14-digit National Health ID to access cashless schemes, teleconsultations, and digital health records across Maharashtra.
+            {t.abhaMakerSubtitle}
           </p>
         </div>
 

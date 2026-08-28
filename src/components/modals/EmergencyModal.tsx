@@ -14,21 +14,21 @@ import {
 } from 'lucide-react';
 
 export const EmergencyModal: React.FC = () => {
-  const { isEmergencyModalOpen, setIsEmergencyModalOpen, language, showToast } = useApp();
+  const { isEmergencyModalOpen, setIsEmergencyModalOpen, language, t, showToast } = useApp();
   const [ambulanceDispatched, setAmbulanceDispatched] = useState(false);
 
   if (!isEmergencyModalOpen) return null;
 
   const handleDispatchAmbulance = () => {
     setAmbulanceDispatched(true);
-    showToast(language === 'mr' ? '१०८ रुग्णवाहिका रवाना झाली - अपेक्षित वेळ ८ मिनिटे' : '108 Ambulance Dispatched! ETA: 8 minutes to your GPS coordinates.');
+    showToast(t.ambulanceDispatchedMsg);
   };
 
   const nearestTrauma = MAHARASHTRA_FACILITIES[0]; // Junnar Trauma Centre
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-red-200 overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-3xl shadow-2xl border border-red-200 overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Urgent Header */}
         <div className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white p-6 flex items-start justify-between">
@@ -43,7 +43,7 @@ export const EmergencyModal: React.FC = () => {
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight mt-1">
-                {language === 'mr' ? 'आपत्कालीन मदत व रुग्णवाहिका १०८' : 'Maharashtra Emergency Medical Response'}
+                {t.emergencyModalTitle}
               </h2>
             </div>
           </div>

@@ -236,22 +236,40 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
 
           <div className="flex items-center gap-2">
             {/* Language Quick Switch inside Companion */}
-            <div className="flex bg-white/10 p-0.5 rounded-lg text-xs font-bold">
+            <div className="flex bg-white/10 p-0.5 rounded-lg text-[11px] font-bold overflow-x-auto max-w-[150px] sm:max-w-none">
               <button
                 onClick={() => setLanguage('mr')}
-                className={`px-2 py-1 rounded transition-colors ${language === 'mr' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
+                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'mr' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
               >
                 मराठी
               </button>
               <button
                 onClick={() => setLanguage('hi')}
-                className={`px-2 py-1 rounded transition-colors ${language === 'hi' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
+                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'hi' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
               >
                 हिंदी
               </button>
               <button
+                onClick={() => setLanguage('or')}
+                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'or' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
+              >
+                ଓଡ଼ିଆ
+              </button>
+              <button
+                onClick={() => setLanguage('bn')}
+                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'bn' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
+              >
+                বাংলা
+              </button>
+              <button
+                onClick={() => setLanguage('ur')}
+                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'ur' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
+              >
+                اردو
+              </button>
+              <button
                 onClick={() => setLanguage('en')}
-                className={`px-2 py-1 rounded transition-colors ${language === 'en' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
+                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'en' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
               >
                 EN
               </button>

@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Role, Language, UserProfile } from '../types';
 import { TRANSLATIONS } from '../i18n/translations';
 import { offlineSyncManager } from '../services/offlineSync';
+import { bhashiniAI } from '../services/bhashiniService';
 
 interface AppContextType {
   currentView: 'landing' | Role;
@@ -9,12 +10,15 @@ interface AppContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: typeof TRANSLATIONS['en'];
+  tr: (text: string) => string;
   isOnline: boolean;
   setIsOnline: (online: boolean) => void;
   isEmergencyModalOpen: boolean;
   setIsEmergencyModalOpen: (open: boolean) => void;
   isAiCompanionOpen: boolean;
   setIsAiCompanionOpen: (open: boolean) => void;
+  isAiSettingsModalOpen: boolean;
+  setIsAiSettingsModalOpen: (open: boolean) => void;
   companionInitialQuery: string;
   setCompanionInitialQuery: (q: string) => void;
   openAiCompanionWithQuery: (query: string) => void;
@@ -42,16 +46,38 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentView, setCurrentView] = useState<'landing' | Role>('landing');
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>(() => {
+    const saved = localStorage.getItem('setu_language');
+    if (saved && ['en', 'mr', 'hi', 'or', 'bn', 'ur'].includes(saved)) {
+      return saved as Language;
+    }
+    return 'en';
+  });
   const [isOnline, setIsOnlineState] = useState<boolean>(true);
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState<boolean>(false);
   const [isAiCompanionOpen, setIsAiCompanionOpen] = useState<boolean>(false);
+  const [isAiSettingsModalOpen, setIsAiSettingsModalOpen] = useState<boolean>(false);
   const [companionInitialQuery, setCompanionInitialQuery] = useState<string>('');
   const [currentUser, setCurrentUser] = useState<UserProfile>(DEFAULT_USER);
   const [pendingSyncCount, setPendingSyncCount] = useState<number>(0);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const t = TRANSLATIONS[language];
+  const t = TRANSLATIONS[language] || TRANSLATIONS.en;
+
+  const setLanguage = (lang: Language) => {
+    setLanguageState(lang);
+    localStorage.setItem('setu_language', lang);
+  };
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.documentElement.dir = language === 'ur' ? 'rtl' : 'ltr';
+  }, [language]);
+
+  // Automated translation function leveraging Bhashini
+  const tr = (text: string): string => {
+    return bhashiniAI.tr(text, language);
+  };
 
   useEffect(() => {
     const unsub = offlineSyncManager.subscribe((queue) => {
@@ -64,9 +90,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsOnlineState(online);
     offlineSyncManager.setSimulatedOnline(online);
     if (online) {
-      showToast(language === 'mr' ? 'नेटवर्क परत आले - डेटा सिंक झाला' : language === 'hi' ? 'नेटवर्क सक्रिय - डेटा सिंक हो गया' : 'Online connection restored — Sync completed');
+      showToast(t.onlineSyncedMsg);
     } else {
-      showToast(language === 'mr' ? 'ऑफलाइन मोड सक्रिय - बदल सुरक्षित ठेवले जात आहेत' : language === 'hi' ? 'ऑफलाइन मोड सक्रिय - डेटा सुरक्षित है' : 'Offline mode active — mutations queued locally');
+      showToast(t.offlineQueuedMsg);
     }
   };
 
@@ -90,12 +116,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         language,
         setLanguage,
         t,
+        tr,
         isOnline,
         setIsOnline,
         isEmergencyModalOpen,
         setIsEmergencyModalOpen,
         isAiCompanionOpen,
         setIsAiCompanionOpen,
+        isAiSettingsModalOpen,
+        setIsAiSettingsModalOpen,
         companionInitialQuery,
         setCompanionInitialQuery,
         openAiCompanionWithQuery,

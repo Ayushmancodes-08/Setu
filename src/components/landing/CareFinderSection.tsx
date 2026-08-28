@@ -7,34 +7,34 @@ import {
   PhoneCall, 
   Clock, 
   Activity, 
-  Bed, 
   ShieldCheck, 
-  Filter, 
   Search, 
   CheckCircle2, 
   Calendar,
-  ExternalLink,
-  ChevronRight
+  Stethoscope,
+  Ambulance,
+  Video
 } from 'lucide-react';
 
 export const CareFinderSection: React.FC = () => {
-  const { setCurrentView, showToast, setIsEmergencyModalOpen, language } = useApp();
-  const { facilities, createReferral, openRoleAuthModal } = useHealthData();
+  const { setCurrentView, showToast, language } = useApp();
+  const { facilities, openRoleAuthModal } = useHealthData();
 
   const [searchDistrict, setSearchDistrict] = useState<string>('All');
   const [selectedType, setSelectedType] = useState<string>('All');
-  const [onlyIcuAvailable, setOnlyIcuAvailable] = useState<boolean>(false);
+  const [onlyEmergency24x7, setOnlyEmergency24x7] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   const filteredFacilities = facilities.filter(f => {
     const matchesDistrict = searchDistrict === 'All' || f.district === searchDistrict || f.taluka === searchDistrict;
     const matchesType = selectedType === 'All' || f.type === selectedType;
-    const matchesIcu = !onlyIcuAvailable || f.icuBedsAvailable > 0;
+    const matchesEmergency = !onlyEmergency24x7 || f.openStatus.toLowerCase().includes('24/7');
     const matchesSearch = !searchQuery || 
       f.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       f.taluka.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      f.village?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesDistrict && matchesType && matchesIcu && matchesSearch;
+      f.village?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      f.specialistsAvailable.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesDistrict && matchesType && matchesEmergency && matchesSearch;
   });
 
   const handleBookFacility = (facilityName: string) => {
@@ -43,21 +43,21 @@ export const CareFinderSection: React.FC = () => {
   };
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200">
+    <section id="health-directory" className="py-16 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-800 border border-slate-300 px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-900 border border-emerald-300 px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
               <Building2 className="w-3.5 h-3.5 text-emerald-700" />
               <span>Public Health Infrastructure Directory</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">
-              Maharashtra Rural Health Network & Bed Tracker
+              Maharashtra Rural Health Facility & Care Directory
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1">
-              Live facility directory with verified real-time ICU/General bed availability, specialist doctor rosters, and 108 ambulance coordination.
+              Verified public health network across Sub-Centres (Ayushman Arogya Mandir), Primary Health Centres (PHC), and District Hospitals with doctor duty rosters and emergency care.
             </p>
           </div>
 
@@ -67,10 +67,10 @@ export const CareFinderSection: React.FC = () => {
               className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5"
             >
               <Building2 className="w-3.5 h-3.5" />
-              <span>Apply for Hospital Listing</span>
+              <span>Apply for Hospital Empanelment</span>
             </button>
             <span className="bg-emerald-100 text-emerald-800 font-extrabold px-3 py-2 rounded-xl">
-              {facilities.length} Active Centers
+              {facilities.length} Public Health Centres
             </span>
           </div>
         </div>
@@ -84,7 +84,7 @@ export const CareFinderSection: React.FC = () => {
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="text"
-                placeholder="Search hospital or taluka..."
+                placeholder="Search hospital, specialty, taluka..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-3 py-2 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
@@ -114,23 +114,23 @@ export const CareFinderSection: React.FC = () => {
                 className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="All">All Facility Levels</option>
-                <option value="Sub-Centre">Sub-Centre (Arogya Mandir)</option>
+                <option value="Sub-Centre">Sub-Centre (Ayushman Arogya Mandir)</option>
                 <option value="PHC">Primary Health Centre (PHC)</option>
                 <option value="Sub-District Hospital">Sub-District / Rural Hospital</option>
                 <option value="District Hospital">District Civil Hospital</option>
               </select>
             </div>
 
-            {/* ICU Only Toggle */}
+            {/* 24/7 Emergency Toggle */}
             <div className="flex items-center">
               <label className="flex items-center gap-2 bg-white border border-slate-300 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 cursor-pointer w-full hover:bg-slate-100 transition-colors">
                 <input
                   type="checkbox"
-                  checked={onlyIcuAvailable}
-                  onChange={(e) => setOnlyIcuAvailable(e.target.checked)}
+                  checked={onlyEmergency24x7}
+                  onChange={(e) => setOnlyEmergency24x7(e.target.checked)}
                   className="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4"
                 />
-                <span>Only with Free ICU Beds</span>
+                <span>24x7 Emergency Services</span>
               </label>
             </div>
 
@@ -140,7 +140,6 @@ export const CareFinderSection: React.FC = () => {
         {/* Facilities Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredFacilities.map((fac) => {
-            const isGovHospital = fac.type.includes('Hospital');
             return (
               <div 
                 key={fac.id} 
@@ -167,25 +166,29 @@ export const CareFinderSection: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* Bed Counters Bar */}
+                  {/* Public Key Capabilities & Services */}
                   <div className="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-100 text-xs">
-                    <div>
-                      <span className="text-[10px] text-slate-400 block font-medium">General Beds</span>
-                      <span className="font-extrabold text-slate-900 text-sm">
-                        {fac.availableBeds} / {fac.totalBeds} <span className="text-[10px] font-normal text-slate-500">Free</span>
-                      </span>
+                    <div className="flex items-center gap-1.5 text-slate-700">
+                      <Video className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      <span className="text-[11px] font-semibold">e-Sanjeevani Hub</span>
                     </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 block font-medium">ICU / Ventilator</span>
-                      <span className={`font-extrabold text-sm ${fac.icuBedsAvailable > 0 ? 'text-blue-700' : 'text-slate-400'}`}>
-                        {fac.icuBedsAvailable > 0 ? `${fac.icuBedsAvailable} Available` : 'None / N/A'}
-                      </span>
+                    <div className="flex items-center gap-1.5 text-slate-700">
+                      <Ambulance className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                      <span className="text-[11px] font-semibold">108 Linkage</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-slate-700">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span className="text-[11px] font-semibold">PM-JAY Empaneled</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-slate-700">
+                      <Activity className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                      <span className="text-[11px] font-semibold">POC Lab Testing</span>
                     </div>
                   </div>
 
                   {/* Specialists Available */}
                   <div className="space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Duty Specialists & Clinicians</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Duty Clinicians & Specialists</span>
                     <div className="flex flex-wrap gap-1">
                       {fac.specialistsAvailable.map((spec, sidx) => (
                         <span key={sidx} className="bg-slate-100 text-slate-700 text-[10px] font-medium px-2 py-0.5 rounded-md">
@@ -198,7 +201,7 @@ export const CareFinderSection: React.FC = () => {
                   {/* Essential Medicine Stock Rate */}
                   <div className="space-y-1">
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-slate-500">Essential Drug Stock Rate</span>
+                      <span className="text-slate-500">Essential Medicine Stock Availability</span>
                       <span className="font-bold text-emerald-800">{fac.essentialMedicineStockRate}%</span>
                     </div>
                     <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
@@ -238,3 +241,4 @@ export const CareFinderSection: React.FC = () => {
     </section>
   );
 };
+

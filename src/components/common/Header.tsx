@@ -21,7 +21,8 @@ import {
   Lock, 
   UserCheck, 
   RefreshCw,
-  Home
+  Home,
+  Sparkles
 } from 'lucide-react';
 
 const ROLES: { id: Role; labelEn: string; labelMr: string; labelHi: string; icon: any; color: string; desc: string }[] = [
@@ -45,6 +46,7 @@ export const Header: React.FC = () => {
     isOnline, 
     setIsOnline, 
     setIsEmergencyModalOpen,
+    setIsAiSettingsModalOpen,
     pendingSyncCount,
     showToast
   } = useApp();
@@ -64,9 +66,8 @@ export const Header: React.FC = () => {
   const [searchedPatient, setSearchedPatient] = useState<any>(null);
 
   const getRoleTitle = (r: Role) => {
-    const item = ROLES.find(x => x.id === r);
-    if (!item) return r;
-    return language === 'mr' ? item.labelMr : language === 'hi' ? item.labelHi : item.labelEn;
+    const key = `role_${r}` as keyof typeof t;
+    return t[key] || r;
   };
 
   const handleSearchPatient = (e: React.FormEvent) => {
@@ -87,14 +88,14 @@ export const Header: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    showToast('Signed out of role console.');
+    showToast(t.logoutSuccessMsg);
     setCurrentView('landing');
   };
 
   const handleResetData = async () => {
     if (window.confirm('Reset local IndexedDB to fresh initial state? All newly created records will be reinitialized.')) {
       await resetToFreshDatabase();
-      showToast('IndexedDB database reset to default state.');
+      showToast(t.resetDbSuccessMsg);
       setCurrentView('landing');
     }
   };
@@ -133,6 +134,16 @@ export const Header: React.FC = () => {
           >
             <RefreshCw className="w-3 h-3" />
             <span>Reset DB</span>
+          </button>
+
+          {/* AI Engine Config Button */}
+          <button
+            onClick={() => setIsAiSettingsModalOpen(true)}
+            className="flex items-center gap-1 bg-amber-950/70 border border-amber-500/60 text-amber-300 hover:bg-amber-900/80 px-2.5 py-0.5 rounded text-[11px] font-bold transition-all shadow-xs"
+            title="Configure Hugging Face Indic LLM or Native Bhashini"
+          >
+            <Sparkles className="w-3 h-3 text-amber-400" />
+            <span className="hidden md:inline">AI Engine</span>
           </button>
 
           {/* Offline / Online Sync State */}
@@ -179,6 +190,24 @@ export const Header: React.FC = () => {
                   className={`w-full text-left px-3 py-1.5 text-xs hover:bg-emerald-50 ${language === 'hi' ? 'text-emerald-800 font-bold bg-emerald-50/50' : ''}`}
                 >
                   हिन्दी (Hindi)
+                </button>
+                <button
+                  onClick={() => { setLanguage('or'); setLangDropdownOpen(false); }}
+                  className={`w-full text-left px-3 py-1.5 text-xs hover:bg-emerald-50 ${language === 'or' ? 'text-emerald-800 font-bold bg-emerald-50/50' : ''}`}
+                >
+                  ଓଡ଼ିଆ (Odia)
+                </button>
+                <button
+                  onClick={() => { setLanguage('bn'); setLangDropdownOpen(false); }}
+                  className={`w-full text-left px-3 py-1.5 text-xs hover:bg-emerald-50 ${language === 'bn' ? 'text-emerald-800 font-bold bg-emerald-50/50' : ''}`}
+                >
+                  বাংলা (Bengali)
+                </button>
+                <button
+                  onClick={() => { setLanguage('ur'); setLangDropdownOpen(false); }}
+                  className={`w-full text-left px-3 py-1.5 text-xs hover:bg-emerald-50 ${language === 'ur' ? 'text-emerald-800 font-bold bg-emerald-50/50' : ''}`}
+                >
+                  اردو (Urdu)
                 </button>
               </div>
             )}
@@ -285,7 +314,10 @@ export const Header: React.FC = () => {
                 </div>
 
                 <div className="grid gap-1 py-1 max-h-96 overflow-y-auto">
-                  {ROLES.map((r) => {
+                  <div className="px-2 pt-1 pb-0.5 text-[10px] uppercase font-bold text-emerald-800 tracking-wider">
+                    Primary Setu Portals
+                  </div>
+                  {ROLES.filter(r => ['patient', 'asha', 'dho'].includes(r.id)).map((r) => {
                     const Icon = r.icon;
                     const isActive = currentView === r.id;
                     return (
@@ -303,11 +335,40 @@ export const Header: React.FC = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-bold truncate">
-                            {language === 'mr' ? r.labelMr : language === 'hi' ? r.labelHi : r.labelEn}
+                            {(t as any)[`role_${r.id}`] || r.labelEn}
                           </div>
                           <div className="text-[11px] text-slate-500 truncate">{r.desc}</div>
                         </div>
                         {isActive && <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-1" />}
+                      </button>
+                    );
+                  })}
+
+                  <div className="px-2 pt-2 pb-0.5 text-[10px] uppercase font-bold text-slate-400 tracking-wider border-t border-slate-100 mt-1">
+                    {t.supportingConsoles}
+                  </div>
+                  {ROLES.filter(r => !['patient', 'asha', 'dho'].includes(r.id)).map((r) => {
+                    const Icon = r.icon;
+                    const isActive = currentView === r.id;
+                    return (
+                      <button
+                        key={r.id}
+                        onClick={() => handleSelectRoleFromMenu(r.id)}
+                        className={`w-full text-left p-2 rounded-xl text-xs transition-all flex items-start gap-2 ${
+                          isActive 
+                            ? 'bg-emerald-50 border border-emerald-300 text-emerald-950 font-bold' 
+                            : 'hover:bg-slate-50 text-slate-700'
+                        }`}
+                      >
+                        <div className={`p-1.5 rounded-lg ${isActive ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                          <Icon className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-xs truncate">
+                            {(t as any)[`role_${r.id}`] || r.labelEn}
+                          </div>
+                        </div>
+                        {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />}
                       </button>
                     );
                   })}

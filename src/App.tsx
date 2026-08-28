@@ -6,12 +6,11 @@ import { Footer } from './components/common/Footer';
 import { HeroSection } from './components/landing/HeroSection';
 import { AbhaCardMakerSection } from './components/landing/AbhaCardMakerSection';
 import { HealthAdvisoryBlogSection } from './components/landing/HealthAdvisoryBlogSection';
-import { CareFinderSection } from './components/landing/CareFinderSection';
-import { ClinicalTriageSection } from './components/landing/ClinicalTriageSection';
 import { RolePortalsSection } from './components/landing/RolePortalsSection';
 import { ArogyaSakhiCompanionModal } from './components/landing/ArogyaSakhiCompanionModal';
 import { EmergencyModal } from './components/modals/EmergencyModal';
 import { AuthModal } from './components/modals/AuthModal';
+import { AiSettingsModal } from './components/modals/AiSettingsModal';
 
 // 8 Official Role Portals
 import { PatientPortal } from './components/roles/PatientPortal';
@@ -28,8 +27,12 @@ import { PhoneCall, Volume2 } from 'lucide-react';
 export const App: React.FC = () => {
   const { 
     currentView, 
+    language,
+    t,
     setIsAiCompanionOpen, 
     setIsEmergencyModalOpen, 
+    isAiSettingsModalOpen,
+    setIsAiSettingsModalOpen,
     toastMessage 
   } = useApp();
 
@@ -40,7 +43,11 @@ export const App: React.FC = () => {
   } = useHealthData();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fafaf9] text-slate-900 selection:bg-emerald-600 selection:text-white">
+    <div 
+      dir={language === 'ur' ? 'rtl' : 'ltr'} 
+      lang={language} 
+      className={`min-h-screen flex flex-col bg-[#fafaf9] text-slate-900 selection:bg-emerald-600 selection:text-white ${language === 'ur' ? 'font-urdu' : ''}`}
+    >
       
       {/* Official State Government Header */}
       <Header />
@@ -53,8 +60,6 @@ export const App: React.FC = () => {
             <RolePortalsSection />
             <AbhaCardMakerSection />
             <HealthAdvisoryBlogSection />
-            <CareFinderSection />
-            <ClinicalTriageSection />
           </>
         )}
 
@@ -105,6 +110,10 @@ export const App: React.FC = () => {
       />
       <ArogyaSakhiCompanionModal />
       <EmergencyModal />
+      <AiSettingsModal 
+        isOpen={isAiSettingsModalOpen} 
+        onClose={() => setIsAiSettingsModalOpen(false)} 
+      />
 
       {/* System Toast Container */}
       {toastMessage && (

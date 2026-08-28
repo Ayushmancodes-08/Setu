@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export const PharmacistPortal: React.FC = () => {
-  const { showToast, language } = useApp();
+  const { showToast, language, t } = useApp();
   const { 
     prescriptionOrders, 
     dispensePrescription, 
@@ -89,7 +89,7 @@ export const PharmacistPortal: React.FC = () => {
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black text-slate-900">Anand Deshmukh (Pharmacist)</h1>
                 <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-amber-300">
-                  e-Aushadhi Verified
+                  {t.role_pharmacist}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">

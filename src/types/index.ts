@@ -9,7 +9,7 @@ export type Role =
   | 'facility' 
   | 'dho';
 
-export type Language = 'en' | 'mr' | 'hi';
+export type Language = 'en' | 'mr' | 'hi' | 'or' | 'bn' | 'ur';
 
 export type TriageUrgency = 'red' | 'amber' | 'green';
 
@@ -213,3 +213,28 @@ export interface DistrictMetric {
   alertCount: number;
   riskStatus: 'Normal' | 'Moderate' | 'Alert' | 'Critical';
 }
+
+export interface Appointment {
+  id: string;
+  appointmentToken: string;
+  patientId: string;
+  patientName: string;
+  patientAge: number;
+  patientGender: string;
+  patientVillage: string;
+  patientMobile: string;
+  doctorId: string;
+  doctorName: string;
+  doctorSpecialty: string;
+  facilityName: string;
+  appointmentDate: string;
+  timeSlot: string;
+  mode: 'TELECONSULTATION' | 'IN_PERSON_OPD';
+  complaint: string;
+  status: 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  createdAt: string;
+  videoRoomId?: string;
+  prescriptionId?: string;
+  notes?: string;
+}
+

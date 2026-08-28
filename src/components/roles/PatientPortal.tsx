@@ -2,559 +2,1486 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useHealthData } from '../../context/HealthDataContext';
 import { bhashiniAI } from '../../services/bhashiniService';
+import { Appointment } from '../../types';
 import { 
   User, 
-  Video, 
-  FileText, 
-  Clock, 
+  Heart, 
+  Activity, 
   Pill, 
+  FileText, 
   MapPin, 
   PhoneCall, 
   ShieldCheck, 
-  Download, 
   CheckCircle2, 
   AlertCircle, 
   Calendar, 
   Volume2, 
+  Mic, 
+  Sparkles, 
+  Search, 
+  ArrowRight, 
+  Send, 
+  Baby, 
+  Smile, 
+  Eye, 
+  ChevronRight, 
+  X, 
+  QrCode, 
+  Clock, 
+  HelpCircle, 
+  Plus, 
+  Navigation, 
+  Upload, 
+  Share2, 
+  AlertTriangle,
+  Flame,
+  Smartphone,
+  Video,
   Stethoscope,
-  QrCode,
-  ArrowRight,
-  ExternalLink,
-  Heart,
-  Printer,
-  X,
-  FileCheck2
+  VideoOff,
+  MicOff,
+  UserCheck
 } from 'lucide-react';
 
-export const PatientPortal: React.FC = () => {
-  const { language, showToast, setIsEmergencyModalOpen, setCurrentView } = useApp();
-  const { patients, teleconsultQueue, facilities } = useHealthData();
+const AVAILABLE_DOCTORS = [
+  {
+    id: 'doc-001',
+    name: 'Dr. Rohini Kulkarni, MD',
+    specialty: 'Obstetrics & High-Risk Pregnancy',
+    degree: 'MBBS, MD (OBGYN)',
+    facility: 'Junnar Rural Hospital Telemedicine Hub',
+    experience: '12 Years',
+    availableSlots: ['11:30 AM - 12:00 PM', '02:00 PM - 02:30 PM', '04:30 PM - 05:00 PM'],
+    teleconsultReady: true
+  },
+  {
+    id: 'doc-002',
+    name: 'Dr. Sandeep Ghule, MBBS',
+    specialty: 'General Medicine & Chronic Care',
+    degree: 'MBBS, DNB (Fam. Med)',
+    facility: 'Otur Primary Health Centre (PHC)',
+    experience: '8 Years',
+    availableSlots: ['10:00 AM - 10:30 AM', '12:00 PM - 12:30 PM', '03:00 PM - 03:30 PM'],
+    teleconsultReady: true
+  },
+  {
+    id: 'doc-003',
+    name: 'Dr. Swapnil Deshmukh, MS',
+    specialty: 'General Surgery & Trauma Resuscitation',
+    degree: 'MBBS, MS (General Surgery)',
+    facility: 'Junnar Trauma & Specialty Hospital',
+    experience: '15 Years',
+    availableSlots: ['01:30 PM - 02:00 PM', '05:00 PM - 05:30 PM'],
+    teleconsultReady: true
+  },
+  {
+    id: 'doc-004',
+    name: 'Dr. Priyanka Patil, MD',
+    specialty: 'Pediatrics & Neonatal Care',
+    degree: 'MBBS, MD (Pediatrics)',
+    facility: 'Manchar Sub-District Hospital',
+    experience: '9 Years',
+    availableSlots: ['09:30 AM - 10:00 AM', '11:00 AM - 11:30 AM'],
+    teleconsultReady: true
+  }
+];
 
-  // Active patient (Sunita Shinde or first registered patient)
-  const patient = patients.find(p => p.id === 'p-001') || patients[0] || {
+export const PatientPortal: React.FC = () => {
+  const { language, t, showToast, setIsEmergencyModalOpen, setCurrentView } = useApp();
+  const { 
+    patients, 
+    facilities, 
+    updatePatientVitals, 
+    appointments, 
+    bookAppointment, 
+    cancelAppointment 
+  } = useHealthData();
+
+  // Active patient profile (Rajesh Kumar / Sunita Shinde)
+  const patient: any = patients.find(p => p.id === 'p-001') || patients[0] || {
     id: 'p-001',
-    name: 'Sunita Ravindra Shinde',
-    age: 24,
-    gender: 'Female',
+    name: 'Rajesh Kumar Shinde',
+    age: 47,
+    gender: 'Male',
     abhaId: '91-4821-9902-3312',
     village: 'Khamgaon',
     taluka: 'Junnar',
     district: 'Pune',
-    assignedAsha: 'Manisha Kadam',
+    mobile: '+91 98230 44512',
+    bloodGroup: 'B+',
+    allergies: 'None reported',
+    chronicConditions: 'Hypertension',
+    assignedAsha: 'Manisha Kadam, ASHA (+91 98230 44512)',
     vitals: {
-      bp: '138/92 mmHg',
-      pulse: '88 bpm',
+      bp: '138/86 mmHg',
+      pulse: '76 bpm',
       spo2: '98%',
-      temp: '98.6 °F',
-      weight: '52 kg'
+      temp: '98.4 °F',
+      weight: '68 kg'
     },
     activePrescriptions: [
       {
         id: 'rx-1',
-        medicineName: 'Ferrous Ascorbate + Folic Acid Tablets',
-        dosage: '1 Tab (100mg + 1.5mg)',
-        frequency: '1-0-1 (Twice Daily)',
+        medicineName: 'Amlodipine 5mg Tablets',
+        dosage: '1 Tab (5mg)',
+        frequency: '1-0-0 (Morning with breakfast)',
         duration: '30 Days',
-        instructions: 'Take after meals with water. Avoid milk or tea within 1 hour.',
+        instructions: 'Take daily after breakfast. Do not miss doses.',
         prescribedBy: 'Dr. Rohini Kulkarni, MD',
-        prescribedAt: 'Today, 10:15 AM',
-        status: 'Pending Dispensing' as const
+        prescribedAt: 'Yesterday, 10:15 AM',
+        status: 'Dispensed' as const
       },
       {
         id: 'rx-2',
-        medicineName: 'Calcium Carbonate + Vitamin D3 Tablets',
-        dosage: '1 Tab (500mg + 250IU)',
-        frequency: '0-1-0 (Afternoon)',
+        medicineName: 'Telmisartan 40mg Tablets',
+        dosage: '1 Tab (40mg)',
+        frequency: '0-0-1 (Night after dinner)',
         duration: '30 Days',
-        instructions: 'Take after lunch with water.',
+        instructions: 'Take with warm water before sleep.',
         prescribedBy: 'Dr. Rohini Kulkarni, MD',
-        prescribedAt: 'Today, 10:15 AM',
-        status: 'Pending Dispensing' as const
+        prescribedAt: 'Yesterday, 10:15 AM',
+        status: 'Dispensed' as const
       }
     ],
     recentLabReports: [
       {
         id: 'lab-1',
-        testName: 'Complete Blood Count (CBC) & Hemoglobin',
-        result: 'Hemoglobin: 8.2 g/dL (Severe Gestational Anemia)',
-        referenceRange: '12.0 - 15.5 g/dL (Female Normal)',
-        status: 'Critical' as const,
-        reportedAt: 'Today, 09:45 AM'
+        testName: 'Lipid Profile & Serum Cholesterol',
+        result: 'Total Cholesterol: 182 mg/dL',
+        referenceRange: '125 - 200 mg/dL (Normal Range)',
+        status: 'Normal' as const,
+        reportedAt: '2 days ago',
+        explanation: 'Your cholesterol is within the normal reference range. Continue balanced diet and physical activity.'
       },
       {
         id: 'lab-2',
-        testName: 'Serum Ferritin & Iron Studies',
-        result: 'Serum Ferritin: 11.4 ng/mL (Iron Depletion)',
-        referenceRange: '30.0 - 150.0 ng/mL',
-        status: 'Abnormal' as const,
-        reportedAt: 'Today, 09:45 AM'
+        testName: 'Fasting Blood Glucose (FBS)',
+        result: 'Blood Sugar: 104 mg/dL',
+        referenceRange: '70 - 100 mg/dL (Borderline)',
+        status: 'Borderline' as const,
+        reportedAt: '2 days ago',
+        explanation: 'Slightly borderline fasting sugar. Recommended to monitor dietary sugar and recheck in 3 months.'
       }
     ]
   };
 
-  const [activeTab, setActiveTab] = useState<'prescriptions' | 'teleconsult' | 'lab_reports' | 'abha_card'>('prescriptions');
-  const [isCalling, setIsCalling] = useState<boolean>(false);
+  const [activeModule, setActiveModule] = useState<'dashboard' | 'appointments' | 'medications' | 'reports' | 'healthcare' | 'schemes' | 'women_child' | 'chronic' | 'wellbeing' | 'emergency'>('dashboard');
+  const [elderlyMode, setElderlyMode] = useState<boolean>(false);
+  const [showFullProfile, setShowFullProfile] = useState<boolean>(false);
+
+  // Setu AI Conversational Guidance State
+  const [aiQuery, setAiQuery] = useState<string>('');
+  const [isAiListening, setIsAiListening] = useState<boolean>(false);
+  const [aiResponse, setAiResponse] = useState<{
+    guidance: string;
+    severity: 'LOW' | 'MODERATE' | 'URGENT';
+    actionText: string;
+    escalateToAsha: boolean;
+  } | null>(null);
+
+  // Appointment Booking Modal State
+  const [isBookModalOpen, setIsBookModalOpen] = useState<boolean>(false);
+  const [selectedDoctor, setSelectedDoctor] = useState(AVAILABLE_DOCTORS[0]);
+  const [aptDate, setAptDate] = useState<string>('Today');
+  const [aptTimeSlot, setAptTimeSlot] = useState<string>('11:30 AM - 12:00 PM');
+  const [aptMode, setAptMode] = useState<'TELECONSULTATION' | 'IN_PERSON_OPD'>('TELECONSULTATION');
+  const [aptComplaint, setAptComplaint] = useState<string>('Routine health follow-up & prescription refill review.');
+  
+  // Live Teleconsultation Video Room State
+  const [activeVideoApt, setActiveVideoApt] = useState<Appointment | null>(null);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [isVideoOff, setIsVideoOff] = useState<boolean>(false);
+
+  // Chronic BP Logger State
+  const [newSystolic, setNewSystolic] = useState<string>('138');
+  const [newDiastolic, setNewDiastolic] = useState<string>('86');
+  const [newGlucose, setNewGlucose] = useState<string>('104');
+
+  // Scheme Need Filter State
+  const [selectedSchemeNeed, setSelectedSchemeNeed] = useState<string>('ALL');
+
+  // Wellbeing Mood State
+  const [currentMood, setCurrentMood] = useState<string>('Calm');
+
+  // Audio readout state
   const [speakingItem, setSpeakingItem] = useState<string | null>(null);
 
-  // Lab Report Slip Download Modal State
-  const [selectedLabReport, setSelectedLabReport] = useState<any>(null);
+  // Mock Emergency Contact
+  const emergencyContacts = [
+    { name: 'Sunita Shinde (Spouse)', relation: 'Spouse', phone: '+91 98221 00192' },
+    { name: 'Manisha Kadam (Assigned ASHA)', relation: 'Village ASHA Worker', phone: '+91 98230 44512' },
+    { name: 'Dr. Sandeep Ghule (MO Otur PHC)', relation: 'Primary Health Centre Doctor', phone: '+91 2132 264222' }
+  ];
 
-  const handleSpeakPrescription = (medName: string, instructions: string) => {
-    setSpeakingItem(medName);
-    const text = language === 'mr' 
-      ? `औषधाचे नाव: ${medName}. घेण्याची पद्धत: ${instructions}.`
-      : `Medicine: ${medName}. Directions: ${instructions}.`;
-    bhashiniAI.speakText(text, language === 'mr' ? 'mr' : 'en', () => {
+  const handleAiConsult = (queryText: string) => {
+    if (!queryText.trim()) return;
+    
+    // BHASHINI Architecture: Speech/Text -> Lang Detect -> Setu Triage -> Translation -> TTS
+    const triage = bhashiniAI.runPatientVoiceTriagePipeline(queryText, language);
+    
+    setAiResponse({
+      guidance: triage.triageGuidance,
+      severity: triage.severity,
+      actionText: triage.suggestedAction,
+      escalateToAsha: triage.escalateToAsha
+    });
+
+    setAiQuery('');
+    
+    // Automatically synthesize voice output in user language
+    bhashiniAI.tts(triage.triageGuidance, triage.detectedLanguage);
+  };
+
+  const handleVoiceInput = () => {
+    setIsAiListening(true);
+    bhashiniAI.asr(
+      language,
+      (transcript) => {
+        setAiQuery(transcript);
+        handleAiConsult(transcript);
+      },
+      (err) => {
+        console.warn('ASR notice:', err);
+      },
+      () => {
+        setIsAiListening(false);
+      }
+    );
+  };
+
+  const handleSpeakText = (text: string, id: string) => {
+    setSpeakingItem(id);
+    bhashiniAI.tts(text, language, () => {
       setSpeakingItem(null);
     });
   };
 
-  const handleDownloadLabSlip = (report: any) => {
-    setSelectedLabReport(report);
+  const handleLogVitals = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (updatePatientVitals) {
+      updatePatientVitals(patient.id, {
+        bp: `${newSystolic}/${newDiastolic} mmHg`,
+        pulse: patient.vitals.pulse,
+        spo2: patient.vitals.spo2,
+        temp: patient.vitals.temp,
+        weight: patient.vitals.weight
+      });
+    }
+    showToast(`Recorded new vitals: BP ${newSystolic}/${newDiastolic} mmHg.`);
   };
 
-  const handlePrintSlip = () => {
-    window.print();
+  const handleBookAppointmentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const newApt = await bookAppointment({
+      patientId: patient.id,
+      patientName: patient.name,
+      patientAge: patient.age,
+      patientGender: patient.gender,
+      patientVillage: patient.village,
+      patientMobile: patient.mobile,
+      doctorId: selectedDoctor.id,
+      doctorName: selectedDoctor.name,
+      doctorSpecialty: selectedDoctor.specialty,
+      facilityName: selectedDoctor.facility,
+      appointmentDate: aptDate,
+      timeSlot: aptTimeSlot,
+      mode: aptMode,
+      complaint: aptComplaint
+    });
+
+    showToast(`Appointment Confirmed with ${selectedDoctor.name}! Token #${newApt.appointmentToken}`);
+    setIsBookModalOpen(false);
+    setActiveModule('appointments');
+  };
+
+  const handleCancelApt = async (aptId: string) => {
+    await cancelAppointment(aptId);
+    showToast('Appointment cancelled successfully.');
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className={`min-h-screen ${elderlyMode ? 'bg-amber-50/40 text-slate-950 text-base' : 'bg-slate-50 text-slate-900'} py-8 px-4 sm:px-6 lg:px-8`}>
       <div className="max-w-6xl mx-auto space-y-6">
         
-        {/* Patient Profile & ABHA Identity Banner */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-700 to-[#003527] text-white flex items-center justify-center text-2xl font-black shadow-md shrink-0">
-              {patient.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'PT'}
+        {/* Top Accessibility & Elder Mode Toggle Bar */}
+        <div className="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-200 shadow-xs text-xs font-semibold">
+          <div className="flex items-center gap-2 text-slate-600">
+            <Smartphone className="w-4 h-4 text-emerald-700" />
+            <span>Setu Citizen Health Companion • Rural Access Mode</span>
+          </div>
+          <button
+            onClick={() => setElderlyMode(!elderlyMode)}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 ${
+              elderlyMode ? 'bg-amber-600 text-white border-amber-700 shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>{elderlyMode ? t.standardModeToggle : t.elderModeToggle}</span>
+          </button>
+        </div>
+
+        {/* 1. HEALTH PROFILE CARD (AT THE TOP) */}
+        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 shadow-xs space-y-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-700 to-[#003527] text-white flex items-center justify-center text-2xl font-black shadow-md shrink-0">
+                {patient.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className={`${elderlyMode ? 'text-2xl font-black' : 'text-xl font-extrabold'} text-slate-900`}>{patient.name}</h1>
+                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
+                    ABHA Verified
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Village: <strong>{patient.village}</strong> • Age: <strong>{patient.age}y</strong> ({patient.gender}) • ABHA: <span className="font-mono font-bold text-slate-700">{patient.abhaId}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Health Status Indicator & Quick Book CTA */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-2xl text-xs">
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Health Status</span>
+                <span className="font-extrabold text-emerald-800 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  🟢 Stable (Active Routine Care)
+                </span>
+              </div>
+
+              <button
+                onClick={() => setIsBookModalOpen(true)}
+                className="bg-[#003527] hover:bg-[#064e3b] text-white font-bold px-4 py-2.5 rounded-2xl text-xs shadow-xs transition-all flex items-center gap-1.5"
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Book Doctor Appointment</span>
+              </button>
+            </div>
+
+          </div>
+
+          {/* Quick Health Summary Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs">
+            <div>
+              <span className="text-slate-400 block text-[10px] uppercase font-bold">Blood Group</span>
+              <span className="font-black text-slate-900 text-sm">{patient.bloodGroup || 'B+'}</span>
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-extrabold text-slate-900">{patient.name}</h1>
-                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
-                  ABHA Linked & Verified
-                </span>
+              <span className="text-slate-400 block text-[10px] uppercase font-bold">Allergies</span>
+              <span className="font-bold text-slate-800 text-sm">{patient.allergies || 'None reported'}</span>
+            </div>
+            <div>
+              <span className="text-slate-400 block text-[10px] uppercase font-bold">Chronic Conditions</span>
+              <span className="font-bold text-amber-800 text-sm">{patient.chronicConditions || 'Hypertension'}</span>
+            </div>
+            <div>
+              <span className="text-slate-400 block text-[10px] uppercase font-bold">Assigned ASHA / CHO</span>
+              <span className="font-bold text-teal-900 text-xs truncate block">{patient.assignedAsha || 'Manisha Kadam (+91 98230 44512)'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. 🤖 SETU AI HEALTH ASSISTANT (CONVERSATIONAL GUIDANCE) */}
+        <div className="bg-gradient-to-br from-[#003527] to-[#04241b] text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-800/80 space-y-5">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-emerald-800/60">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 animate-pulse" />
               </div>
-              <p className="text-xs text-slate-500 mt-1 font-mono">
-                ABHA ID: <span className="font-bold text-slate-800">{patient.abhaId}</span> • Age: {patient.age}y ({patient.gender}) • {patient.village}, {patient.taluka}
-              </p>
-              <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-slate-600">
-                <span className="flex items-center gap-1 font-medium">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  MJPJAY & PM-JAY Eligible
-                </span>
-                <span>•</span>
-                <span>Assigned ASHA: <strong className="text-slate-800">{patient.assignedAsha || 'Manisha Kadam'}</strong></span>
+              <div>
+                <h3 className="font-black text-base sm:text-lg text-white">Setu AI Health Guidance</h3>
+                <p className="text-xs text-emerald-300/80">
+                  Ask symptoms in your own words (Marathi / Hindi / English) or speak via microphone.
+                </p>
               </div>
+            </div>
+
+            <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-3 py-1 rounded-full">
+              Multilingual Voice Assistant
+            </span>
+          </div>
+
+          {/* Voice & Input Box */}
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              onClick={handleVoiceInput}
+              className={`py-3 px-4 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 shrink-0 ${
+                isAiListening ? 'bg-red-600 text-white animate-pulse' : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md'
+              }`}
+            >
+              <Mic className="w-4 h-4" />
+              <span>{isAiListening ? 'Listening...' : '🎤 Speak to Setu'}</span>
+            </button>
+
+            <div className="flex-1 flex gap-2">
+              <input
+                type="text"
+                placeholder="Type symptoms (e.g. want to consult doctor for headache and medication check)..."
+                value={aiQuery}
+                onChange={(e) => setAiQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAiConsult(aiQuery)}
+                className="w-full bg-slate-900/80 border border-emerald-700/80 rounded-2xl px-4 py-3 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 font-medium"
+              />
+              <button
+                onClick={() => handleAiConsult(aiQuery)}
+                className="bg-white hover:bg-slate-100 text-slate-900 font-bold px-4 py-3 rounded-2xl text-xs transition-colors shrink-0 flex items-center gap-1"
+              >
+                <span>Ask</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <button
-              onClick={() => setActiveTab('abha_card')}
-              className="flex-1 md:flex-none bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold py-2.5 px-4 rounded-xl border border-slate-300 transition-all flex items-center justify-center gap-1.5"
-            >
-              <QrCode className="w-3.5 h-3.5 text-slate-700" />
-              <span>Digital ABHA Pass</span>
-            </button>
-
-            <button
-              onClick={() => setIsEmergencyModalOpen(true)}
-              className="flex-1 md:flex-none bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5"
-            >
-              <PhoneCall className="w-3.5 h-3.5 animate-pulse" />
-              <span>Emergency 108 SOS</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Clinical Vitals Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="p-2 border-r border-slate-100 last:border-0">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Blood Pressure</span>
-            <span className="font-extrabold text-slate-900 text-sm">{patient.vitals.bp || '120/80 mmHg'}</span>
-          </div>
-          <div className="p-2 border-r border-slate-100 last:border-0">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Pulse Rate</span>
-            <span className="font-extrabold text-slate-900 text-sm">{patient.vitals.pulse || '78 bpm'}</span>
-          </div>
-          <div className="p-2 border-r border-slate-100 last:border-0">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Oxygen (SpO2)</span>
-            <span className="font-extrabold text-emerald-700 text-sm">{patient.vitals.spo2 || '98%'}</span>
-          </div>
-          <div className="p-2">
-            <span className="text-[10px] text-slate-400 block uppercase font-bold">Temperature</span>
-            <span className="font-extrabold text-slate-900 text-sm">{patient.vitals.temp || '98.4 °F'}</span>
-          </div>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs font-bold w-full max-w-xl">
-          <button
-            onClick={() => setActiveTab('prescriptions')}
-            className={`flex-1 py-2.5 rounded-xl transition-all ${
-              activeTab === 'prescriptions' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            Active e-Rx ({patient.activePrescriptions.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('teleconsult')}
-            className={`flex-1 py-2.5 rounded-xl transition-all ${
-              activeTab === 'teleconsult' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            e-Sanjeevani Room
-          </button>
-          <button
-            onClick={() => setActiveTab('lab_reports')}
-            className={`flex-1 py-2.5 rounded-xl transition-all ${
-              activeTab === 'lab_reports' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            Diagnostic Reports ({patient.recentLabReports.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('abha_card')}
-            className={`flex-1 py-2.5 rounded-xl transition-all ${
-              activeTab === 'abha_card' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            ABHA Pass
-          </button>
-        </div>
-
-        {/* TAB 1: PRESCRIPTIONS WITH AUDIO READOUT */}
-        {activeTab === 'prescriptions' && (
-          <div className="space-y-4">
-            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div>
-                  <h3 className="font-extrabold text-base text-slate-900">Current Doctor e-Prescriptions</h3>
-                  <p className="text-xs text-slate-500">Includes AI Bhashini Marathi voice directions for illiterate and rural patients.</p>
-                </div>
-                <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-xl">
-                  e-Aushadhi Sync Active
+          {/* AI Guidance Output Card */}
+          {aiResponse && (
+            <div className="bg-slate-900/90 border border-emerald-500/40 rounded-2xl p-5 space-y-3 animate-in fade-in zoom-in-95 duration-150">
+              <div className="flex items-center justify-between">
+                <span className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full ${
+                  aiResponse.severity === 'URGENT' ? 'bg-red-900 text-red-200 border border-red-500' :
+                  aiResponse.severity === 'MODERATE' ? 'bg-amber-900 text-amber-200 border border-amber-500' :
+                  'bg-emerald-900 text-emerald-200 border border-emerald-500'
+                }`}>
+                  Triage Severity: {aiResponse.severity}
                 </span>
+
+                <button
+                  onClick={() => handleSpeakText(aiResponse.guidance, 'ai-guidance')}
+                  className="text-xs text-emerald-300 hover:text-white flex items-center gap-1 font-bold"
+                >
+                  <Volume2 className="w-3.5 h-3.5" />
+                  <span>Listen in Audio</span>
+                </button>
               </div>
 
-              <div className="divide-y divide-slate-100">
-                {patient.activePrescriptions.map((rx) => (
-                  <div key={rx.id} className="py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
+              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
+                {aiResponse.guidance}
+              </p>
+
+              <div className="bg-emerald-950/60 p-3 rounded-xl border border-emerald-800/80 text-xs text-emerald-200 flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Suggested Next Action:</strong> {aiResponse.actionText}</span>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-2">
+                <button
+                  onClick={() => setIsBookModalOpen(true)}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs transition-colors flex items-center gap-1.5"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Schedule Doctor Teleconsult</span>
+                </button>
+                {aiResponse.escalateToAsha && (
+                  <button
+                    onClick={() => showToast('Escalation notification dispatched to ASHA Manisha Kadam.')}
+                    className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-colors"
+                  >
+                    📞 Request ASHA Check-in
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Mandated Medical Disclaimer */}
+          <div className="text-[11px] text-emerald-300/70 border-t border-emerald-800/60 pt-3 flex items-center gap-1.5">
+            <AlertCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span><strong>Medical Disclaimer:</strong> AI guidance is for general health education and basic triage assistance only. It does not replace a qualified healthcare professional.</span>
+          </div>
+        </div>
+
+        {/* 3. PATIENT MODULE TABS BAR */}
+        <div className="flex border-b border-slate-200 gap-1.5 overflow-x-auto pb-1 text-xs font-bold">
+          {[
+            { id: 'dashboard', label: '📊 Health Overview', icon: Activity },
+            { id: 'appointments', label: `📅 Doctor Appointments (${appointments.length})`, icon: Calendar },
+            { id: 'medications', label: '💊 Medicines & Reminders', icon: Pill },
+            { id: 'reports', label: '🧪 Understand Reports', icon: FileText },
+            { id: 'healthcare', label: '🏥 Find Healthcare', icon: MapPin },
+            { id: 'schemes', label: '🛡️ Government Schemes', icon: ShieldCheck },
+            { id: 'women_child', label: '👩 Women & Child Care', icon: Baby },
+            { id: 'chronic', label: '💗 Chronic Care (BP/Sugar)', icon: Heart },
+            { id: 'wellbeing', label: '🧠 Wellbeing Check-in', icon: Smile },
+            { id: 'emergency', label: '🚨 Emergency SOS', icon: PhoneCall }
+          ].map((tab) => {
+            const isActive = activeModule === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveModule(tab.id as any)}
+                className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl transition-all whitespace-nowrap ${
+                  isActive
+                    ? 'bg-[#003527] text-white shadow-xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                }`}
+              >
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* MODULE 1: HEALTH OVERVIEW DASHBOARD */}
+        {activeModule === 'dashboard' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Left: Vitals & Care Reminders */}
+            <div className="md:col-span-2 space-y-4">
+              
+              <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-extrabold text-base text-slate-900">Upcoming Appointments & Care Timeline</h3>
+                  <button
+                    onClick={() => setIsBookModalOpen(true)}
+                    className="text-xs text-emerald-800 font-bold hover:underline"
+                  >
+                    + Book New Consult
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {appointments.slice(0, 2).map((apt) => (
+                    <div key={apt.id} className="bg-teal-50 border border-teal-200 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-teal-600 text-white font-bold">
+                          {apt.mode === 'TELECONSULTATION' ? <Video className="w-4 h-4" /> : <Stethoscope className="w-4 h-4" />}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-black text-sm text-slate-900">{apt.doctorName}</span>
+                            <span className="bg-teal-200 text-teal-900 font-mono text-[10px] px-2 py-0.5 rounded font-bold">
+                              {apt.appointmentToken}
+                            </span>
+                          </div>
+                          <div className="text-slate-600 mt-0.5">
+                            {apt.doctorSpecialty} • <strong>{apt.appointmentDate} at {apt.timeSlot}</strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        {apt.mode === 'TELECONSULTATION' && (
+                          <button
+                            onClick={() => setActiveVideoApt(apt)}
+                            className="flex-1 sm:flex-none bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                          >
+                            <Video className="w-3.5 h-3.5" />
+                            <span>Join Video Room</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setActiveModule('appointments')}
+                          className="bg-white hover:bg-slate-100 text-slate-800 font-bold py-2 px-3 rounded-xl border border-slate-300 transition-colors text-xs"
+                        >
+                          View Pass
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Vitals Trend Summary */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-extrabold text-base text-slate-900">Recent Health Parameters</h3>
+                  <button onClick={() => setActiveModule('chronic')} className="text-xs text-teal-800 font-bold hover:underline">
+                    Log New Reading →
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span className="text-slate-400 block text-[10px]">Blood Pressure</span>
+                    <span className="font-black text-slate-900 text-sm">{patient.vitals.bp}</span>
+                    <span className="text-[10px] text-amber-700 font-semibold block mt-0.5">🟡 Controlled</span>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span className="text-slate-400 block text-[10px]">Pulse Rate</span>
+                    <span className="font-black text-slate-900 text-sm">{patient.vitals.pulse}</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold block mt-0.5">🟢 Normal</span>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span className="text-slate-400 block text-[10px]">Oxygen (SpO2)</span>
+                    <span className="font-black text-emerald-700 text-sm">{patient.vitals.spo2}</span>
+                    <span className="text-[10px] text-emerald-700 font-semibold block mt-0.5">🟢 Optimal</span>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span className="text-slate-400 block text-[10px]">Body Temp</span>
+                    <span className="font-black text-slate-900 text-sm">{patient.vitals.temp}</span>
+                    <span className="text-[10px] text-slate-500 font-semibold block mt-0.5">Normal</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right: Quick Contacts & Help Desk */}
+            <div className="space-y-4">
+              <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+                <h3 className="font-extrabold text-base text-slate-900">Your Healthcare Contacts</h3>
+                
+                <div className="space-y-2 text-xs">
+                  {emergencyContacts.map((contact, idx) => (
+                    <div key={idx} className="bg-slate-50 p-3 rounded-2xl border border-slate-100 flex items-center justify-between">
+                      <div>
+                        <div className="font-bold text-slate-900">{contact.name}</div>
+                        <div className="text-[11px] text-slate-500">{contact.relation}</div>
+                      </div>
+                      <a
+                        href={`tel:${contact.phone}`}
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 transition-colors"
+                      >
+                        <PhoneCall className="w-3 h-3" />
+                        <span>Call</span>
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 1-Tap Emergency Trigger */}
+              <div className="bg-red-50 border border-red-200 rounded-3xl p-6 shadow-xs space-y-3">
+                <div className="flex items-center gap-2 text-red-950 font-black">
+                  <AlertTriangle className="w-5 h-5 text-red-600 animate-bounce" />
+                  <span>Immediate Medical Emergency?</span>
+                </div>
+                <p className="text-xs text-red-900">
+                  Notify emergency services, your family contacts, and village health worker in 1 tap.
+                </p>
+                <button
+                  onClick={() => setIsEmergencyModalOpen(true)}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  <PhoneCall className="w-4 h-4" />
+                  <span>Launch Emergency SOS</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* MODULE: DOCTOR APPOINTMENTS & TELECONSULTATION */}
+        {activeModule === 'appointments' && (
+          <div className="space-y-6">
+            
+            {/* Header & Quick Action */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <span className="text-[10px] uppercase font-black tracking-wider text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                  e-Sanjeevani Integrated
+                </span>
+                <h3 className="font-extrabold text-xl text-slate-900 mt-1">Doctor Appointments & Teleconsultations</h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Book online video teleconsults or in-person OPD appointments with government specialist doctors.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsBookModalOpen(true)}
+                className="bg-[#003527] hover:bg-[#064e3b] text-white font-black text-xs py-3 px-5 rounded-2xl transition-all shadow-md flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Book New Appointment</span>
+              </button>
+            </div>
+
+            {/* My Active Appointments List */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+              <h4 className="font-black text-sm text-slate-900 uppercase tracking-wider">Your Scheduled Appointments ({appointments.length})</h4>
+              
+              <div className="space-y-3">
+                {appointments.map((apt) => (
+                  <div key={apt.id} className="bg-slate-50 rounded-2xl border border-slate-200 p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 text-sm">{rx.medicineName}</span>
+                        <span className="font-black text-base text-slate-900">{apt.doctorName}</span>
+                        <span className="bg-teal-100 text-teal-900 font-mono text-xs px-2.5 py-0.5 rounded-full font-bold border border-teal-200">
+                          {apt.appointmentToken}
+                        </span>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          rx.status === 'Dispensed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          apt.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-800' :
+                          apt.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' :
+                          apt.status === 'COMPLETED' ? 'bg-slate-200 text-slate-700' : 'bg-red-100 text-red-800'
                         }`}>
-                          {rx.status}
+                          {apt.status}
                         </span>
                       </div>
-                      <div className="text-xs text-slate-600">
-                        <strong>Dosage:</strong> {rx.dosage} • <strong>Timing:</strong> {rx.frequency} • <strong>Duration:</strong> {rx.duration}
+
+                      <p className="text-xs text-slate-600">
+                        Specialty: <strong>{apt.doctorSpecialty}</strong> • Facility: <strong>{apt.facilityName}</strong>
+                      </p>
+
+                      <div className="text-xs text-slate-700 bg-white p-2.5 rounded-xl border border-slate-200 flex flex-wrap gap-4">
+                        <span>🗓️ Date: <strong>{apt.appointmentDate}</strong></span>
+                        <span>⏰ Time Slot: <strong>{apt.timeSlot}</strong></span>
+                        <span>Mode: <strong>{apt.mode === 'TELECONSULTATION' ? '📹 Video Teleconsult' : '🏥 In-Person OPD'}</strong></span>
                       </div>
-                      <div className="text-xs text-slate-800 bg-slate-50 p-2.5 rounded-xl border border-slate-100 font-medium">
-                        🗣️ <em>"{rx.instructions}"</em>
-                      </div>
-                      <div className="text-[11px] text-slate-400">Prescribed by {rx.prescribedBy} • {rx.prescribedAt}</div>
+
+                      {apt.complaint && (
+                        <p className="text-[11px] text-slate-500">
+                          <strong>Reason / Symptoms:</strong> {apt.complaint}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleSpeakPrescription(rx.medicineName, rx.instructions)}
-                        disabled={speakingItem === rx.medicineName}
-                        className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-xs"
-                      >
-                        <Volume2 className={`w-4 h-4 ${speakingItem === rx.medicineName ? 'animate-bounce text-emerald-600' : ''}`} />
-                        <span>{speakingItem === rx.medicineName ? 'Playing Voice...' : 'Listen (मराठी आवाजात ऐका)'}</span>
-                      </button>
+                    <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                      {apt.mode === 'TELECONSULTATION' && apt.status !== 'CANCELLED' && (
+                        <button
+                          onClick={() => setActiveVideoApt(apt)}
+                          className="flex-1 md:flex-none bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                        >
+                          <Video className="w-4 h-4" />
+                          <span>Join Video Teleconsult</span>
+                        </button>
+                      )}
+
+                      {apt.status === 'CONFIRMED' && (
+                        <button
+                          onClick={() => handleCancelApt(apt.id)}
+                          className="bg-white hover:bg-red-50 text-red-700 font-bold py-2.5 px-3 rounded-xl border border-red-200 transition-colors text-xs"
+                        >
+                          Cancel
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-        )}
 
-        {/* TAB 2: TELECONSULTATION ROOM */}
-        {activeTab === 'teleconsult' && (
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs">
-            {!isCalling ? (
-              <div className="text-center py-10 space-y-4 max-w-md mx-auto">
-                <div className="w-20 h-20 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto shadow-md">
-                  <Video className="w-10 h-10" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-black text-slate-900">e-Sanjeevani Video Teleconsultation</h3>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Connect directly with Dr. Rohini Kulkarni (OBGYN Specialist, Junnar Rural Hospital Hub) from your village Sub-Centre.
-                  </p>
-                </div>
-
-                <div className="pt-2 flex flex-col gap-2">
-                  <button
-                    onClick={() => {
-                      setIsCalling(true);
-                      showToast('Connecting to e-Sanjeevani HD encrypted clinical stream...');
-                    }}
-                    className="bg-[#003527] hover:bg-[#064e3b] text-white font-bold px-6 py-3.5 rounded-2xl text-xs transition-all shadow-lg flex items-center justify-center gap-2"
-                  >
-                    <Video className="w-4 h-4 text-emerald-400" />
-                    <span>Join Video Consultation Room</span>
-                  </button>
-
-                  <button
-                    onClick={() => setCurrentView('doctor')}
-                    className="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-300 font-bold px-6 py-3 rounded-2xl text-xs transition-all flex items-center justify-center gap-2"
-                  >
-                    <Stethoscope className="w-4 h-4 text-blue-700" />
-                    <span>Switch to Doctor Hub View</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="bg-slate-950 text-white rounded-3xl p-6 relative aspect-video flex flex-col justify-between overflow-hidden shadow-2xl border border-slate-800">
-                  <div className="flex items-center justify-between z-10">
-                    <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-xs px-3.5 py-1.5 rounded-xl border border-slate-700 text-xs">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                      <span className="font-bold text-white">Dr. Rohini Kulkarni, MD</span>
-                      <span className="text-slate-400">| Junnar Hospital</span>
-                    </div>
-
-                    <div className="bg-emerald-950/80 border border-emerald-600 px-3 py-1 rounded-xl text-xs text-emerald-300 font-mono">
-                      e-Sanjeevani HD 1080p Stream Active
-                    </div>
-                  </div>
-
-                  <div className="flex-1 flex items-center justify-center py-4">
-                    <div className="text-center space-y-3">
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 p-1 mx-auto shadow-2xl shadow-emerald-500/20">
-                        <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center border-2 border-white/20">
-                          <Stethoscope className="w-12 h-12 text-emerald-300" />
+            {/* Available Doctors Roster */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+              <h4 className="font-black text-sm text-slate-900 uppercase tracking-wider">Available Government Specialist Doctors</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {AVAILABLE_DOCTORS.map((doc) => (
+                  <div key={doc.id} className="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-3 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h5 className="font-extrabold text-sm text-slate-900">{doc.name}</h5>
+                          <p className="text-xs text-emerald-800 font-semibold">{doc.specialty}</p>
                         </div>
+                        <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">
+                          Available Today
+                        </span>
                       </div>
-                      <div>
-                        <div className="font-extrabold text-lg text-white">Dr. Rohini Kulkarni</div>
-                        <div className="text-xs text-emerald-400">Consulting with {patient.name} (Khamgaon Sub-Centre Spoke)</div>
-                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        {doc.degree} • {doc.facility} ({doc.experience} Exp)
+                      </p>
                     </div>
+
+                    <button
+                      onClick={() => {
+                        setSelectedDoctor(doc);
+                        setIsBookModalOpen(true);
+                      }}
+                      className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-xl text-xs transition-colors flex items-center justify-center gap-1"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>Book Slot with {doc.name.split(' ')[1]}</span>
+                    </button>
                   </div>
-
-                  <div className="flex items-center justify-between z-10 pt-3 border-t border-slate-800">
-                    <div className="text-xs text-slate-300 hidden sm:flex items-center gap-3">
-                      <span>BP: <strong className="text-emerald-400">{patient.vitals.bp}</strong></span>
-                      <span>SpO2: <strong className="text-blue-400">{patient.vitals.spo2}</strong></span>
-                      <span>Pulse: <strong className="text-amber-400">{patient.vitals.pulse}</strong></span>
-                    </div>
-
-                    <div className="flex items-center gap-3 mx-auto sm:mx-0">
-                      <button
-                        onClick={() => setCurrentView('doctor')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition-all flex items-center gap-1.5"
-                      >
-                        <Stethoscope className="w-4 h-4" />
-                        <span>Doctor Console</span>
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          setIsCalling(false);
-                          showToast('Teleconsultation completed. Prescription updated.');
-                        }}
-                        className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2.5 px-6 rounded-full transition-all flex items-center gap-1.5 shadow-lg"
-                      >
-                        <PhoneCall className="w-4 h-4 rotate-[135deg]" />
-                        <span>End Consultation</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 3: DIAGNOSTIC LAB REPORTS */}
-        {activeTab === 'lab_reports' && (
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="font-extrabold text-base text-slate-900">Verified Diagnostic Lab Reports</h3>
-                <p className="text-xs text-slate-500">Directly synchronized with PHC / Rural Hospital Diagnostic Laboratory.</p>
+                ))}
               </div>
             </div>
 
-            <div className="space-y-3">
-              {patient.recentLabReports.map((lab) => (
-                <div key={lab.id} className="bg-slate-50 rounded-2xl border border-slate-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          </div>
+        )}
+
+        {/* MODULE 3: MEDICATIONS & REMINDERS */}
+        {activeModule === 'medications' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900">Your Active Medications & Schedule</h3>
+                <p className="text-xs text-slate-500">Track doses, set reminders, and verify safety instructions.</p>
+              </div>
+              <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-xl">
+                2 Active Prescriptions
+              </span>
+            </div>
+
+            {/* Medication Safety Badge */}
+            <div className="bg-teal-50 border border-teal-200 p-3.5 rounded-2xl flex items-center gap-2.5 text-xs text-teal-950">
+              <ShieldCheck className="w-4 h-4 text-teal-700 shrink-0" />
+              <span><strong>Medication Safety Verification:</strong> No known interaction or allergy conflicts detected between your active medications.</span>
+            </div>
+
+            {/* Prescriptions List */}
+            <div className="divide-y divide-slate-100">
+              {patient.activePrescriptions.map((rx: any) => (
+                <div key={rx.id} className="py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 text-sm">{lab.testName}</span>
-                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                        lab.status === 'Abnormal' || lab.status === 'Critical' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'
-                      }`}>
-                        {lab.status}
+                      <span className="font-black text-sm text-slate-900">{rx.medicineName}</span>
+                      <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md">
+                        {rx.dosage}
                       </span>
                     </div>
                     <div className="text-xs text-slate-600">
-                      <strong>Result:</strong> <span className="font-bold text-slate-900">{lab.result}</span> • Reference Range: {lab.referenceRange}
+                      Schedule: <strong>{rx.frequency}</strong> • Duration: <strong>{rx.duration}</strong>
                     </div>
-                    <div className="text-[11px] text-slate-400">Reported on {lab.reportedAt} • Verified by Medical Specialist</div>
+                    <div className="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                      <strong>Instructions:</strong> {rx.instructions}
+                    </div>
                   </div>
 
-                  <button
-                    onClick={() => handleDownloadLabSlip(lab)}
-                    className="bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 transition-all shadow-xs"
-                  >
-                    <Download className="w-3.5 h-3.5 text-slate-700" />
-                    <span>Download / Print Official Slip</span>
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => handleSpeakText(`${rx.medicineName}. ${rx.instructions}`, rx.id)}
+                      className="bg-slate-100 hover:bg-slate-200 text-slate-800 p-2.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-colors"
+                      title="Listen in Marathi/English"
+                    >
+                      <Volume2 className="w-3.5 h-3.5 text-teal-700" />
+                      <span>Audio Guide</span>
+                    </button>
+                    <button
+                      onClick={() => showToast(`Dose logged for ${rx.medicineName}. Adherence recorded.`)}
+                      className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 px-3.5 rounded-xl text-xs transition-colors"
+                    >
+                      ✓ Mark Taken
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* TAB 4: DIGITAL ABHA HEALTH PASS */}
-        {activeTab === 'abha_card' && (
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs max-w-2xl mx-auto space-y-6">
-            <div className="bg-gradient-to-r from-[#003527] to-teal-800 rounded-3xl p-6 text-white shadow-xl space-y-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-[10px] uppercase font-bold tracking-widest text-emerald-300">National Health Authority</div>
-                  <div className="text-xl font-black">Ayushman Bharat Digital Health Card</div>
+        {/* MODULE 4: UNDERSTAND YOUR REPORT (LABS) */}
+        {activeModule === 'reports' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900">Understand Your Diagnostic Reports</h3>
+                <p className="text-xs text-slate-500">Plain-language explanation of laboratory findings and reference values.</p>
+              </div>
+              <button
+                onClick={() => showToast('Report uploaded & added to your digital health profile.')}
+                className="bg-[#003527] hover:bg-[#064e3b] text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Upload New Report</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {patient.recentLabReports.map((lab: any) => (
+                <div key={lab.id} className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between">
+                      <h4 className="font-extrabold text-sm text-slate-900">{lab.testName}</h4>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        lab.status === 'Normal' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {lab.status}
+                      </span>
+                    </div>
+
+                    <div className="text-xs bg-white p-3 rounded-xl border border-slate-200 space-y-1">
+                      <div className="font-black text-slate-900">{lab.result}</div>
+                      <div className="text-[11px] text-slate-500">Reference: {lab.referenceRange}</div>
+                    </div>
+
+                    <div className="text-xs text-slate-700 bg-teal-50/60 p-3 rounded-xl border border-teal-100 leading-relaxed font-medium">
+                      <strong>What this means:</strong> {lab.explanation}
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
+                    <span className="text-[10px] text-slate-400">{lab.reportedAt}</span>
+                    <button
+                      onClick={() => showToast(`Report shared with ASHA Manisha Kadam for follow-up review.`)}
+                      className="text-xs text-teal-800 hover:text-teal-900 font-bold flex items-center gap-1"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span>Discuss with ASHA / CHO</span>
+                    </button>
+                  </div>
                 </div>
-                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-xs font-mono text-xs font-bold">
-                  ABDM L3
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* MODULE 5: HEALTHCARE ACCESS & NEARBY FACILITIES */}
+        {activeModule === 'healthcare' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            <div>
+              <h3 className="font-extrabold text-base text-slate-900">Nearby Public Health Facilities & Centres</h3>
+              <p className="text-xs text-slate-500">Operating hours, distance, and contact details for Government Health Centres.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">Primary Health Centre</span>
+                    <h4 className="font-extrabold text-base text-slate-900 mt-1">Otur Primary Health Centre (PHC)</h4>
+                    <p className="text-xs text-slate-500">2.4 km away • Open 24/7 • Government Facility</p>
+                  </div>
+                </div>
+                <div className="text-xs text-slate-600 space-y-1">
+                  <div>Services: <strong>OPD, Normal Delivery, Malaria/Dengue Lab, e-Sanjeevani</strong></div>
+                  <div>Medical Officer: <strong>Dr. Sandeep Ghule (MBBS)</strong></div>
+                </div>
+                <div className="pt-2 border-t border-slate-200 flex items-center gap-2">
+                  <a
+                    href="tel:+912132264222"
+                    className="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded-xl text-xs text-center transition-colors"
+                  >
+                    Call Facility
+                  </a>
+                  <button
+                    onClick={() => showToast('Directions to Otur PHC mapped (2.4 km via Junnar-Otur Rd).')}
+                    className="flex-1 bg-white hover:bg-slate-100 text-slate-800 font-bold py-2 rounded-xl text-xs text-center border border-slate-300 transition-colors"
+                  >
+                    Directions
+                  </button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 pt-2">
-                <div className="w-16 h-16 rounded-xl bg-white text-[#003527] flex items-center justify-center text-xl font-black shadow-md">
-                  SR
+              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase bg-blue-100 text-blue-800 px-2 py-0.5 rounded">Sub-District Rural Hospital</span>
+                    <h4 className="font-extrabold text-base text-slate-900 mt-1">Junnar Rural Hospital & Trauma Hub</h4>
+                    <p className="text-xs text-slate-500">8.7 km away • Open 24/7 • Specialty Hub</p>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-lg font-bold">{patient.name}</div>
-                  <div className="text-xs text-emerald-200 font-mono">{patient.abhaId}</div>
-                  <div className="text-[11px] text-slate-300 mt-0.5">DOB: 12/04/2002 • Gender: Female</div>
+                <div className="text-xs text-slate-600 space-y-1">
+                  <div>Services: <strong>Trauma Resuscitation, Surgery, Blood Storage, High-Risk ANC</strong></div>
+                  <div>Contact: <strong>+91 2132 222108</strong></div>
+                </div>
+                <div className="pt-2 border-t border-slate-200 flex items-center gap-2">
+                  <a
+                    href="tel:+912132222108"
+                    className="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded-xl text-xs text-center transition-colors"
+                  >
+                    Call Facility
+                  </a>
+                  <button
+                    onClick={() => showToast('Directions to Junnar Rural Hospital mapped (8.7 km).')}
+                    className="flex-1 bg-white hover:bg-slate-100 text-slate-800 font-bold py-2 rounded-xl text-xs text-center border border-slate-300 transition-colors"
+                  >
+                    Directions
+                  </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
 
-              <div className="pt-4 border-t border-emerald-800/80 flex items-center justify-between text-xs font-mono">
-                <span>📍 {patient.village}, {patient.taluka}</span>
-                <span>Government of Maharashtra</span>
+        {/* MODULE 6: GOVERNMENT SCHEME DISCOVERY */}
+        {activeModule === 'schemes' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            <div>
+              <h3 className="font-extrabold text-base text-slate-900">Government Health Schemes & Cashless Support</h3>
+              <p className="text-xs text-slate-500">Select what support you need to view eligible state and national health programs.</p>
+            </div>
+
+            {/* Need-Based Quick Filters */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Which support do you need?</span>
+              <div className="flex flex-wrap gap-2 text-xs font-bold">
+                {[
+                  { id: 'ALL', label: 'All Schemes' },
+                  { id: 'HOSPITAL', label: '🏥 Hospital Treatment' },
+                  { id: 'MEDICINE', label: '💊 Free Medicines' },
+                  { id: 'LABS', label: '🧪 Diagnostic Tests' },
+                  { id: 'MATERNAL', label: '👩 Maternal Care' },
+                  { id: 'CHILD', label: '👶 Child Healthcare' },
+                  { id: 'DISABILITY', label: '♿ Disability Support' }
+                ].map((btn) => (
+                  <button
+                    key={btn.id}
+                    onClick={() => setSelectedSchemeNeed(btn.id)}
+                    className={`px-3.5 py-2 rounded-xl transition-all ${
+                      selectedSchemeNeed === btn.id ? 'bg-[#003527] text-white shadow-xs' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                    }`}
+                  >
+                    {btn.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <button
-              onClick={() => {
-                window.print();
-                showToast('Printed official ABHA Health Pass');
-              }}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Print ABHA Identity Pass</span>
-            </button>
+            {/* Schemes Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">₹5 Lakh Cashless</span>
+                  <span className="text-[10px] text-slate-400 font-mono">National Scheme</span>
+                </div>
+                <h4 className="font-black text-sm text-slate-900">Mahatma Jyotirao Phule Jan Arogya Yojana (MJPJAY / PM-JAY)</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Cashless secondary and tertiary hospital treatment up to ₹5,00,000 per family per year at empaneled government and private hospitals.
+                </p>
+                <div className="text-xs text-slate-500 bg-white p-3 rounded-xl border border-slate-200 space-y-1">
+                  <div><strong>Required Documents:</strong> Ration Card (Yellow/Orange) + Aadhaar Card</div>
+                  <div><strong>Eligibility:</strong> All rural residents holding verified ABHA / Ration card</div>
+                </div>
+                <button
+                  onClick={() => showToast('MJPJAY Pre-authorization guidance initiated with ASHA.')}
+                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded-xl text-xs transition-colors"
+                >
+                  Check Eligibility & Apply with ASHA
+                </button>
+              </div>
+
+              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="bg-rose-100 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded">Maternal Benefit</span>
+                  <span className="text-[10px] text-slate-400 font-mono">100% Free Deliveries</span>
+                </div>
+                <h4 className="font-black text-sm text-slate-900">Janani Shishu Suraksha Karyakram (JSSK)</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Completely free institutional delivery, C-section, free diagnostics, drugs, food, and free transport for mother and newborn up to 1 year.
+                </p>
+                <div className="text-xs text-slate-500 bg-white p-3 rounded-xl border border-slate-200 space-y-1">
+                  <div><strong>Required Documents:</strong> MCP Mother & Child Card + Bank Passbook</div>
+                  <div><strong>Eligibility:</strong> All pregnant mothers in rural government hospitals</div>
+                </div>
+                <button
+                  onClick={() => showToast('JSSK registration verified in your Mother & Child file.')}
+                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 rounded-xl text-xs transition-colors"
+                >
+                  View JSSK Mother Benefit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODULE 7: WOMEN & CHILD HEALTH */}
+        {activeModule === 'women_child' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            <div>
+              <h3 className="font-extrabold text-base text-slate-900">Women & Child Health Tracker</h3>
+              <p className="text-xs text-slate-500">Maternal ANC milestones, child vaccination schedule, and nutrition monitoring.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Maternal Health */}
+              <div className="bg-rose-50/50 rounded-2xl border border-rose-200 p-5 space-y-3">
+                <h4 className="font-black text-sm text-rose-950 flex items-center gap-1.5">
+                  <Baby className="w-4 h-4 text-rose-600" />
+                  <span>Maternal ANC Journey</span>
+                </h4>
+                <div className="space-y-2 text-xs text-slate-700">
+                  <div className="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between">
+                    <span>1st Trimester Vitals & Hb Test</span>
+                    <span className="text-emerald-700 font-bold">✓ Completed</span>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between">
+                    <span>2nd Trimester Ultrasound Scan</span>
+                    <span className="text-emerald-700 font-bold">✓ Completed</span>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-rose-100 flex items-center justify-between">
+                    <span>3rd Trimester Hemoglobin & BP Check</span>
+                    <span className="text-amber-700 font-bold">Due Next Week</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Child Immunization Schedule */}
+              <div className="bg-emerald-50/50 rounded-2xl border border-emerald-200 p-5 space-y-3">
+                <h4 className="font-black text-sm text-emerald-950 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>National Immunization Schedule</span>
+                </h4>
+                <div className="space-y-2 text-xs text-slate-700">
+                  <div className="bg-white p-3 rounded-xl border border-emerald-100 flex items-center justify-between">
+                    <span>BCG, OPV-0, Hepatitis B (Birth)</span>
+                    <span className="text-emerald-700 font-bold">✓ Up to date</span>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-emerald-100 flex items-center justify-between">
+                    <span>Pentavalent-1 + Rota-1 (6 Weeks)</span>
+                    <span className="text-emerald-700 font-bold">✓ Up to date</span>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-emerald-100 flex items-center justify-between">
+                    <span>Measles-Rubella (MR-1) (9 Months)</span>
+                    <span className="text-blue-700 font-bold">Scheduled at PHC</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODULE 8: CHRONIC DISEASE (BP & SUGAR LOG) */}
+        {activeModule === 'chronic' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900">Chronic Care Monitoring (Hypertension & Diabetes)</h3>
+                <p className="text-xs text-slate-500">Record home readings, observe trends, and receive lifestyle alerts.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Vitals Form */}
+              <form onSubmit={handleLogVitals} className="lg:col-span-5 bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 text-xs">
+                <h4 className="font-black text-sm text-slate-900">Log New Daily Reading</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Systolic BP (mmHg)</label>
+                    <input
+                      type="number"
+                      value={newSystolic}
+                      onChange={(e) => setNewSystolic(e.target.value)}
+                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Diastolic BP (mmHg)</label>
+                    <input
+                      type="number"
+                      value={newDiastolic}
+                      onChange={(e) => setNewDiastolic(e.target.value)}
+                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Fasting Blood Sugar (mg/dL)</label>
+                  <input
+                    type="number"
+                    value={newGlucose}
+                    onChange={(e) => setNewGlucose(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-xl text-xs transition-colors shadow-xs"
+                >
+                  Save Reading to Record
+                </button>
+              </form>
+
+              {/* Trend Visualizer */}
+              <div className="lg:col-span-7 bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 text-xs">
+                <h4 className="font-black text-sm text-slate-900">7-Day Blood Pressure Trend</h4>
+                <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
+                  <div className="flex items-center justify-between text-slate-500 text-[11px]">
+                    <span>Mon: 136/88</span>
+                    <span>Tue: 140/90</span>
+                    <span>Wed: 138/86</span>
+                    <span>Thu: 135/84</span>
+                    <span className="font-bold text-slate-900">Today: {patient.vitals.bp}</span>
+                  </div>
+                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                    <div className="bg-emerald-600 h-full rounded-full" style={{ width: '75%' }} />
+                  </div>
+                  <p className="text-[11px] text-slate-600 pt-1">
+                    Your blood pressure readings have remained stable this week. Continue morning Amlodipine dose.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODULE 9: WELLBEING CHECK-IN */}
+        {activeModule === 'wellbeing' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            <div>
+              <h3 className="font-extrabold text-base text-slate-900">Mental Wellbeing & Stress Check-in</h3>
+              <p className="text-xs text-slate-500">Discreet self-care support, breathing exercises, and village health worker check-in.</p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-2">How are you feeling today?</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold">
+                  {['Peaceful / Calm', 'Slightly Stressed', 'Tired / Fatigued', 'Need to Talk'].map((m) => (
+                    <button
+                      key={m}
+                      onClick={() => {
+                        setCurrentMood(m);
+                        showToast(`Mood noted: ${m}. Showing personalized relaxation tips.`);
+                      }}
+                      className={`p-3 rounded-2xl border text-center transition-all ${
+                        currentMood === m ? 'bg-emerald-50 border-emerald-500 text-emerald-950 font-black ring-2 ring-emerald-500/20' : 'bg-slate-50 border-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2-Minute Breathing Guide */}
+              <div className="bg-teal-50 border border-teal-200 rounded-2xl p-5 space-y-2 text-xs text-teal-950">
+                <h4 className="font-black text-sm text-teal-900">2-Minute Deep Breathing Guide (अनुलोम-विलोम)</h4>
+                <p className="leading-relaxed">
+                  Sit upright comfortably. Inhale slowly through your left nostril for 4 seconds, hold for 2 seconds, and exhale smoothly through the right nostril for 4 seconds. Repeat 5 times to reduce daily stress and calm your heart rate.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODULE 10: EMERGENCY SOS */}
+        {activeModule === 'emergency' && (
+          <div className="bg-red-50 border border-red-200 rounded-3xl p-6 sm:p-8 shadow-md space-y-6">
+            <div>
+              <span className="text-[10px] uppercase font-black tracking-wider bg-red-200 text-red-900 px-2.5 py-0.5 rounded-full border border-red-300">
+                Priority Emergency Assistance
+              </span>
+              <h3 className="font-black text-xl text-red-950 mt-2">Emergency Response & Medical SOS</h3>
+              <p className="text-xs text-red-900 max-w-xl">
+                1-tap direct emergency calling, automatic GPS location transmission, and instant alerts to your assigned ASHA worker and family.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <button
+                onClick={() => setIsEmergencyModalOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white font-extrabold py-4 px-5 rounded-2xl text-xs transition-all shadow-md flex flex-col items-center justify-center gap-1.5 text-center"
+              >
+                <PhoneCall className="w-5 h-5 animate-bounce" />
+                <span>Call Emergency Services</span>
+                <span className="text-[10px] font-normal opacity-90">Ambulance & Trauma Hub</span>
+              </button>
+
+              <a
+                href="tel:+919823044512"
+                className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-4 px-5 rounded-2xl text-xs transition-all shadow-md flex flex-col items-center justify-center gap-1.5 text-center"
+              >
+                <User className="w-5 h-5 text-emerald-400" />
+                <span>Call My ASHA / CHO</span>
+                <span className="text-[10px] font-normal opacity-90">Manisha Kadam</span>
+              </a>
+
+              <a
+                href="tel:+919822100192"
+                className="bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 font-extrabold py-4 px-5 rounded-2xl text-xs transition-all shadow-md flex flex-col items-center justify-center gap-1.5 text-center"
+              >
+                <PhoneCall className="w-5 h-5 text-red-600" />
+                <span>Call Emergency Contact</span>
+                <span className="text-[10px] font-normal text-slate-500">Sunita Shinde (Spouse)</span>
+              </a>
+            </div>
           </div>
         )}
 
       </div>
 
-      {/* Official Diagnostic Report Slip Modal */}
-      {selectedLabReport && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 max-h-[90vh] overflow-y-auto">
-            
-            {/* Header with Govt / Hospital Seal */}
-            <div className="flex items-start justify-between pb-4 border-b-2 border-slate-900">
+      {/* BOOK APPOINTMENT MODAL */}
+      {isBookModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/75 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5 my-auto animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <div className="text-[10px] uppercase font-black tracking-wider text-emerald-800">
-                  Government of Maharashtra • Directorate of Health Services
-                </div>
-                <h2 className="text-lg font-black text-slate-900">
-                  Junnar Rural Hospital & Diagnostic Pathology Laboratory
-                </h2>
-                <p className="text-xs text-slate-500">
-                  National Accreditation Board for Testing and Calibration Laboratories (NABL) Certified
-                </p>
+                <h3 className="font-black text-lg text-slate-900">Book Doctor Appointment</h3>
+                <p className="text-xs text-slate-500">Select doctor, consultation mode, and convenient time slot.</p>
               </div>
-              <button
-                onClick={() => setSelectedLabReport(null)}
-                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100"
-              >
+              <button onClick={() => setIsBookModalOpen(false)} className="text-slate-400 hover:text-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Patient & Report Metadata Grid */}
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+            <form onSubmit={handleBookAppointmentSubmit} className="space-y-4 text-xs">
+              
+              {/* Select Doctor */}
               <div>
-                <span className="text-[10px] text-slate-400 block uppercase font-bold">Patient Name</span>
-                <span className="font-extrabold text-slate-900">{patient.name}</span>
+                <label className="font-bold text-slate-800 block mb-1">Select Specialist Doctor</label>
+                <select
+                  value={selectedDoctor.id}
+                  onChange={(e) => {
+                    const doc = AVAILABLE_DOCTORS.find(d => d.id === e.target.value) || AVAILABLE_DOCTORS[0];
+                    setSelectedDoctor(doc);
+                  }}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-900 font-bold"
+                >
+                  {AVAILABLE_DOCTORS.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} — {d.specialty} ({d.facility})
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div>
-                <span className="text-[10px] text-slate-400 block uppercase font-bold">ABHA Number</span>
-                <span className="font-mono font-bold text-slate-900">{patient.abhaId}</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 block uppercase font-bold">Age / Gender</span>
-                <span className="font-bold text-slate-900">{patient.age} Yrs / {patient.gender}</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 block uppercase font-bold">Sample Collected At</span>
-                <span className="font-bold text-slate-800">Khamgaon Sub-Centre Spoke</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 block uppercase font-bold">Reporting Date</span>
-                <span className="font-bold text-slate-800">{selectedLabReport.reportedAt}</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 block uppercase font-bold">Referring Doctor</span>
-                <span className="font-bold text-blue-700">Dr. Rohini Kulkarni, MD</span>
-              </div>
-            </div>
 
-            {/* Test Investigation Findings Table */}
-            <div className="border border-slate-200 rounded-2xl overflow-hidden text-xs">
-              <div className="bg-slate-900 text-white p-3 font-bold grid grid-cols-3">
-                <span>Test Investigation</span>
-                <span>Observed Result</span>
-                <span>Biological Reference Range</span>
-              </div>
-              <div className="p-4 grid grid-cols-3 items-center border-t border-slate-100 bg-white">
-                <span className="font-extrabold text-slate-900">{selectedLabReport.testName}</span>
-                <span className={`font-black ${selectedLabReport.status === 'Critical' ? 'text-red-600' : 'text-slate-900'}`}>
-                  {selectedLabReport.result}
-                </span>
-                <span className="text-slate-600 font-mono">{selectedLabReport.referenceRange}</span>
-              </div>
-            </div>
+              {/* Mode Selection */}
+              <div>
+                <label className="font-bold text-slate-800 block mb-1.5">Consultation Mode</label>
+                <div className="grid grid-cols-2 gap-2 font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setAptMode('TELECONSULTATION')}
+                    className={`p-3 rounded-2xl border text-center transition-all flex items-center justify-center gap-2 ${
+                      aptMode === 'TELECONSULTATION'
+                        ? 'bg-emerald-50 border-emerald-600 text-emerald-950 ring-2 ring-emerald-500/20'
+                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                    }`}
+                  >
+                    <Video className="w-4 h-4 text-emerald-700" />
+                    <span>📹 Teleconsult Video</span>
+                  </button>
 
-            {/* Verification Seal & Doctor Sign-off */}
-            <div className="pt-4 border-t border-slate-200 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 text-emerald-800">
-                <FileCheck2 className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <span className="font-bold block">Digitally Signed & Validated</span>
-                  <span className="text-[10px] text-slate-500 font-mono">Hash: ABDM-LAB-9921-VERIFIED</span>
+                  <button
+                    type="button"
+                    onClick={() => setAptMode('IN_PERSON_OPD')}
+                    className={`p-3 rounded-2xl border text-center transition-all flex items-center justify-center gap-2 ${
+                      aptMode === 'IN_PERSON_OPD'
+                        ? 'bg-emerald-50 border-emerald-600 text-emerald-950 ring-2 ring-emerald-500/20'
+                        : 'bg-slate-50 border-slate-200 text-slate-700'
+                    }`}
+                  >
+                    <Stethoscope className="w-4 h-4 text-emerald-700" />
+                    <span>🏥 In-Person OPD</span>
+                  </button>
                 </div>
               </div>
 
-              <div className="text-right">
-                <span className="font-bold text-slate-900 block">Dr. Rohini Kulkarni, MD</span>
-                <span className="text-[10px] text-slate-500">Medical Officer In-Charge (MMC-2014-99812)</span>
+              {/* Date & Time Slot Selection */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-bold text-slate-800 block mb-1">Preferred Date</label>
+                  <select
+                    value={aptDate}
+                    onChange={(e) => setAptDate(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-900 font-bold"
+                  >
+                    <option value="Today">Today (29 Aug)</option>
+                    <option value="Tomorrow">Tomorrow (30 Aug)</option>
+                    <option value="Monday, 31 Aug">Monday, 31 Aug</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-800 block mb-1">Available Slot</label>
+                  <select
+                    value={aptTimeSlot}
+                    onChange={(e) => setAptTimeSlot(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-900 font-bold"
+                  >
+                    {selectedDoctor.availableSlots.map((slot) => (
+                      <option key={slot} value={slot}>{slot}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              {/* Reason / Presenting Complaint */}
+              <div>
+                <label className="font-bold text-slate-800 block mb-1">Chief Symptoms / Reason for Visit</label>
+                <textarea
+                  rows={3}
+                  value={aptComplaint}
+                  onChange={(e) => setAptComplaint(e.target.value)}
+                  placeholder="Describe what symptoms or guidance you need from the doctor..."
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 font-medium focus:outline-none"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#003527] hover:bg-[#064e3b] text-white font-black py-3.5 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2 mt-2"
+              >
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Confirm & Generate Digital Token Slip</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* LIVE TELECONSULTATION VIDEO ROOM MODAL */}
+      {activeVideoApt && (
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-slate-900 rounded-3xl max-w-3xl w-full border border-slate-800 shadow-2xl p-6 space-y-5 text-white animate-in fade-in zoom-in-95 duration-200">
+            
+            {/* Call Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 text-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
+                <div>
+                  <h4 className="font-black text-base text-white">{activeVideoApt.doctorName}</h4>
+                  <p className="text-[11px] text-slate-400">{activeVideoApt.doctorSpecialty} • Token: {activeVideoApt.appointmentToken}</p>
+                </div>
+              </div>
+
+              <span className="bg-emerald-500/20 text-emerald-300 font-mono font-bold px-3 py-1 rounded-full border border-emerald-500/30">
+                Live e-Sanjeevani Teleconsult
+              </span>
             </div>
 
-            {/* Print / Save Action */}
-            <div className="flex gap-3 pt-2">
+            {/* Video Streams Simulated Box */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              {/* Doctor Remote Stream */}
+              <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700 h-64 flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent z-10" />
+                <div className="relative z-20 flex items-center justify-between text-xs">
+                  <span className="bg-slate-900/80 px-2 py-1 rounded font-bold">{activeVideoApt.doctorName} (Doctor)</span>
+                  <span className="text-emerald-400 font-bold">● Connected (HD)</span>
+                </div>
+                <div className="flex items-center justify-center h-full relative z-20">
+                  <div className="w-20 h-20 rounded-full bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 flex items-center justify-center text-2xl font-black">
+                    DR
+                  </div>
+                </div>
+                <div className="relative z-20 text-[11px] text-slate-300">
+                  Audio & Video Linked • e-Rx Generation Active
+                </div>
+              </div>
+
+              {/* Patient Local Stream */}
+              <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700 h-64 flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent z-10" />
+                <div className="relative z-20 flex items-center justify-between text-xs">
+                  <span className="bg-slate-900/80 px-2 py-1 rounded font-bold">You ({patient.name})</span>
+                  <span className="text-slate-400 font-mono text-[10px]">Village Spoke</span>
+                </div>
+                <div className="flex items-center justify-center h-full relative z-20">
+                  <div className="w-20 h-20 rounded-full bg-teal-900/60 border border-teal-500/40 text-teal-300 flex items-center justify-center text-2xl font-black">
+                    {patient.name.slice(0, 2).toUpperCase()}
+                  </div>
+                </div>
+                <div className="relative z-20 text-[11px] text-slate-300">
+                  BP: {patient.vitals.bp} • SpO2: {patient.vitals.spo2}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Video Controls Bar */}
+            <div className="flex items-center justify-center gap-4 pt-3 border-t border-slate-800">
               <button
-                onClick={handlePrintSlip}
-                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2"
+                onClick={() => setIsMuted(!isMuted)}
+                className={`p-3.5 rounded-full transition-colors ${
+                  isMuted ? 'bg-red-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'
+                }`}
               >
-                <Printer className="w-4 h-4" />
-                <span>Print / Save as PDF</span>
+                {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </button>
+
+              <button
+                onClick={() => setIsVideoOff(!isVideoOff)}
+                className={`p-3.5 rounded-full transition-colors ${
+                  isVideoOff ? 'bg-red-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'
+                }`}
+              >
+                {isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveVideoApt(null);
+                  showToast('Teleconsultation session closed. Doctor e-Prescription will sync automatically.');
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-2xl text-xs transition-colors flex items-center gap-2"
+              >
+                <PhoneCall className="w-4 h-4 rotate-[135deg]" />
+                <span>Leave Teleconsult</span>
               </button>
             </div>
 

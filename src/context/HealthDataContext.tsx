@@ -9,7 +9,8 @@ import {
   DistrictMetric, 
   Referral,
   Role,
-  TriageUrgency
+  TriageUrgency,
+  Appointment
 } from '../types';
 import { 
   MAHARASHTRA_FACILITIES, 
@@ -51,6 +52,7 @@ interface HealthDataContextType {
   directives: DBDirective[];
   outbreakAlerts: DBOutbreakAlert[];
   pocTests: DBPocTest[];
+  appointments: Appointment[];
   
   // Realtime Session & Auth State
   currentUser: DBUser | null;
@@ -66,6 +68,11 @@ interface HealthDataContextType {
   registerPatient: (patientData: Partial<DBPatient>) => Promise<DBPatient>;
   updatePatientVitals: (patientId: string, vitals: Partial<DBPatient['vitals']>, notes?: string) => Promise<void>;
   getPatientByAbhaOrMobile: (query: string) => DBPatient | undefined;
+  
+  // Realtime Appointment Actions
+  bookAppointment: (appointmentData: Partial<Appointment>) => Promise<Appointment>;
+  updateAppointmentStatus: (appointmentId: string, status: Appointment['status'], notes?: string) => Promise<void>;
+  cancelAppointment: (appointmentId: string) => Promise<void>;
   
   // Realtime Teleconsultation Actions
   enqueueTeleconsult: (item: Partial<DBTeleconsult>) => Promise<DBTeleconsult>;
@@ -84,7 +91,7 @@ interface HealthDataContextType {
   // Realtime Referral & Bed Actions
   createReferral: (referralData: Partial<DBReferral>) => Promise<DBReferral>;
   updateReferralStatus: (referralId: string, status: DBReferral['status']) => Promise<void>;
-  updateFacilityBeds: (facilityId: string, change: { availableBeds?: number; icuBedsAvailable?: number }) => void;
+  updateFacilityBeds: (facilityId: string, change: { totalBeds?: number; availableBeds?: number; icuBedsAvailable?: number }) => void;
 
   // Frontline ASHA & CHO Actions
   completeAshaTask: (taskId: string, recordedVitals?: any, notes?: string) => Promise<void>;
@@ -117,6 +124,7 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [directives, setDirectives] = useState<DBDirective[]>([]);
   const [outbreakAlerts, setOutbreakAlerts] = useState<DBOutbreakAlert[]>([]);
   const [pocTests, setPocTests] = useState<DBPocTest[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   // Auth State
   const [currentUser, setCurrentUser] = useState<DBUser | null>(null);
@@ -139,7 +147,8 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         storedOutbreaks,
         storedPoc,
         storedActivities,
-        storedSession
+        storedSession,
+        storedAppointments
       ] = await Promise.all([
         setuDB.getAll<DBPatient>('patients'),
         setuDB.getAll<DBTeleconsult>('teleconsultQueue'),
@@ -153,7 +162,8 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setuDB.getAll<DBOutbreakAlert>('outbreakAlerts'),
         setuDB.getAll<DBPocTest>('pocTests'),
         setuDB.getAll<DBActivity>('activityLogs'),
-        setuDB.getActiveSession()
+        setuDB.getActiveSession(),
+        setuDB.getAll<Appointment>('appointments')
       ]);
 
       if (storedPatients && storedPatients.length > 0) setPatients(storedPatients);
@@ -169,6 +179,7 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (storedPoc) setPocTests(storedPoc);
       if (storedActivities) setActivityLogs(storedActivities);
       if (storedSession) setCurrentUser(storedSession);
+      if (storedAppointments) setAppointments(storedAppointments);
     } catch (e) {
       console.error('Failed to sync from IndexedDB', e);
     }
@@ -259,6 +270,19 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       const pName = p.name.toLowerCase();
       return pAbha.includes(clean) || pMobile.includes(clean) || pName.includes(clean);
     });
+  };
+
+  const bookAppointment = async (appointmentData: Partial<Appointment>): Promise<Appointment> => {
+    const newApt = await setuDB.bookAppointment(appointmentData);
+    return newApt;
+  };
+
+  const updateAppointmentStatus = async (appointmentId: string, status: Appointment['status'], notes?: string): Promise<void> => {
+    await setuDB.updateAppointmentStatus(appointmentId, status, notes);
+  };
+
+  const cancelAppointment = async (appointmentId: string): Promise<void> => {
+    await setuDB.updateAppointmentStatus(appointmentId, 'CANCELLED', 'Cancelled by user');
   };
 
   const enqueueTeleconsult = async (item: Partial<DBTeleconsult>): Promise<DBTeleconsult> => {
@@ -550,18 +574,21 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
-  const updateFacilityBeds = async (facilityId: string, change: { availableBeds?: number; icuBedsAvailable?: number }) => {
+  const updateFacilityBeds = async (facilityId: string, change: { totalBeds?: number; availableBeds?: number; icuBedsAvailable?: number }) => {
     const fac = await setuDB.getById<Facility>('facilities', facilityId);
     if (fac) {
+      if (change.totalBeds !== undefined) fac.totalBeds = Math.max(1, change.totalBeds);
       fac.availableBeds = change.availableBeds !== undefined ? Math.max(0, Math.min(fac.totalBeds, change.availableBeds)) : fac.availableBeds;
       fac.icuBedsAvailable = change.icuBedsAvailable !== undefined ? Math.max(0, change.icuBedsAvailable) : fac.icuBedsAvailable;
       await setuDB.putItem('facilities', fac);
     }
     setFacilities(prev => prev.map(f => {
       if (f.id === facilityId) {
+        const newTotal = change.totalBeds !== undefined ? Math.max(1, change.totalBeds) : f.totalBeds;
         return {
           ...f,
-          availableBeds: change.availableBeds !== undefined ? Math.max(0, Math.min(f.totalBeds, change.availableBeds)) : f.availableBeds,
+          totalBeds: newTotal,
+          availableBeds: change.availableBeds !== undefined ? Math.max(0, Math.min(newTotal, change.availableBeds)) : f.availableBeds,
           icuBedsAvailable: change.icuBedsAvailable !== undefined ? Math.max(0, change.icuBedsAvailable) : f.icuBedsAvailable
         };
       }
@@ -693,6 +720,7 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       directives,
       outbreakAlerts,
       pocTests,
+      appointments,
       currentUser,
       setCurrentUser,
       isAuthModalOpen,
@@ -704,6 +732,9 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       registerPatient,
       updatePatientVitals,
       getPatientByAbhaOrMobile,
+      bookAppointment,
+      updateAppointmentStatus,
+      cancelAppointment,
       enqueueTeleconsult,
       updateTeleconsultStatus,
       completeConsultationAndIssueRx,

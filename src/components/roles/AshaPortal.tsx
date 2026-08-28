@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useHealthData } from '../../context/HealthDataContext';
-import { bhashiniAI } from '../../services/bhashiniService';
+import { bhashiniAI, VitalsVoiceExtraction } from '../../services/bhashiniService';
+import { Language } from '../../types';
 import { 
   HeartHandshake, 
   UserPlus, 
@@ -22,62 +23,153 @@ import {
   Activity, 
   Baby, 
   Users,
-  X
+  X,
+  Sparkles,
+  Send,
+  ArrowRight,
+  ClipboardList,
+  AlertTriangle,
+  Languages,
+  Volume2,
+  Check
 } from 'lucide-react';
 
 export const AshaPortal: React.FC = () => {
-  const { isOnline, setIsOnline, showToast, language, setCurrentView } = useApp();
-  const { ashaTasks, completeAshaTask, addAshaTask, registerPatient, patients } = useHealthData();
+  const { isOnline, setIsOnline, showToast, language, setCurrentView, t } = useApp();
+  const { ashaTasks, completeAshaTask, addAshaTask, registerPatient, patients, createReferral } = useHealthData();
 
-  const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [activeTab, setActiveTab] = useState<'today_work' | 'patients' | 'visit_workflow' | 'language_bridge' | 'referrals' | 'offline_sync'>('today_work');
   const [searchQuery, setSearchQuery] = useState<string>('');
   
-  // Modals state
-  const [isVisitModalOpen, setIsVisitModalOpen] = useState<boolean>(false);
-  const [selectedTask, setSelectedTask] = useState<any>(null);
+  // Offline sync queue state
+  const [offlinePendingCount, setOfflinePendingCount] = useState<number>(0);
+
+  // Field Visit Workflow state
+  const [selectedPatientForVisit, setSelectedPatientForVisit] = useState<any>(patients[0] || null);
+  const [visitBp, setVisitBp] = useState<string>('148/92');
+  const [visitPulse, setVisitPulse] = useState<string>('82');
+  const [visitSpo2, setVisitSpo2] = useState<string>('97');
+  const [visitTemp, setVisitTemp] = useState<string>('98.4');
+  const [visitGlucose, setVisitGlucose] = useState<string>('142');
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>(['Headache', 'Dizziness']);
+  const [visitNotes, setVisitNotes] = useState<string>('Patient counseled on salt restriction and daily Amlodipine tablet adherence.');
+  const [aiTriageStatus, setAiTriageStatus] = useState<'ROUTINE' | 'FOLLOW_UP' | 'URGENT'>('FOLLOW_UP');
+
+  // USE CASE #3: Voice Clinical Data Entry State
+  const [isVoiceEntryListening, setIsVoiceEntryListening] = useState<boolean>(false);
+  const [voiceParsedVitals, setVoiceParsedVitals] = useState<VitalsVoiceExtraction | null>(null);
+
+  // USE CASE #5: ASHA <-> Patient Live Language Bridge State
+  const [bridgePatientLang, setBridgePatientLang] = useState<Language>('or'); // Odia patient
+  const [bridgeChoLang, setBridgeChoLang] = useState<Language>('hi'); // Hindi CHO
+  const [bridgePatientInput, setBridgePatientInput] = useState<string>('ମୋତେ ଛାତିରେ ବ୍ୟଥା ହେଉଛି ଏବଂ ନିଶ୍ୱାସ ନେବାରେ କଷ୍ଟ ହେଉଛି।');
+  const [bridgeChoTranslated, setBridgeChoTranslated] = useState<string>('मुझे सीने में दर्द हो रहा है और सांस लेने में तकलीफ हो रही है।');
+  const [bridgeChoInput, setBridgeChoInput] = useState<string>('आपको यह दवा दिन में दो बार भोजन के बाद लेनी है।');
+  const [bridgePatientTranslated, setBridgePatientTranslated] = useState<string>('ଆପଣଙ୍କୁ ଏହି ଔଷଧ ଦିନକୁ ଦୁଇଥର ଖାଇବା ପରେ ନେବାକୁ ପଡିବ।');
+  const [isBridgeListening, setIsBridgeListening] = useState<boolean>(false);
+
+  // New Patient Registration State
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState<boolean>(false);
-
-  // Visit Form state
-  const [vitalsBp, setVitalsBp] = useState<string>('138/92');
-  const [vitalsHb, setVitalsHb] = useState<string>('8.2');
-  const [vitalsSugar, setVitalsSugar] = useState<string>('110');
-  const [vitalsWeight, setVitalsWeight] = useState<string>('52');
-  const [visitNotes, setVisitNotes] = useState<string>('Mother counseled on IFA tablet compliance and iron-rich diet (spinach, jaggery).');
-
-  // New Registration form state
   const [regName, setRegName] = useState<string>('');
-  const [regAge, setRegAge] = useState<number>(24);
+  const [regAge, setRegAge] = useState<number>(32);
   const [regGender, setRegGender] = useState<'Female' | 'Male'>('Female');
   const [regVillage, setRegVillage] = useState<string>('Khamgaon');
   const [regMobile, setRegMobile] = useState<string>('+91 98230 44512');
-  const [regCategory, setRegCategory] = useState<'Maternal ANC' | 'NCD Patient' | 'Pediatric'>('Maternal ANC');
+  const [regCategory, setRegCategory] = useState<'Maternal ANC' | 'NCD Patient' | 'Elderly Care' | 'General'>('Maternal ANC');
   const [regRisk, setRegRisk] = useState<'Low' | 'Moderate' | 'High-Risk'>('High-Risk');
 
-  const filteredTasks = ashaTasks.filter(t => {
-    const matchesCat = activeCategory === 'All' || t.category.includes(activeCategory);
-    const matchesSearch = !searchQuery || t.patientName.toLowerCase().includes(searchQuery.toLowerCase()) || t.village.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCat && matchesSearch;
-  });
+  // Referral Modal State
+  const [isReferralModalOpen, setIsReferralModalOpen] = useState<boolean>(false);
+  const [referralTargetFacility, setReferralTargetFacility] = useState<string>('Otur Primary Health Centre');
+  const [referralReason, setReferralReason] = useState<string>('Elevated blood pressure (148/92) with persistent headache & fatigue.');
+  const [referralUrgency, setReferralUrgency] = useState<'amber' | 'red' | 'green'>('amber');
 
-  const handleOpenVisit = (task: any) => {
-    setSelectedTask(task);
-    setIsVisitModalOpen(true);
+  const toggleSymptom = (sym: string) => {
+    if (selectedSymptoms.includes(sym)) {
+      setSelectedSymptoms(selectedSymptoms.filter(s => s !== sym));
+    } else {
+      setSelectedSymptoms([...selectedSymptoms, sym]);
+    }
   };
 
-  const handleSubmitVisit = (e: React.FormEvent) => {
+  const handleStartFieldVisit = (patientObj: any) => {
+    setSelectedPatientForVisit(patientObj);
+    setActiveTab('visit_workflow');
+  };
+
+  const handleSaveVisit = () => {
+    if (!isOnline) {
+      setOfflinePendingCount(prev => prev + 1);
+      showToast(`Offline Mode: Visit for ${selectedPatientForVisit?.name} queued in local storage.`);
+    } else {
+      showToast(`Visit recorded for ${selectedPatientForVisit?.name}. Vitals and assessment synced to Setu.`);
+    }
+    setActiveTab('today_work');
+  };
+
+  // Trigger ASHA/CHO Voice Clinical Data Entry (USE CASE #3)
+  const handleStartVoiceVitalsEntry = () => {
+    setIsVoiceEntryListening(true);
+    bhashiniAI.asr(
+      language,
+      (transcript) => {
+        const parsed = bhashiniAI.parseVitalsVoiceInput(transcript);
+        setVoiceParsedVitals(parsed);
+      },
+      (err) => {
+        console.warn('Voice ASR notice:', err);
+      },
+      () => {
+        setIsVoiceEntryListening(false);
+      }
+    );
+  };
+
+  // Apply parsed vitals to the active form
+  const handleApplyParsedVitals = () => {
+    if (!voiceParsedVitals) return;
+    if (voiceParsedVitals.systolic && voiceParsedVitals.diastolic) {
+      setVisitBp(`${voiceParsedVitals.systolic}/${voiceParsedVitals.diastolic}`);
+    }
+    if (voiceParsedVitals.bloodGlucose) {
+      setVisitGlucose(voiceParsedVitals.bloodGlucose.toString());
+    }
+    showToast(`Applied voice-parsed clinical values to visit chart.`);
+    setVoiceParsedVitals(null);
+  };
+
+  // Live Language Bridge Translation Handlers (USE CASE #5)
+  const handleTranslatePatientToCho = (text: string) => {
+    setBridgePatientInput(text);
+    const trans = bhashiniAI.liveBridgeTranslate(text, bridgePatientLang, bridgeChoLang);
+    setBridgeChoTranslated(trans);
+  };
+
+  const handleTranslateChoToPatient = (text: string) => {
+    setBridgeChoInput(text);
+    const trans = bhashiniAI.liveBridgeTranslate(text, bridgeChoLang, bridgePatientLang);
+    setBridgePatientTranslated(trans);
+    bhashiniAI.tts(trans, bridgePatientLang);
+  };
+
+  const handleCreateReferral = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTask) return;
-    completeAshaTask(selectedTask.id, {
-      bp: `${vitalsBp} mmHg`,
-      sugar: `${vitalsSugar} mg/dL`,
-      hemoglobin: `${vitalsHb} g/dL`,
-      weight: `${vitalsWeight} kg`
-    }, visitNotes);
-    setIsVisitModalOpen(false);
-    showToast(`Home visit recorded for ${selectedTask.patientName}. HMIS synced.`);
+    await createReferral({
+      patientName: selectedPatientForVisit?.name || 'Patient',
+      patientAge: selectedPatientForVisit?.age || 40,
+      patientGender: selectedPatientForVisit?.gender || 'Female',
+      patientVillage: selectedPatientForVisit?.village || 'Khamgaon',
+      targetFacilityName: referralTargetFacility,
+      reasonForReferral: referralReason,
+      urgency: referralUrgency,
+      referringProviderName: 'Manisha Kadam, ASHA Worker',
+      referringFacilityName: 'Khamgaon Village Sector'
+    });
+    showToast(`Referral issued to ${referralTargetFacility} for ${selectedPatientForVisit?.name}.`);
+    setIsReferralModalOpen(false);
   };
 
-  const handleRegisterNewBeneficiary = async (e: React.FormEvent) => {
+  const handleRegisterBeneficiary = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regName.trim()) return;
 
@@ -92,333 +184,553 @@ export const AshaPortal: React.FC = () => {
       assignedAsha: 'Manisha Kadam'
     });
 
-    addAshaTask({
-      patientName: newP.name,
-      patientAge: newP.age,
-      village: newP.village,
-      category: regCategory as any,
-      actionRequired: `First trimester ANC registration & tetanus toxoid check`,
-      urgency: 'today'
-    });
-
+    showToast(`Registered new citizen: ${newP.name} (ABHA generated).`);
     setIsRegisterModalOpen(false);
     setRegName('');
-    showToast(`Registered ${newP.name} with ABHA ID: ${newP.abhaId}`);
+  };
+
+  const handleSyncOfflineQueue = () => {
+    setOfflinePendingCount(0);
+    showToast('Sync completed: 100% field records synchronized with central Setu servers.');
   };
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* ASHA Field Header */}
+        {/* ASHA / CHO Field Command Header */}
         <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-xl font-bold shadow-md">
+            <div className="w-14 h-14 rounded-2xl bg-rose-700 text-white flex items-center justify-center text-xl font-bold shadow-md">
               <HeartHandshake className="w-7 h-7" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-slate-900">Manisha Kadam (ASHA Sevika)</h1>
+                <h1 className="text-xl font-black text-slate-900">{t.ashaPortalTitle}</h1>
                 <span className="bg-rose-100 text-rose-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-rose-300">
-                  Khamgaon Sub-Centre Sector 4
+                  {t.role_asha}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                Catchment Population: <strong>1,420 Residents (284 Households)</strong> • Junnar Taluka, Pune
+                Assigned Village: <strong>Khamgaon & Otur Spoke (Sector 4)</strong> • Sub-Centre: <strong>Ayushman Arogya Mandir</strong>
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <button
-              onClick={() => setIsRegisterModalOpen(true)}
-              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Register New Beneficiary</span>
-            </button>
-
-            <button
-              onClick={() => setIsOnline(!isOnline)}
-              className={`text-xs font-bold py-2.5 px-4 rounded-xl border flex items-center gap-1.5 transition-all ${
-                isOnline ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-900 border-amber-300 animate-pulse'
-              }`}
-            >
-              {isOnline ? <Wifi className="w-3.5 h-3.5 text-emerald-600" /> : <WifiOff className="w-3.5 h-3.5 text-amber-600" />}
-              <span>{isOnline ? 'HMIS Auto-Sync Live' : 'Offline Mode (Local Storage)'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Task Metrics Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Due Visits Today</span>
-            <div className="text-2xl font-black text-slate-900">{ashaTasks.filter(t => !t.completedAt).length} Households</div>
-            <span className="text-[11px] text-rose-600 font-bold">2 High-Risk ANC Flagged</span>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Severe Anemia / Pre-eclampsia</span>
-            <div className="text-2xl font-black text-red-600">3 Cases</div>
-            <span className="text-[11px] text-slate-500">Under Junnar RH teleconsult</span>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Child Immunization Due</span>
-            <div className="text-2xl font-black text-blue-600">4 Children</div>
-            <span className="text-[11px] text-slate-500">MR-1 & Pentavalent</span>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Completed & Synced</span>
-            <div className="text-2xl font-black text-emerald-700">{ashaTasks.filter(t => t.completedAt).length} Visits</div>
-            <span className="text-[11px] text-emerald-600 font-bold">100% Uploaded</span>
-          </div>
-        </div>
-
-        {/* Task Filter & Search Bar */}
-        <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            
-            {/* Category Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1">
-              {['All', 'Maternal ANC', 'Postnatal PNC', 'NCD', 'Child Immunization'].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                    activeCategory === cat
-                      ? 'bg-rose-700 text-white shadow-xs'
-                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+          {/* Offline Sync State Indicator */}
+          <div className="flex items-center gap-3">
+            <div className={`px-3 py-1.5 rounded-2xl border text-xs font-bold flex items-center gap-1.5 ${
+              offlinePendingCount > 0 ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${offlinePendingCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
+              <span>{offlinePendingCount > 0 ? `🟠 ${offlinePendingCount} ${t.syncPending}` : `🟢 ${t.synced}`}</span>
             </div>
 
-            {/* Search Box */}
-            <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-              <input
-                type="text"
-                placeholder="Search beneficiary or household..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500 font-medium"
+            {offlinePendingCount > 0 && (
+              <button
+                onClick={handleSyncOfflineQueue}
+                className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-1.5 px-3 rounded-xl transition-all shadow-xs flex items-center gap-1"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>{t.syncWithHmis}</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setIsRegisterModalOpen(true)}
+              className="bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs py-2 px-3.5 rounded-xl transition-all shadow-xs flex items-center gap-1.5"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>+ {t.role_patient}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-slate-200 gap-2 overflow-x-auto pb-1 text-xs font-bold">
+          {[
+            { id: 'today_work', label: `📋 ${t.fieldHomeVisits} (${ashaTasks.filter(item => !item.completedAt).length})`, icon: ClipboardList },
+            { id: 'visit_workflow', label: `🩺 ${t.logVisitSubmit}`, icon: Activity },
+            { id: 'language_bridge', label: '🌐 Bhashini Language Bridge', icon: Languages },
+            { id: 'patients', label: `👥 ${t.householdRoster} (${patients.length})`, icon: Users },
+            { id: 'referrals', label: `🚑 ${t.referPatientBtn}`, icon: Send }
+          ].map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap ${
+                  isActive
+                    ? 'bg-rose-700 text-white shadow-xs'
+                    : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                }`}
+              >
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* TAB 1: TODAY'S FIELD VISITS QUEUE */}
+        {activeTab === 'today_work' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">Assigned Field Visits for Today</h3>
+                  <p className="text-xs text-slate-500">Prioritized by clinical severity (🔴 High-Risk ANC → 🟡 Follow-ups → 🟢 Routine Care).</p>
+                </div>
+                <button
+                  onClick={() => setIsRegisterModalOpen(true)}
+                  className="text-xs text-rose-800 font-bold hover:underline"
+                >
+                  + Add Doorstep Screening
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {ashaTasks.map((task) => {
+                  const isRed = task.urgency === 'overdue';
+                  const isAmber = task.urgency === 'today';
+                  const isDone = !!task.completedAt;
+                  return (
+                    <div
+                      key={task.id}
+                      className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
+                        isDone ? 'bg-slate-50 border-slate-200 opacity-60' :
+                        isRed ? 'bg-red-50/60 border-red-200' :
+                        isAmber ? 'bg-amber-50/60 border-amber-200' : 'bg-emerald-50/60 border-emerald-200'
+                      }`}
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                            isRed ? 'bg-red-200 text-red-900' : isAmber ? 'bg-amber-200 text-amber-900' : 'bg-emerald-200 text-emerald-900'
+                          }`}>
+                            {task.urgency.toUpperCase()}
+                          </span>
+                          <span className="font-extrabold text-sm text-slate-900">{task.patientName}</span>
+                          <span className="text-xs text-slate-500">({task.patientAge}y • {task.village})</span>
+                        </div>
+                        <p className="text-xs text-slate-700 font-medium">
+                          {task.category}: {task.actionRequired}
+                        </p>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-2">
+                          <span>Scheduled: <strong>{task.dueDate}</strong></span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 w-full sm:w-auto">
+                        {!isDone ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                const found = patients.find(p => p.name === task.patientName) || {
+                                  id: task.id,
+                                  name: task.patientName,
+                                  age: task.patientAge,
+                                  gender: 'Female',
+                                  village: task.village,
+                                  category: task.category
+                                };
+                                handleStartFieldVisit(found);
+                              }}
+                              className="flex-1 sm:flex-none bg-rose-700 hover:bg-rose-800 text-white font-bold py-2 px-3.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1 shadow-xs"
+                            >
+                              <Activity className="w-3.5 h-3.5" />
+                              <span>Start Triage Visit</span>
+                            </button>
+                            <button
+                              onClick={() => completeAshaTask(task.id)}
+                              className="bg-white hover:bg-slate-100 text-slate-700 font-bold py-2 px-3 rounded-xl border border-slate-300 text-xs transition-colors"
+                            >
+                              Mark Done
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-xs text-emerald-700 font-bold flex items-center gap-1">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Visit Recorded</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: STEP-BY-STEP FIELD VISIT & VITALS TRIAGE */}
+        {activeTab === 'visit_workflow' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            
+            {/* Active Patient Bar & Voice Entry Trigger */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider bg-rose-100 text-rose-900 px-2.5 py-0.5 rounded-full border border-rose-300">
+                  Active Doorstep Triage
+                </span>
+                <h3 className="font-extrabold text-lg text-slate-900 mt-1">
+                  Field Check-in: {selectedPatientForVisit?.name || 'Sunita Shinde'}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Village: <strong>{selectedPatientForVisit?.village || 'Khamgaon'}</strong> • Age: <strong>{selectedPatientForVisit?.age || 32}y</strong>
+                </p>
+              </div>
+
+              {/* USE CASE #3: Voice Entry Button */}
+              <button
+                onClick={handleStartVoiceVitalsEntry}
+                className={`py-2.5 px-4 rounded-2xl text-xs font-bold transition-all shadow-md flex items-center gap-2 ${
+                  isVoiceEntryListening ? 'bg-red-600 text-white animate-pulse' : 'bg-slate-900 hover:bg-slate-800 text-white'
+                }`}
+              >
+                <Mic className="w-4 h-4 text-emerald-400" />
+                <span>{isVoiceEntryListening ? 'Listening vitals...' : '🎤 Voice Clinical Entry'}</span>
+              </button>
+            </div>
+
+            {/* USE CASE #3: Detected Voice Vitals Card */}
+            {voiceParsedVitals && (
+              <div className="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 space-y-3 animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-emerald-950 font-bold text-xs">
+                    <Sparkles className="w-4 h-4 text-emerald-700" />
+                    <span>BHASHINI Voice-Extracted Clinical Parameters:</span>
+                  </div>
+                  <span className="text-[10px] bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded font-mono font-bold">
+                    Detected {voiceParsedVitals.detectedLanguage.toUpperCase()}
+                  </span>
+                </div>
+
+                <div className="text-xs italic text-slate-700 bg-white/80 p-2.5 rounded-xl border border-emerald-200">
+                  "{voiceParsedVitals.rawTranscript}"
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  <div className="bg-white p-2.5 rounded-xl border border-emerald-200">
+                    <span className="text-slate-400 text-[10px] block">BP Reading</span>
+                    <span className="font-black text-slate-900">{voiceParsedVitals.systolic} / {voiceParsedVitals.diastolic} mmHg</span>
+                  </div>
+                  <div className="bg-white p-2.5 rounded-xl border border-emerald-200">
+                    <span className="text-slate-400 text-[10px] block">Blood Glucose</span>
+                    <span className="font-black text-slate-900">{voiceParsedVitals.bloodGlucose} mg/dL</span>
+                  </div>
+                  <div className="bg-white p-2.5 rounded-xl border border-emerald-200">
+                    <span className="text-slate-400 text-[10px] block">Patient Name</span>
+                    <span className="font-bold text-slate-900 truncate block">{voiceParsedVitals.patientName}</span>
+                  </div>
+                  <div className="bg-white p-2.5 rounded-xl border border-emerald-200">
+                    <span className="text-slate-400 text-[10px] block">Age</span>
+                    <span className="font-bold text-slate-900">{voiceParsedVitals.age} Years</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={handleApplyParsedVitals}
+                    className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-xs"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Confirm & Apply to Form</span>
+                  </button>
+                  <button
+                    onClick={() => setVoiceParsedVitals(null)}
+                    className="bg-white hover:bg-slate-100 text-slate-700 font-bold py-2 px-3 rounded-xl border border-slate-300 text-xs"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Vitals Input Grid */}
+            <div className="space-y-4">
+              <h4 className="font-black text-xs text-slate-900 uppercase tracking-wider">1. Record Vital Signs:</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                  <label className="text-slate-500 font-bold block mb-1">Blood Pressure</label>
+                  <input
+                    type="text"
+                    value={visitBp}
+                    onChange={(e) => setVisitBp(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-900"
+                  />
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                  <label className="text-slate-500 font-bold block mb-1">Pulse (bpm)</label>
+                  <input
+                    type="number"
+                    value={visitPulse}
+                    onChange={(e) => setVisitPulse(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-900"
+                  />
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                  <label className="text-slate-500 font-bold block mb-1">SpO2 (%)</label>
+                  <input
+                    type="number"
+                    value={visitSpo2}
+                    onChange={(e) => setVisitSpo2(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-emerald-800"
+                  />
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                  <label className="text-slate-500 font-bold block mb-1">Temp (°F)</label>
+                  <input
+                    type="text"
+                    value={visitTemp}
+                    onChange={(e) => setVisitTemp(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-900"
+                  />
+                </div>
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                  <label className="text-slate-500 font-bold block mb-1">Glucose (mg/dL)</label>
+                  <input
+                    type="number"
+                    value={visitGlucose}
+                    onChange={(e) => setVisitGlucose(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-900"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Symptoms Tagging */}
+            <div className="space-y-2 text-xs">
+              <h4 className="font-black text-xs text-slate-900 uppercase tracking-wider">2. Observed Symptoms:</h4>
+              <div className="flex flex-wrap gap-2">
+                {['Headache', 'Dizziness', 'Fever > 48h', 'Chest Discomfort', 'Swelling (Edema)', 'Cough / Breathlessness', 'Severe Fatigue'].map((sym) => {
+                  const isChecked = selectedSymptoms.includes(sym);
+                  return (
+                    <button
+                      key={sym}
+                      type="button"
+                      onClick={() => toggleSymptom(sym)}
+                      className={`px-3 py-1.5 rounded-xl border font-bold transition-all ${
+                        isChecked ? 'bg-rose-100 text-rose-900 border-rose-300' : 'bg-slate-50 text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      {isChecked ? `✓ ${sym}` : `+ ${sym}`}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Field Notes & Actions */}
+            <div className="space-y-2 text-xs">
+              <label className="font-bold text-slate-800 block">3. Counseling & Visit Clinical Notes:</label>
+              <textarea
+                rows={3}
+                value={visitNotes}
+                onChange={(e) => setVisitNotes(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 rounded-2xl p-3 text-xs text-slate-900 focus:outline-none"
               />
             </div>
 
+            <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+              <button
+                onClick={() => setIsReferralModalOpen(true)}
+                className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-5 rounded-2xl text-xs transition-all shadow-xs flex items-center gap-1.5"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Escalate & Create Referral Slip</span>
+              </button>
+
+              <button
+                onClick={handleSaveVisit}
+                className="bg-rose-700 hover:bg-rose-800 text-white font-extrabold py-3 px-6 rounded-2xl text-xs transition-all shadow-md flex items-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Save & Complete Visit Record</span>
+              </button>
+            </div>
+
           </div>
+        )}
 
-          {/* Tasks Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredTasks.map((task) => {
-              const isDone = !!task.completedAt;
-              return (
-                <div
-                  key={task.id}
-                  className={`rounded-2xl border p-4 flex flex-col justify-between space-y-3 transition-all ${
-                    isDone 
-                      ? 'bg-emerald-50/40 border-emerald-200' 
-                      : task.category.includes('ANC') 
-                      ? 'bg-white border-rose-200 hover:border-rose-400 shadow-xs' 
-                      : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs'
-                  }`}
-                >
-                  <div className="space-y-2">
-                    <div className="flex items-start justify-between">
-                      <span className="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md font-mono">
-                        {task.householdNumber}
-                      </span>
-                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                        isDone 
-                          ? 'bg-emerald-100 text-emerald-800' 
-                          : task.urgency === 'overdue' 
-                          ? 'bg-red-100 text-red-800' 
-                          : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {isDone ? 'Completed' : task.urgency.toUpperCase()}
-                      </span>
-                    </div>
+        {/* TAB 3: USE CASE #5 — BHASHINI LIVE LANGUAGE BRIDGE */}
+        {activeTab === 'language_bridge' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-900 px-2.5 py-0.5 rounded-full border border-blue-300">
+                  USE CASE #5 — BHASHINI Anuvaad Bridge
+                </span>
+                <h3 className="font-extrabold text-xl text-slate-900 mt-1">Live ASHA / CHO ↔ Patient Language Bridge</h3>
+                <p className="text-xs text-slate-500">
+                  Instant bidirectional translation and voice synthesis for tribal & linguistic minority patient communication.
+                </p>
+              </div>
+            </div>
 
-                    <div>
-                      <h4 className="font-extrabold text-sm text-slate-900">{task.patientName}</h4>
-                      <p className="text-xs text-slate-500">{task.patientAge}y • {task.village} • {task.category}</p>
-                    </div>
-
-                    <div className="text-xs text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-100 font-medium">
-                      <strong>Action:</strong> {task.actionRequired}
-                    </div>
-
-                    {task.lastVitals && (
-                      <div className="grid grid-cols-3 gap-1 bg-white p-2 rounded-lg border border-slate-200 text-[11px]">
-                        <div>BP: <strong className="text-slate-900">{task.lastVitals.bp}</strong></div>
-                        <div>Hb: <strong className="text-red-700">{task.lastVitals.hemoglobin}</strong></div>
-                        <div>Sugar: <strong className="text-slate-900">{task.lastVitals.sugar}</strong></div>
-                      </div>
-                    )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Patient Side (e.g. Speaks Odia) */}
+              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-xs text-slate-800">👤 Patient Language (e.g. Odia)</span>
+                    <span className="text-[10px] bg-slate-200 font-mono font-bold px-2 py-0.5 rounded">
+                      Language: Odia (ଓଡ଼ିଆ)
+                    </span>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 flex items-center gap-2">
-                    {!isDone ? (
-                      <button
-                        onClick={() => handleOpenVisit(task)}
-                        className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-1 shadow-xs"
-                      >
-                        <Stethoscope className="w-3.5 h-3.5" />
-                        <span>Log Home Visit & Vitals</span>
-                      </button>
-                    ) : (
-                      <div className="flex-1 text-center py-1.5 text-xs text-emerald-700 font-bold flex items-center justify-center gap-1">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Visit Completed & Synced</span>
-                      </div>
-                    )}
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-500 block mb-1">Patient Speaks:</label>
+                    <textarea
+                      rows={3}
+                      value={bridgePatientInput}
+                      onChange={(e) => handleTranslatePatientToCho(e.target.value)}
+                      className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900"
+                    />
+                  </div>
+
+                  <div className="bg-blue-50 border border-blue-200 p-3 rounded-xl space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-blue-800 block">CHO / ASHA Hears (Hindi Translation):</span>
+                    <p className="text-xs font-bold text-blue-950">"{bridgeChoTranslated}"</p>
                   </div>
                 </div>
-              );
-            })}
+
+                <button
+                  onClick={() => bhashiniAI.tts(bridgeChoTranslated, 'hi')}
+                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Volume2 className="w-3.5 h-3.5" />
+                  <span>Listen in Hindi (ASHA)</span>
+                </button>
+              </div>
+
+              {/* CHO Side (e.g. Speaks Hindi) */}
+              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-extrabold text-xs text-slate-800">👩‍⚕️ CHO / ASHA Response (Hindi)</span>
+                    <span className="text-[10px] bg-slate-200 font-mono font-bold px-2 py-0.5 rounded">
+                      Language: Hindi (हिन्दी)
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-500 block mb-1">CHO Speaks Directions:</label>
+                    <textarea
+                      rows={3}
+                      value={bridgeChoInput}
+                      onChange={(e) => handleTranslateChoToPatient(e.target.value)}
+                      className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900"
+                    />
+                  </div>
+
+                  <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-emerald-800 block">Patient Hears (Odia Translation):</span>
+                    <p className="text-xs font-bold text-emerald-950">"{bridgePatientTranslated}"</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => bhashiniAI.tts(bridgePatientTranslated, 'or')}
+                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                >
+                  <Volume2 className="w-3.5 h-3.5" />
+                  <span>🔊 Play Voice to Patient in Odia</span>
+                </button>
+              </div>
+
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* TAB 4: VILLAGE POPULATION ROSTER */}
+        {activeTab === 'patients' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900">Village Population Health Register</h3>
+                <p className="text-xs text-slate-500">Track ABHA verification, high-risk flags, and routine check-up due dates.</p>
+              </div>
+              <input
+                type="text"
+                placeholder="Search patient name, ABHA or village..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs w-full sm:w-64"
+              />
+            </div>
+
+            <div className="divide-y divide-slate-100 text-xs">
+              {patients.map((p) => (
+                <div key={p.id} className="py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold text-sm text-slate-900">{p.name}</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        p.riskLevel === 'High-Risk' || p.riskLevel === 'Critical' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {p.riskLevel || 'Low'} Risk
+                      </span>
+                    </div>
+                    <div className="text-slate-500 text-[11px] mt-0.5">
+                      ABHA: <span className="font-mono">{p.abhaId}</span> • Age: <strong>{p.age}y</strong> ({p.gender}) • Village: <strong>{p.village}</strong>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleStartFieldVisit(p)}
+                    className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-1.5 px-3.5 rounded-xl text-xs transition-colors"
+                  >
+                    Conduct Visit
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
 
-      {/* MODAL: LOG HOME VISIT */}
-      {isVisitModalOpen && selectedTask && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div>
-                <h3 className="font-extrabold text-base text-slate-900">Log Household Visit & Vitals</h3>
-                <p className="text-xs text-slate-500">{selectedTask.patientName} ({selectedTask.householdNumber})</p>
-              </div>
-              <button 
-                onClick={() => setIsVisitModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmitVisit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <label className="text-slate-700 font-bold block mb-1">Blood Pressure (mmHg)</label>
-                  <input
-                    type="text"
-                    value={vitalsBp}
-                    onChange={(e) => setVitalsBp(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 font-mono"
-                    placeholder="120/80"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-700 font-bold block mb-1">Hemoglobin Hb (g/dL)</label>
-                  <input
-                    type="text"
-                    value={vitalsHb}
-                    onChange={(e) => setVitalsHb(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 font-mono"
-                    placeholder="11.5"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-700 font-bold block mb-1">Random Blood Sugar (mg/dL)</label>
-                  <input
-                    type="text"
-                    value={vitalsSugar}
-                    onChange={(e) => setVitalsSugar(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 font-mono"
-                    placeholder="110"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-700 font-bold block mb-1">Body Weight (kg)</label>
-                  <input
-                    type="text"
-                    value={vitalsWeight}
-                    onChange={(e) => setVitalsWeight(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 font-mono"
-                    placeholder="52"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-slate-700 font-bold text-xs block mb-1">Counseling Given & Field Observations</label>
-                <textarea
-                  rows={3}
-                  value={visitNotes}
-                  onChange={(e) => setVisitNotes(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 font-medium"
-                  placeholder="Record nutritional guidance, IFA tablet count handed over, or warning symptoms..."
-                />
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="submit"
-                  className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Submit Visit & Sync HMIS</span>
-                </button>
-              </div>
-            </form>
-
-          </div>
-        </div>
-      )}
-
-      {/* MODAL: REGISTER NEW BENEFICIARY */}
+      {/* NEW PATIENT REGISTRATION MODAL */}
       {isRegisterModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="font-extrabold text-base text-slate-900">Register New Rural Beneficiary</h3>
-              <button 
-                onClick={() => setIsRegisterModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg"
-              >
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="font-black text-base text-slate-900">Register Village Resident (ABHA)</h3>
+              <button onClick={() => setIsRegisterModalOpen(false)} className="text-slate-400 hover:text-slate-700">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleRegisterNewBeneficiary} className="space-y-3">
+            <form onSubmit={handleRegisterBeneficiary} className="space-y-3 text-xs">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Full Name (नाव)</label>
+                <label className="font-bold text-slate-800 block mb-1">Full Legal Name</label>
                 <input
                   type="text"
-                  placeholder="e.g. Kavita Sachin Jadhav"
+                  required
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900"
-                  required
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-slate-700 font-bold block mb-1">Age</label>
+                  <label className="font-bold text-slate-800 block mb-1">Age</label>
                   <input
                     type="number"
                     value={regAge}
-                    onChange={(e) => setRegAge(Number(e.target.value))}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900"
+                    onChange={(e) => setRegAge(parseInt(e.target.value, 10))}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs"
                   />
                 </div>
                 <div>
-                  <label className="text-slate-700 font-bold block mb-1">Gender</label>
+                  <label className="font-bold text-slate-800 block mb-1">Gender</label>
                   <select
                     value={regGender}
                     onChange={(e) => setRegGender(e.target.value as any)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold"
                   >
                     <option value="Female">Female</option>
                     <option value="Male">Male</option>
@@ -426,64 +738,59 @@ export const AshaPortal: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <label className="text-slate-700 font-bold block mb-1">Village (गाव)</label>
-                  <input
-                    type="text"
-                    value={regVillage}
-                    onChange={(e) => setRegVillage(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900"
-                  />
-                </div>
-                <div>
-                  <label className="text-slate-700 font-bold block mb-1">Mobile Contact</label>
-                  <input
-                    type="text"
-                    value={regMobile}
-                    onChange={(e) => setRegMobile(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <label className="text-slate-700 font-bold block mb-1">Health Category</label>
-                  <select
-                    value={regCategory}
-                    onChange={(e) => setRegCategory(e.target.value as any)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900"
-                  >
-                    <option value="Maternal ANC">Maternal ANC (Pregnant)</option>
-                    <option value="NCD Patient">NCD (Hypertension/Diabetes)</option>
-                    <option value="Pediatric">Pediatric (Infant/Child)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-slate-700 font-bold block mb-1">Initial Risk Level</label>
-                  <select
-                    value={regRisk}
-                    onChange={(e) => setRegRisk(e.target.value as any)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900"
-                  >
-                    <option value="High-Risk">High-Risk (Flagged)</option>
-                    <option value="Moderate">Moderate</option>
-                    <option value="Low">Low / Routine</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs transition-all shadow-md"
-                >
-                  Generate ABHA & Create Beneficiary Profile
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="w-full bg-rose-700 hover:bg-rose-800 text-white font-extrabold py-3 rounded-2xl text-xs transition-all shadow-md mt-2"
+              >
+                ✓ Complete Doorstep Registration
+              </button>
             </form>
+          </div>
+        </div>
+      )}
 
+      {/* REFERRAL MODAL */}
+      {isReferralModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="font-black text-base text-slate-900">Issue Fast-Track Referral</h3>
+              <button onClick={() => setIsReferralModalOpen(false)} className="text-slate-400 hover:text-slate-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateReferral} className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-800 block mb-1">Target Government Hospital</label>
+                <select
+                  value={referralTargetFacility}
+                  onChange={(e) => setReferralTargetFacility(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold"
+                >
+                  <option value="Otur Primary Health Centre">Otur Primary Health Centre (PHC)</option>
+                  <option value="Junnar Rural Hospital & Trauma Centre">Junnar Rural Hospital & Trauma Centre</option>
+                  <option value="Pune Sassoon General Hospital">Pune Sassoon General Hospital</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-800 block mb-1">Clinical Reason for Transfer</label>
+                <textarea
+                  rows={3}
+                  value={referralReason}
+                  onChange={(e) => setReferralReason(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-amber-600 hover:bg-amber-700 text-white font-extrabold py-3 rounded-2xl text-xs transition-all shadow-md mt-2"
+              >
+                Generate Referral Slip & Alert Hospital
+              </button>
+            </form>
           </div>
         </div>
       )}

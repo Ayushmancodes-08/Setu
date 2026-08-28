@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export const LabPortal: React.FC = () => {
-  const { showToast, language } = useApp();
+  const { showToast, language, t } = useApp();
   const { diagnosticOrders, submitLabResult } = useHealthData();
 
   const [activeCategory, setActiveCategory] = useState<string>('All');
@@ -75,7 +75,7 @@ export const LabPortal: React.FC = () => {
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-black text-slate-900">Diagnostic Laboratory Information System (LIS)</h1>
                 <span className="bg-purple-100 text-purple-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-purple-300">
-                  NABL & ABDM M2 Compliant
+                  {t.role_lab}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">

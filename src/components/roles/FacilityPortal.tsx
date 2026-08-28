@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export const FacilityPortal: React.FC = () => {
-  const { showToast, language } = useApp();
+  const { showToast, language, t } = useApp();
   const { facilities, referrals, updateFacilityBeds, updateReferralStatus } = useHealthData();
 
   const activeHospital = facilities.find(f => f.id === 'fac-01') || facilities[0];
@@ -83,9 +83,9 @@ export const FacilityPortal: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-slate-900">{activeHospital.name}</h1>
+                <h1 className="text-xl font-black text-slate-900">{t.facilityOpsTitle}</h1>
                 <span className="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-indigo-300">
-                  Sub-District Trauma Centre
+                  {t.role_facility}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -97,7 +97,7 @@ export const FacilityPortal: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              <span>Oxygen Plant & ICU Live</span>
+              <span>{t.oxygenStatusAvailable}</span>
             </span>
           </div>
         </div>
@@ -105,7 +105,7 @@ export const FacilityPortal: React.FC = () => {
         {/* Live Bed Counters Header */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-1">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">General Ward Free</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">{t.generalBedsAvailable}</span>
             <div className="text-2xl font-black text-slate-900">{generalBedsFree} / {activeHospital.totalBeds}</div>
             <div className="flex gap-1.5 pt-1">
               <button
