@@ -1,10 +1,11 @@
 /**
  * IndexedDB Enterprise Realtime Persistence Engine for SETU Health Platform
  * Provides reactive cross-console synchronization and persistent local storage
- * for Users, Patients, Teleconsult Queue, Prescriptions, Inventory, Labs, Referrals & Facilities.
+ * for Users, Patients, Teleconsult Queue, Prescriptions, Inventory, Labs, Referrals,
+ * ASHA Tasks, Hospital Beds, Directives & Outbreaks.
  */
 
-import { Role, Facility } from '../types';
+import { Role, Facility, AshaTask, TriageUrgency } from '../types';
 import { 
   MAHARASHTRA_FACILITIES, 
   DISTRICT_METRICS,
@@ -216,6 +217,45 @@ export interface DBReferral {
   createdAt: string;
 }
 
+export interface DBDirective {
+  id: string;
+  code: string;
+  title: string;
+  titleMr: string;
+  issuer: string;
+  issuerDesignation: string;
+  targetTaluka: string;
+  priority: 'URGENT' | 'HIGH' | 'ROUTINE';
+  body: string;
+  actionItems: string[];
+  issuedAt: string;
+  acknowledgementsCount: number;
+}
+
+export interface DBOutbreakAlert {
+  id: string;
+  disease: string;
+  taluka: string;
+  villageCluster: string;
+  reportedCases: number;
+  severity: 'RED_ALERT' | 'AMBER_WATCH' | 'MONITORING';
+  firstReportedAt: string;
+  status: 'INVESTIGATION_ONGOING' | 'CONTAINMENT_DISPATCHED' | 'RESOLVED';
+  leadEpidemiologist: string;
+}
+
+export interface DBPocTest {
+  id: string;
+  patientName: string;
+  patientVillage: string;
+  testType: 'Hemoglobin Rapid Strip' | 'Malaria RDT (Pv/Pf)' | 'Blood Sugar (RBS)' | 'Urine Albumin';
+  resultValue: string;
+  isAbnormal: boolean;
+  conductedBy: string;
+  subCenterName: string;
+  timestamp: string;
+}
+
 export interface DBActivity {
   id: string;
   timestamp: string;
@@ -226,7 +266,7 @@ export interface DBActivity {
   type: 'clinical' | 'pharmacy' | 'lab' | 'referral' | 'admin' | 'emergency';
 }
 
-const DB_NAME = 'SetuMahaHealthDB_v3';
+const DB_NAME = 'SetuMahaHealthDB_v4';
 const DB_VERSION = 1;
 
 class IndexedDBManager {
@@ -264,41 +304,33 @@ class IndexedDBManager {
       request.onupgradeneeded = (event: any) => {
         const db: IDBDatabase = event.target.result;
 
-        if (!db.objectStoreNames.contains('users')) {
-          db.createObjectStore('users', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('session')) {
-          db.createObjectStore('session', { keyPath: 'key' });
-        }
-        if (!db.objectStoreNames.contains('patients')) {
-          const pStore = db.createObjectStore('patients', { keyPath: 'id' });
-          pStore.createIndex('abhaId', 'abhaId', { unique: false });
-          pStore.createIndex('name', 'name', { unique: false });
-        }
-        if (!db.objectStoreNames.contains('teleconsultQueue')) {
-          db.createObjectStore('teleconsultQueue', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('prescriptions')) {
-          db.createObjectStore('prescriptions', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('inventory')) {
-          db.createObjectStore('inventory', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('diagnosticOrders')) {
-          db.createObjectStore('diagnosticOrders', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('referrals')) {
-          db.createObjectStore('referrals', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('facilities')) {
-          db.createObjectStore('facilities', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('doctorApplications')) {
-          db.createObjectStore('doctorApplications', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('activityLogs')) {
-          db.createObjectStore('activityLogs', { keyPath: 'id' });
-        }
+        const stores = [
+          'users', 
+          'session', 
+          'patients', 
+          'teleconsultQueue', 
+          'prescriptions', 
+          'inventory', 
+          'diagnosticOrders', 
+          'referrals', 
+          'facilities', 
+          'doctorApplications', 
+          'ashaTasks', 
+          'directives', 
+          'outbreakAlerts', 
+          'pocTests', 
+          'activityLogs'
+        ];
+
+        stores.forEach(s => {
+          if (!db.objectStoreNames.contains(s)) {
+            const os = db.createObjectStore(s, { keyPath: 'id' });
+            if (s === 'patients') {
+              os.createIndex('abhaId', 'abhaId', { unique: false });
+              os.createIndex('name', 'name', { unique: false });
+            }
+          }
+        });
       };
 
       request.onsuccess = async (event: any) => {
@@ -320,7 +352,7 @@ class IndexedDBManager {
     if (facilityCount > 0) return; // Already seeded
 
     const tx = db.transaction(
-      ['users', 'patients', 'teleconsultQueue', 'prescriptions', 'inventory', 'diagnosticOrders', 'referrals', 'facilities', 'activityLogs', 'session'],
+      ['users', 'patients', 'teleconsultQueue', 'prescriptions', 'inventory', 'diagnosticOrders', 'referrals', 'facilities', 'ashaTasks', 'directives', 'outbreakAlerts', 'pocTests', 'activityLogs', 'session'],
       'readwrite'
     );
 
@@ -329,7 +361,7 @@ class IndexedDBManager {
     MAHARASHTRA_FACILITIES.forEach(f => facStore.put(f));
 
     // 2. Default Active Session (None)
-    tx.objectStore('session').put({ key: 'activeUser', user: null });
+    tx.objectStore('session').put({ id: 'activeUser', user: null });
 
     // 3. Seed Initial Verified Patients
     const patientStore = tx.objectStore('patients');
@@ -375,6 +407,43 @@ class IndexedDBManager {
       { id: 'med-4', code: 'TAB-AMX-500', name: 'Amoxicillin Capsules IP 500mg', genericName: 'Amoxicillin Trihydrate 500mg', category: 'Antibiotic', currentStock: 80, reorderLevel: 250, unit: 'Capsules', batchNumber: 'BT-6619', expiryDate: '2027-04-15', status: 'Low Stock', location: 'Rack B-2', lastDispensedDate: 'Yesterday' }
     ];
     items.forEach(it => invStore.put(it));
+
+    // 5. Seed ASHA Tasks
+    const ashaStore = tx.objectStore('ashaTasks');
+    MOCK_ASHA_TASKS.forEach(t => ashaStore.put(t));
+
+    // 6. Seed DHO Directives
+    const dirStore = tx.objectStore('directives');
+    const d1: DBDirective = {
+      id: 'dir-01',
+      code: 'DIR-MH-PUN-2026-08',
+      title: 'Emergency Protocol: Enhanced Surveillance for Vector-Borne Diseases in Junnar & Ambegaon',
+      titleMr: 'आणीबाणी सूचना: जुन्नर व आंबेगाव तालुक्यात कीटकजन्य आजार प्रतिबंधात्मक उपाययोजना',
+      issuer: 'Dr. Ramchandra Hankare, DHO Pune',
+      issuerDesignation: 'District Health Officer, Directorate of Health Services',
+      targetTaluka: 'Junnar, Ambegaon',
+      priority: 'URGENT',
+      body: 'In light of reported fever clusters, all CHOs and PHC Medical Officers are instructed to ensure 100% RDT testing for suspected Dengue/Malaria and maintain adequate stocks of Paracetamol and ORS.',
+      actionItems: ['Conduct 100% Rapid Card Tests for fever cases', 'Daily reporting of platelet count < 50,000 cases to District Epidemic Cell', 'Ensure zero stock-out of IV Fluids & Paracetamol'],
+      issuedAt: 'Yesterday, 11:30 AM',
+      acknowledgementsCount: 42
+    };
+    dirStore.put(d1);
+
+    // 7. Seed Outbreak Alerts
+    const outStore = tx.objectStore('outbreakAlerts');
+    const o1: DBOutbreakAlert = {
+      id: 'out-01',
+      disease: 'Suspected Dengue / Viral Fever Clustering',
+      taluka: 'Junnar (Otur Sector)',
+      villageCluster: 'Dingore & Otur Phata',
+      reportedCases: 14,
+      severity: 'AMBER_WATCH',
+      firstReportedAt: '26 Aug 2026',
+      status: 'INVESTIGATION_ONGOING',
+      leadEpidemiologist: 'Dr. Sandeep Ghule (MO Otur PHC)'
+    };
+    outStore.put(o1);
   }
 
   private countItems(db: IDBDatabase, storeName: string): Promise<number> {
@@ -465,7 +534,7 @@ class IndexedDBManager {
     return new Promise((resolve, reject) => {
       const tx = db.transaction('session', 'readwrite');
       const store = tx.objectStore('session');
-      const req = store.put({ key: 'activeUser', user });
+      const req = store.put({ id: 'activeUser', user });
       req.onsuccess = () => {
         this.notify();
         resolve();
@@ -488,7 +557,6 @@ class IndexedDBManager {
     );
 
     if (!matched) {
-      // Auto-generate authenticated profile for valid credentials
       matched = {
         id: `usr-${Date.now()}`,
         role: role,
@@ -538,7 +606,6 @@ class IndexedDBManager {
 
     await this.putItem('doctorApplications', application);
 
-    // Create Doctor User Profile
     const doctorUser: DBUser = {
       id: `usr-doc-${Date.now()}`,
       role: 'doctor',

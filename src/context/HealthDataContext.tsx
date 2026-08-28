@@ -26,7 +26,10 @@ import {
   DBLabOrder, 
   DBReferral, 
   DBActivity, 
-  DBUser 
+  DBUser,
+  DBDirective,
+  DBOutbreakAlert,
+  DBPocTest
 } from '../services/db';
 
 export type PatientRecord = DBPatient;
@@ -45,6 +48,9 @@ interface HealthDataContextType {
   prescriptionOrders: DBPrescription[];
   districtMetrics: DistrictMetric[];
   activityLogs: DBActivity[];
+  directives: DBDirective[];
+  outbreakAlerts: DBOutbreakAlert[];
+  pocTests: DBPocTest[];
   
   // Realtime Session & Auth State
   currentUser: DBUser | null;
@@ -56,33 +62,40 @@ interface HealthDataContextType {
   openRoleAuthModal: (role: Role) => void;
   logout: () => Promise<void>;
 
-  // Realtime Patient Actions (Synced to IndexedDB)
+  // Realtime Patient Actions
   registerPatient: (patientData: Partial<DBPatient>) => Promise<DBPatient>;
   updatePatientVitals: (patientId: string, vitals: Partial<DBPatient['vitals']>, notes?: string) => Promise<void>;
   getPatientByAbhaOrMobile: (query: string) => DBPatient | undefined;
   
-  // Realtime Teleconsultation Actions (Synced to IndexedDB)
+  // Realtime Teleconsultation Actions
   enqueueTeleconsult: (item: Partial<DBTeleconsult>) => Promise<DBTeleconsult>;
   updateTeleconsultStatus: (queueId: string, status: DBTeleconsult['status']) => Promise<void>;
   completeConsultationAndIssueRx: (queueId: string, prescriptionData: Omit<DBPrescription, 'id' | 'tokenNumber' | 'prescribedAt' | 'status'>) => Promise<void>;
 
-  // Realtime Pharmacy Actions (Synced to IndexedDB)
+  // Realtime Pharmacy Actions
   dispensePrescription: (orderId: string, pharmacistName: string) => Promise<boolean>;
   updateMedicineStock: (medicineId: string, quantityChange: number) => Promise<void>;
   addNewStockConsignment: (medicineData: Partial<DBMedicine>) => Promise<void>;
 
-  // Realtime Lab Actions (Synced to IndexedDB)
+  // Realtime Lab Actions
   createDiagnosticOrder: (order: Partial<DBLabOrder>) => Promise<DBLabOrder>;
   submitLabResult: (orderId: string, resultValue: string, isPanicValue?: boolean, notes?: string) => Promise<void>;
 
-  // Realtime Referral & Bed Actions (Synced to IndexedDB)
+  // Realtime Referral & Bed Actions
   createReferral: (referralData: Partial<DBReferral>) => Promise<DBReferral>;
   updateReferralStatus: (referralId: string, status: DBReferral['status']) => Promise<void>;
   updateFacilityBeds: (facilityId: string, change: { availableBeds?: number; icuBedsAvailable?: number }) => void;
 
-  // ASHA Actions
-  completeAshaTask: (taskId: string, recordedVitals?: any, notes?: string) => void;
-  addAshaTask: (task: Partial<AshaTask>) => AshaTask;
+  // Frontline ASHA & CHO Actions
+  completeAshaTask: (taskId: string, recordedVitals?: any, notes?: string) => Promise<void>;
+  addAshaTask: (task: Partial<AshaTask>) => Promise<AshaTask>;
+  logPocTest: (pocData: Omit<DBPocTest, 'id' | 'timestamp'>) => Promise<DBPocTest>;
+
+  // DHO Public Health Command Actions
+  issueDirective: (dirData: Omit<DBDirective, 'id' | 'issuedAt' | 'acknowledgementsCount'>) => Promise<DBDirective>;
+  acknowledgeDirective: (dirId: string) => Promise<void>;
+  reportOutbreakAlert: (outbreak: Omit<DBOutbreakAlert, 'id' | 'firstReportedAt'>) => Promise<DBOutbreakAlert>;
+  updateOutbreakStatus: (outbreakId: string, status: DBOutbreakAlert['status']) => Promise<void>;
 
   // Database Reset
   resetToFreshDatabase: () => Promise<void>;
@@ -101,6 +114,9 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [prescriptionOrders, setPrescriptionOrders] = useState<DBPrescription[]>([]);
   const [districtMetrics, setDistrictMetrics] = useState<DistrictMetric[]>(DISTRICT_METRICS);
   const [activityLogs, setActivityLogs] = useState<DBActivity[]>([]);
+  const [directives, setDirectives] = useState<DBDirective[]>([]);
+  const [outbreakAlerts, setOutbreakAlerts] = useState<DBOutbreakAlert[]>([]);
+  const [pocTests, setPocTests] = useState<DBPocTest[]>([]);
 
   // Auth State
   const [currentUser, setCurrentUser] = useState<DBUser | null>(null);
@@ -117,6 +133,11 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         storedMeds,
         storedLabs,
         storedRefs,
+        storedFacilities,
+        storedTasks,
+        storedDirs,
+        storedOutbreaks,
+        storedPoc,
         storedActivities,
         storedSession
       ] = await Promise.all([
@@ -126,16 +147,26 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setuDB.getAll<DBMedicine>('inventory'),
         setuDB.getAll<DBLabOrder>('diagnosticOrders'),
         setuDB.getAll<DBReferral>('referrals'),
+        setuDB.getAll<Facility>('facilities'),
+        setuDB.getAll<AshaTask>('ashaTasks'),
+        setuDB.getAll<DBDirective>('directives'),
+        setuDB.getAll<DBOutbreakAlert>('outbreakAlerts'),
+        setuDB.getAll<DBPocTest>('pocTests'),
         setuDB.getAll<DBActivity>('activityLogs'),
         setuDB.getActiveSession()
       ]);
 
-      if (storedPatients) setPatients(storedPatients);
+      if (storedPatients && storedPatients.length > 0) setPatients(storedPatients);
       if (storedQueue) setTeleconsultQueue(storedQueue);
       if (storedRx) setPrescriptionOrders(storedRx);
-      if (storedMeds) setMedicines(storedMeds);
+      if (storedMeds && storedMeds.length > 0) setMedicines(storedMeds);
       if (storedLabs) setDiagnosticOrders(storedLabs);
       if (storedRefs) setReferrals(storedRefs);
+      if (storedFacilities && storedFacilities.length > 0) setFacilities(storedFacilities);
+      if (storedTasks && storedTasks.length > 0) setAshaTasks(storedTasks);
+      if (storedDirs) setDirectives(storedDirs);
+      if (storedOutbreaks) setOutbreakAlerts(storedOutbreaks);
+      if (storedPoc) setPocTests(storedPoc);
       if (storedActivities) setActivityLogs(storedActivities);
       if (storedSession) setCurrentUser(storedSession);
     } catch (e) {
@@ -288,10 +319,8 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       status: 'QUEUED'
     };
 
-    // 1. Save Prescription in IndexedDB
     await setuDB.putItem('prescriptions', newRxOrder);
 
-    // 2. Update Patient EHR in IndexedDB
     const allPatients = await setuDB.getAll<DBPatient>('patients');
     const matchedPatient = allPatients.find(p => p.id === prescriptionData.patientId || p.name.toLowerCase() === prescriptionData.patientName.toLowerCase());
     if (matchedPatient) {
@@ -310,10 +339,8 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       await setuDB.putItem('patients', matchedPatient);
     }
 
-    // 3. Mark Teleconsult Queue Status
     await updateTeleconsultStatus(queueId, 'Prescription Issued');
 
-    // 4. Log Realtime Activity
     await setuDB.logActivity(
       prescriptionData.doctorName,
       'Medical Officer / Specialist',
@@ -327,7 +354,6 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const order = await setuDB.getById<DBPrescription>('prescriptions', orderId);
     if (!order) return false;
 
-    // 1. Deduct Stock from IndexedDB Inventory
     const allMeds = await setuDB.getAll<DBMedicine>('inventory');
     for (const item of order.items) {
       const matchedMed = allMeds.find(m => 
@@ -342,13 +368,11 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
     }
 
-    // 2. Mark Prescription as Dispensed
     order.status = 'DISPENSED';
     order.dispensedAt = 'Just now';
     order.dispensedBy = pharmacistName;
     await setuDB.putItem('prescriptions', order);
 
-    // 3. Update Patient EHR Prescriptions
     const allPatients = await setuDB.getAll<DBPatient>('patients');
     const matchedPatient = allPatients.find(p => p.id === order.patientId || p.name.toLowerCase() === order.patientName.toLowerCase());
     if (matchedPatient) {
@@ -359,7 +383,6 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       await setuDB.putItem('patients', matchedPatient);
     }
 
-    // 4. Log Realtime Activity
     await setuDB.logActivity(
       pharmacistName,
       'Pharmacist / e-Aushadhi',
@@ -444,7 +467,6 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     order.resultNotes = notes;
     await setuDB.putItem('diagnosticOrders', order);
 
-    // Update Patient EHR in IndexedDB
     const allPatients = await setuDB.getAll<DBPatient>('patients');
     const matchedPatient = allPatients.find(p => p.name.toLowerCase() === order.patientName.toLowerCase());
     if (matchedPatient) {
@@ -492,7 +514,6 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     await setuDB.putItem('referrals', newRef);
 
-    // Update facility available bed count
     setFacilities(prev => prev.map(f => {
       if (f.name.includes(newRef.targetFacilityName) || newRef.targetFacilityName.includes(f.name)) {
         return {
@@ -529,7 +550,13 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
-  const updateFacilityBeds = (facilityId: string, change: { availableBeds?: number; icuBedsAvailable?: number }) => {
+  const updateFacilityBeds = async (facilityId: string, change: { availableBeds?: number; icuBedsAvailable?: number }) => {
+    const fac = await setuDB.getById<Facility>('facilities', facilityId);
+    if (fac) {
+      fac.availableBeds = change.availableBeds !== undefined ? Math.max(0, Math.min(fac.totalBeds, change.availableBeds)) : fac.availableBeds;
+      fac.icuBedsAvailable = change.icuBedsAvailable !== undefined ? Math.max(0, change.icuBedsAvailable) : fac.icuBedsAvailable;
+      await setuDB.putItem('facilities', fac);
+    }
     setFacilities(prev => prev.map(f => {
       if (f.id === facilityId) {
         return {
@@ -542,22 +569,19 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }));
   };
 
-  const completeAshaTask = (taskId: string, recordedVitals?: any, notes?: string) => {
-    setAshaTasks(prev => prev.map(t => {
-      if (t.id === taskId) {
-        return {
-          ...t,
-          isSynced: true,
-          completedAt: 'Just now',
-          lastVitals: recordedVitals || t.lastVitals,
-          notes: notes || t.notes
-        };
-      }
-      return t;
-    }));
+  const completeAshaTask = async (taskId: string, recordedVitals?: any, notes?: string) => {
+    const task = await setuDB.getById<AshaTask>('ashaTasks', taskId);
+    if (task) {
+      task.isSynced = true;
+      task.completedAt = 'Just now';
+      task.lastVitals = recordedVitals || task.lastVitals;
+      task.notes = notes || task.notes;
+      await setuDB.putItem('ashaTasks', task);
+    }
+    setAshaTasks(prev => prev.map(t => t.id === taskId ? { ...t, isSynced: true, completedAt: 'Just now', lastVitals: recordedVitals || t.lastVitals, notes: notes || t.notes } : t));
   };
 
-  const addAshaTask = (task: Partial<AshaTask>): AshaTask => {
+  const addAshaTask = async (task: Partial<AshaTask>): Promise<AshaTask> => {
     const newTask: AshaTask = {
       id: `task-${Date.now()}`,
       patientName: task.patientName || 'New Citizen',
@@ -573,8 +597,80 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       isSynced: true
     };
 
+    await setuDB.putItem('ashaTasks', newTask);
     setAshaTasks(prev => [newTask, ...prev]);
     return newTask;
+  };
+
+  const logPocTest = async (pocData: Omit<DBPocTest, 'id' | 'timestamp'>): Promise<DBPocTest> => {
+    const newTest: DBPocTest = {
+      ...pocData,
+      id: `poc-${Date.now()}`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    await setuDB.putItem('pocTests', newTest);
+    await setuDB.logActivity(
+      pocData.conductedBy,
+      'CHO / Field Clinician',
+      'Point-of-Care Rapid Test Logged',
+      `${pocData.testType}: ${pocData.resultValue} for ${pocData.patientName} (${pocData.patientVillage})`,
+      'clinical'
+    );
+    return newTest;
+  };
+
+  const issueDirective = async (dirData: Omit<DBDirective, 'id' | 'issuedAt' | 'acknowledgementsCount'>): Promise<DBDirective> => {
+    const newDir: DBDirective = {
+      ...dirData,
+      id: `dir-${Date.now()}`,
+      issuedAt: 'Just now',
+      acknowledgementsCount: 0
+    };
+
+    await setuDB.putItem('directives', newDir);
+    await setuDB.logActivity(
+      dirData.issuer,
+      dirData.issuerDesignation,
+      'Issued Public Health Directive',
+      `${newDir.code}: ${newDir.title} (Broadcasted to ${newDir.targetTaluka})`,
+      'admin'
+    );
+    return newDir;
+  };
+
+  const acknowledgeDirective = async (dirId: string) => {
+    const dir = await setuDB.getById<DBDirective>('directives', dirId);
+    if (dir) {
+      dir.acknowledgementsCount = (dir.acknowledgementsCount || 0) + 1;
+      await setuDB.putItem('directives', dir);
+    }
+  };
+
+  const reportOutbreakAlert = async (outbreak: Omit<DBOutbreakAlert, 'id' | 'firstReportedAt'>): Promise<DBOutbreakAlert> => {
+    const newAlert: DBOutbreakAlert = {
+      ...outbreak,
+      id: `out-${Date.now()}`,
+      firstReportedAt: 'Today'
+    };
+
+    await setuDB.putItem('outbreakAlerts', newAlert);
+    await setuDB.logActivity(
+      outbreak.leadEpidemiologist,
+      'IDSP Surveillance Officer',
+      'Triggered Outbreak Epidemic Alert',
+      `${newAlert.disease} in ${newAlert.villageCluster} (${newAlert.reportedCases} cases)`,
+      'admin'
+    );
+    return newAlert;
+  };
+
+  const updateOutbreakStatus = async (outbreakId: string, status: DBOutbreakAlert['status']) => {
+    const out = await setuDB.getById<DBOutbreakAlert>('outbreakAlerts', outbreakId);
+    if (out) {
+      out.status = status;
+      await setuDB.putItem('outbreakAlerts', out);
+    }
   };
 
   const resetToFreshDatabase = async () => {
@@ -594,6 +690,9 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       prescriptionOrders,
       districtMetrics,
       activityLogs,
+      directives,
+      outbreakAlerts,
+      pocTests,
       currentUser,
       setCurrentUser,
       isAuthModalOpen,
@@ -618,6 +717,11 @@ export const HealthDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       updateFacilityBeds,
       completeAshaTask,
       addAshaTask,
+      logPocTest,
+      issueDirective,
+      acknowledgeDirective,
+      reportOutbreakAlert,
+      updateOutbreakStatus,
       resetToFreshDatabase
     }}>
       {children}
