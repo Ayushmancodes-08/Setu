@@ -66,7 +66,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
   const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isAiSettingsOpen, setIsAiSettingsOpen] = useState(false);
-  const [autoSpeak, setAutoSpeak] = useState(true);
+  const [autoSpeak, setAutoSpeak] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Initialize greeting or initial query
@@ -115,10 +115,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
-        
-        if (autoSpeak) {
-          handlePlayAudio(initMsgId, welcomeText);
-        }
       }
 
       if (companionInitialQuery) {

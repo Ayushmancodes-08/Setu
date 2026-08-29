@@ -212,8 +212,9 @@ class BhashiniEngine {
   /**
    * 1. Automatic Language Detection across 6 Languages
    */
-  public detectLanguage(text: string): Language {
-    if (!text) return 'en';
+  public detectLanguage(text: string, fallbackLang: Language = 'en'): Language {
+    if (!text || !text.trim()) return fallbackLang;
+    const lower = text.toLowerCase();
     
     // Arabic/Perso-Arabic script detection (Urdu)
     if (/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text)) {
@@ -232,13 +233,33 @@ class BhashiniEngine {
 
     // Devanagari script detection (Marathi vs Hindi heuristics)
     if (/[\u0900-\u097F]/.test(text)) {
-      if (/आहे|नाही|माझे|माझ्या|डोक्यात|चक्कर|कसे|कुठे|कधी|गोळी|दवाखाना|हॉस्पिटल|साखर/.test(text)) {
+      if (/आहे|नाही|माझे|माझ्या|डोक्यात|डोके|चक्कर|कसे|कुठे|कधी|गोळी|दवाखाना|हॉस्पिटल|साखर|त्रास|पोटात|छातीत|कळ|खोकला|उलट्या|बाळ|गरोदर/.test(text)) {
         return 'mr';
       }
       return 'hi';
     }
 
-    return 'en';
+    // Romanized / Transliterated Marathi
+    if (/\b(mala|maza|mazya|ahe|nahi|dokadukhi|dokyat|doke|tras|trass|chhati|kall|potat|tapa|khokla|aushadh|davakhana|goli|garodar|baal)\b/i.test(lower)) {
+      return 'mr';
+    }
+
+    // Romanized / Transliterated Hindi
+    if (/\b(mujhe|mera|meri|mere|hai|hain|nahi|bukhar|dard|sir|pet|chhati|dawa|dawai|khansi|chakkar|ulti|bimar|seene|taklif)\b/i.test(lower)) {
+      return 'hi';
+    }
+
+    // Romanized / Transliterated Odia
+    if (/\b(mote|mora|houchi|jwara|munda|bindha|byatha|chhati|oushadha)\b/i.test(lower)) {
+      return 'or';
+    }
+
+    // Romanized / Transliterated Bengali
+    if (/\b(amar|amake|ache|nei|jor|matha|batha|khasi|oushodh|buk)\b/i.test(lower)) {
+      return 'bn';
+    }
+
+    return fallbackLang;
   }
 
   /**

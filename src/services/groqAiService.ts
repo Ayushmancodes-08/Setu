@@ -10,7 +10,7 @@
  */
 
 import { Language } from '../types';
-import { MAHARASHTRA_SCHEMES, MAHARASHTRA_FACILITIES } from '../data/mockData';
+import { bhashiniAI } from './bhashiniService';
 
 export interface GroqConfig {
   apiKey: string;
@@ -174,15 +174,19 @@ Always output ONLY valid JSON conforming to the requested schema.`;
     },
     conversationHistory?: ChatHistoryItem[]
   ): Promise<GroqTriageOutput> {
+    // Resolve effective language: if targetLang is en but query is in Hindi/Marathi/etc, detect it!
+    const detectedLang = bhashiniAI.detectLanguage(userQuery, targetLang);
+    const effectiveLang = (targetLang && targetLang !== 'en') ? targetLang : detectedLang;
+
     const apiKey = this.config.apiKey.trim();
     const provider = this.config.provider;
 
     if (this.config.isEnabled && apiKey) {
       try {
         if (provider === 'groq') {
-          return await this.callGroqChat(userQuery, targetLang, apiKey, patientContext, conversationHistory);
+          return await this.callGroqChat(userQuery, effectiveLang, apiKey, patientContext, conversationHistory);
         } else if (provider === 'grok') {
-          return await this.callGrokChat(userQuery, targetLang, apiKey, patientContext);
+          return await this.callGrokChat(userQuery, effectiveLang, apiKey, patientContext);
         }
       } catch (err) {
         console.warn('Groq API call failed, using intelligent offline fallback engine:', err);
@@ -190,7 +194,7 @@ Always output ONLY valid JSON conforming to the requested schema.`;
     }
 
     // High-Precision Local Medical Engine (Guaranteed zero latency, zero errors & full cards)
-    return this.generateOfflineTriageOutput(userQuery, targetLang, patientContext);
+    return this.generateOfflineTriageOutput(userQuery, effectiveLang, patientContext);
   }
 
   /**
@@ -406,7 +410,7 @@ Respond with a valid JSON object formatted strictly as:
     const lower = query.toLowerCase();
 
     // 1. CHEST PAIN / CARDIAC RED FLAG
-    if (lower.includes('chest') || lower.includes('heart') || lower.includes('छातीत') || lower.includes('कळ') || lower.includes('सीना') || lower.includes('हार्ट') || lower.includes('छाती')) {
+    if (lower.includes('chest') || lower.includes('heart') || lower.includes('छातीत') || lower.includes('कळ') || lower.includes('सीना') || lower.includes('हार्ट') || lower.includes('छाती') || lower.includes('chhati') || lower.includes('seene') || lower.includes('breath') || lower.includes('dhadkan')) {
       const summaries: Record<Language, string> = {
         en: 'CRITICAL ALERT: Chest discomfort with pain radiating to the left arm or sweating requires urgent emergency evaluation. Dial 108 immediately.',
         mr: 'तातडीचा इशारा: छातीत तीव्र वेदना, घाम येणे किंवा डाव्या हातात कळ येणे हे हृदयविकाराचे लक्षण असू शकते. तात्काळ १०८ रुग्णवाहिका बोलवा.',
@@ -489,7 +493,7 @@ Respond with a valid JSON object formatted strictly as:
     }
 
     // 2. MATERNAL PREGNANCY / DELIVERY (JSSK / PMMVY MATCH)
-    if (lower.includes('pregnant') || lower.includes('delivery') || lower.includes('गर्भ') || lower.includes('प्रसूती') || lower.includes('डिलीवरी') || lower.includes('गर्भवती') || lower.includes('anc') || lower.includes('बाळ')) {
+    if (lower.includes('pregnant') || lower.includes('delivery') || lower.includes('गर्भ') || lower.includes('प्रसूती') || lower.includes('डिलीवरी') || lower.includes('गर्भवती') || lower.includes('anc') || lower.includes('बाळ') || lower.includes('garodar') || lower.includes('bachha') || lower.includes('prasav')) {
       const summaries: Record<Language, string> = {
         en: 'Congratulations! In Maharashtra, 100% of pregnancy checkups, institutional delivery, medications, and newborn care are completely free under JSSK.',
         mr: 'अभिनंदन! महाराष्ट्रात जननी शिशु सुरक्षा योजनेअंतर्गत (JSSK) सर्व गर्भवती तपासण्या, मोफत प्रसूती, औषधे आणि पोषण आहार पूर्णपणे मोफत मिळतो.',
@@ -532,7 +536,7 @@ Respond with a valid JSON object formatted strictly as:
           lang === 'mr' ? 'मोफत लोहयुक्त गोळ्या (IFA) जेवणानंतर नियमित घ्या' : 'Daily Iron Folic Acid (IFA) tablet after meals'
         ],
         redFlags: ['Severe abdominal cramping', 'Sudden vaginal bleeding', 'Reduced fetal movement in 3rd trimester', 'BP >= 140/90'],
-        recommendedAction: 'Schedule mandatory ANC visits with your village ASHA worker and register on RCH for ₹5,000 PMMVY cash benefit.',
+        recommendedAction: 'Schedule mandatory ANC visits with your village ASHA worker and register on RCH for ₹5,00,0 PMMVY cash benefit.',
         nearestFacilityType: 'Ayushman Arogya Mandir (Sub-Centre) / Otur PHC',
         hospitalCard: {
           name: 'Otur Primary Health Centre (PHC)',
@@ -579,14 +583,14 @@ Respond with a valid JSON object formatted strictly as:
     }
 
     // 3. FEVER / INFECTIONS / DENGUE / MALARIA
-    if (lower.includes('fever') || lower.includes('ताप') || lower.includes('बुखार') || lower.includes('malaria') || lower.includes('dengue') || lower.includes('डेंग्यू') || lower.includes('थंडी')) {
+    if (lower.includes('fever') || lower.includes('ताप') || lower.includes('बुखार') || lower.includes('malaria') || lower.includes('dengue') || lower.includes('डेंग्यू') || lower.includes('थंडी') || lower.includes('bukhar') || lower.includes('tapa') || lower.includes('tap') || lower.includes('jwara') || lower.includes('jor') || lower.includes('hudhudi') || lower.includes('chills') || lower.includes('shivering')) {
       const summaries: Record<Language, string> = {
         en: 'Fever with body ache or chills requires rapid testing to rule out Malaria or Dengue. Paracetamol and blood tests are free at your local PHC.',
         mr: 'अंगात तीव्र ताप व थंडी असल्यास तातडीने ओतूर पीएचसी किंवा उपकेंद्रात जाऊन रक्ताची डेंग्यू/मलेरिया तपासणी मोफत करून घ्या.',
         hi: 'तेज बुखार और ठंड लगना डेंगू या मलेरिया का लक्षण हो सकता है। प्राथमिक स्वास्थ्य केंद्र (PHC) में खून की जांच और दवाइयां मुफ्त उपलब्ध हैं।',
         or: 'ପ୍ରବଳ ଜ୍ୱର ଓ ଥଣ୍ଡା ଲାଗିଲେ ତୁରନ୍ତ ନିକଟସ୍ଥ PHC ରେ ମାଗଣା ରକ୍ତ ପରୀକ୍ଷା କରାନ୍ତୁ।',
         bn: 'তীব্র জ্বর এবং কাঁপুনি হলে নিকটস্থ পিএইচসিতে গিয়ে বিনামূল্যে রক্তের পরীক্ষা করান।',
-        ur: 'شدید بخار اور سردی لگنے की صورت میں قریبی پی ایچ سی سے مفت خون کے ٹیسٹ کروائیں۔'
+        ur: 'شدید بخار اور سردی لگنے کی صورت میں قریبی پی ایچ سی سے مفت خون کے ٹیسٹ کروائیں۔'
       };
 
       const clarifyingQuestions: Record<Language, string> = {
@@ -610,12 +614,12 @@ Respond with a valid JSON object formatted strictly as:
       return {
         summary: summaries[lang] || summaries.en,
         urgency: 'amber',
-        urgencyLabel: lang === 'mr' ? 'तातडीची पीएचसी तपासणी' : 'Urgent PHC Testing',
-        primaryAssessment: lang === 'mr' ? 'तीव्र संसर्गजन्य ताप (संशयित मलेरिया / डेंग्यू / व्हायरल इन्फेक्शन)' : 'Acute Febrile Illness (Suspected Vector-Borne / Viral Infection)',
+        urgencyLabel: lang === 'mr' ? 'तातडीची पीएचसी तपासणी' : lang === 'hi' ? 'प्राथमिक स्वास्थ्य केंद्र जांच' : 'Urgent PHC Testing',
+        primaryAssessment: lang === 'mr' ? 'तीव्र संसर्गजन्य ताप (संशयित मलेरिया / डेंग्यू / व्हायरल इन्फेक्शन)' : lang === 'hi' ? 'संक्रामक बुखार (संभावित मलेरिया / डेंगू / वायरल संक्रमण)' : 'Acute Febrile Illness (Suspected Vector-Borne / Viral Infection)',
         clarifyingQuestion: clarifyingQuestions[lang] || clarifyingQuestions.en,
         choiceChips: choiceChipsByLang[lang] || choiceChipsByLang.en,
         homeRemedies: [
-          lang === 'mr' ? 'कपाळावर थंड पाण्याच्या पाण्याच्या घड्या ठेवा' : 'Apply cold water cloth compresses on the forehead',
+          lang === 'mr' ? 'कपाळावर थंड पाण्याच्या घड्या ठेवा' : 'Apply cold water cloth compresses on the forehead',
           lang === 'mr' ? 'ओआरएस (ORS) किंवा नारळ पाणी व भरपूर पातळ आहार घ्या' : 'Drink ORS fluids, coconut water and plenty of fluids'
         ],
         safeOtcGuidance: [
@@ -661,7 +665,90 @@ Respond with a valid JSON object formatted strictly as:
       };
     }
 
-    // 4. GENERAL CONSULTATION / HYPERTENSION / DIABETES
+    // 4. HEADACHE / BP / HYPERTENSION
+    if (lower.includes('headache') || lower.includes('सिरदर्द') || lower.includes('डोकेदुखी') || lower.includes('dokadukhi') || lower.includes('dokyat') || lower.includes('sar dard') || lower.includes('sir dard') || lower.includes('bp') || lower.includes('chakkar') || lower.includes('chhakkar') || lower.includes('dizzy')) {
+      const summaries: Record<Language, string> = {
+        en: 'Severe headache and dizziness can indicate fluctuating blood pressure. Rest in a calm environment and get your BP checked at the nearest Sub-Centre.',
+        mr: 'तीव्र डोकेदुखी आणि चक्कर हे वाढलेल्या रक्तदाबाचे लक्षण असू शकते. शांत बसा आणि जवळच्या उपकेंद्रात जाऊन रक्तदाब तपासा.',
+        hi: 'तेज सिरदर्द और चक्कर आना उच्च रक्तचाप का संकेत हो सकता है। शांत वातावरण में आराम करें और नजदीकी उपकेंद्र में बीपी की जांच कराएं।',
+        or: 'ତୀବ୍ର ମୁଣ୍ଡ ବିନ୍ଧା ଓ ମୁଣ୍ଡ ବୁଲାଇବା ରକ୍ତଚାପର ଲକ୍ଷଣ ହୋଇପାରେ। ବିଶ୍ରାମ ନିଅନ୍ତୁ ଏବଂ ଯାଞ୍ଚ କରାନ୍ତୁ।',
+        bn: 'তীব্র মাথাব্যথা ও মাথা ঘোরা উচ্চ রক্তচাপের লক্ষণ হতে পারে। বিশ্রাম নিন এবং রক্তচাপ পরীক্ষা করান।',
+        ur: 'شدید سر درد اور چکر آنا ہائی بلڈ پریشر کی علامت ہو سکتا ہے۔ آرام کریں اور بی پی چیک کروائیں۔'
+      };
+
+      const clarifyingQuestions: Record<Language, string> = {
+        en: 'Do you have blurry vision or vomiting along with this headache?',
+        mr: 'डोकेदुखीसोबत डोळ्यांसमोर अंधारी येणे किंवा मळमळ/उलटी होते का?',
+        hi: 'सिरदर्द के साथ क्या आंखों में धुंधलापन या उल्टी/मतली महसूस हो रही है?',
+        or: 'ମୁଣ୍ଡ ବିନ୍ଧା ସହିତ ବାନ୍ତି ଲାଗୁଛି କି?',
+        bn: 'মাথাব্যথার সাথে কি বমি বমি ভাব আছে?',
+        ur: 'کیا سر درد کے ساتھ متلی یا بینائی میں دھندلاپن ہے؟'
+      };
+
+      const choiceChipsByLang: Record<Language, string[]> = {
+        en: ['Mild Throbbing', 'Severe with Nausea', 'Known High BP', 'First Time'],
+        mr: ['हलकी डोकेदुखी', 'मळमळ व अंधारी', 'आधीपासून BP चा त्रास', 'पहिल्यांदाच त्रास'],
+        hi: ['हल्का सिरदर्द', 'तेज सिरदर्द एवं मतली', 'हाई बीपी के मरीज', 'पहली बार दर्द'],
+        or: ['ମଧ୍ୟମ ଯନ୍ତ୍ରଣା', 'ବାନ୍ତି ସହିତ', 'ଉଚ୍ଚ ରକ୍ତଚାପ', 'ପ୍ରଥମ ଥର'],
+        bn: ['হালকা ব্যথা', 'বমি ভাব সহ তীব্র', 'হাই বিপি রোগী', 'প্রথমবার'],
+        ur: ['ہلکا درد', 'شدید درد و متلی', 'ہائی بی پی', 'پہلی بار']
+      };
+
+      return {
+        summary: summaries[lang] || summaries.en,
+        urgency: 'amber',
+        urgencyLabel: lang === 'mr' ? 'रक्तदाब तपासणी आवश्यक' : 'BP Screening Required',
+        primaryAssessment: lang === 'mr' ? 'डोकेदुखी व संशयित उच्च रक्तदाब (Hypertension)' : 'Tension Headache / Suspected Hypertension',
+        clarifyingQuestion: clarifyingQuestions[lang] || clarifyingQuestions.en,
+        choiceChips: choiceChipsByLang[lang] || choiceChipsByLang.en,
+        homeRemedies: [
+          lang === 'mr' ? 'शांत अंधाऱ्या खोलीत २० मिनिटे डोळे बंद करून पडा' : 'Rest in a quiet, dark room for 20 minutes',
+          lang === 'mr' ? 'भरपूर स्वच्छ पाणी प्या आणि आहारात मीठ कमी करा' : 'Drink fresh water and avoid excess dietary salt'
+        ],
+        safeOtcGuidance: [
+          lang === 'mr' ? 'उपकेंद्र किंवा पीएचसीमध्ये मोफत बीपी व साखर तपासा' : 'Measure BP and blood glucose at nearest Ayushman Arogya Mandir'
+        ],
+        redFlags: ['Sudden thunderclap headache', 'Weakness on one side of body', 'Slurred speech'],
+        recommendedAction: 'Connect with a CHO or Medical Officer for BP recording.',
+        nearestFacilityType: 'Ayushman Arogya Mandir / Otur PHC',
+        hospitalCard: {
+          name: 'Khamgaon Ayushman Arogya Mandir',
+          nameMr: 'खामगाव आयुष्मान आरोग्य मंदिर (उपकेंद्र)',
+          type: 'Village Sub-Centre Spoke',
+          distanceKm: 0.8,
+          availableBeds: 2,
+          icuBeds: 0,
+          contactNumber: '+91 94220 88312',
+          isOpen24x7: false,
+          specialists: ['Community Health Officer (CHO)', 'ASHA']
+        },
+        pharmacyCard: {
+          name: 'Jan Aushadhi Medical Store (Otur)',
+          distanceKm: 1.8,
+          stockRate: 91,
+          contactNumber: '+91 94230 11980',
+          openStatus: 'Open (8 AM - 9 PM)'
+        },
+        matchedSchemes: [
+          {
+            name: 'National NCD Programme (Hypertension & Diabetes)',
+            benefit: '100% Free Monthly Anti-Hypertensive Medications (Amlodipine/Telmisartan)',
+            coverageAmount: 'Free Lifelong Drugs',
+            eligibility: 'All citizens aged 30+ years',
+            documentsRequired: ['ABHA Card or Verbal Registration']
+          }
+        ],
+        suggestedMedicationsOrFirstAid: ['Rest in quiet area', 'Hydration', 'BP measurement'],
+        suggestedActionButtons: [
+          { label: '🩺 Book Teleconsultation', actionType: 'BOOK_TELECONSULT' },
+          { label: '🏥 Find Nearest Sub-Centre', actionType: 'FIND_FACILITY' }
+        ],
+        confidenceScore: 0.93,
+        modelUsed: '🛡️ SetuAI Native Clinical Engine'
+      };
+    }
+
+    // 5. GENERAL CONSULTATION / PREVENTIVE GUIDANCE
     const generalSummaries: Record<Language, string> = {
       en: 'SetuAI is here to guide you. You can consult specialist doctors online for free or check 100% cashless treatment eligibility under MJPJAY.',
       mr: 'सेतू AI (SetuAI) आपल्या सेवेत आहे. आपण मोफत तज्ज्ञ डॉक्टरांचा सल्ला घेऊ शकता किंवा महात्मा फुले जन आरोग्य योजनेची माहिती मिळवू शकता.',
@@ -677,7 +764,7 @@ Respond with a valid JSON object formatted strictly as:
       hi: 'आज आपको मुख्य रूप से क्या स्वास्थ्य समस्या हो रही है, और कितने दिनों से है?',
       or: 'ଆପଣଙ୍କର କ’ଣ ସ୍ୱାସ୍ଥ୍ୟ ସମସ୍ୟା ହେଉଛି?',
       bn: 'আপনার মূলত কি ধরনের শারীরিক সমস্যা হচ্ছে?',
-      ur: 'آج آپ کو کس قسم کی تکلیف محسوس ہو رہی है؟'
+      ur: 'آج آپ کو کس قسم کی تکلیف محسوس ہو रही है؟'
     };
 
     const generalChips: Record<Language, string[]> = {
@@ -692,8 +779,8 @@ Respond with a valid JSON object formatted strictly as:
     return {
       summary: generalSummaries[lang] || generalSummaries.en,
       urgency: 'green',
-      urgencyLabel: 'Routine Guidance',
-      primaryAssessment: lang === 'mr' ? 'सर्वसाधारण आरोग्य सल्ला व प्रतिबंधात्मक तपासणी' : 'General Healthcare Advisory & Preventive Guidance',
+      urgencyLabel: lang === 'mr' ? 'नियमित सल्ला' : lang === 'hi' ? 'सामान्य परामर्श' : 'Routine Guidance',
+      primaryAssessment: lang === 'mr' ? 'सर्वसाधारण आरोग्य सल्ला व प्रतिबंधात्मक तपासणी' : lang === 'hi' ? 'सामान्य स्वास्थ्य परामर्श एवं प्राथमिक देखभाल' : 'General Healthcare Advisory & Preventive Guidance',
       clarifyingQuestion: generalQuestions[lang] || generalQuestions.en,
       choiceChips: generalChips[lang] || generalChips.en,
       homeRemedies: [
