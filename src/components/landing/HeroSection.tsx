@@ -50,7 +50,7 @@ export const HeroSection: React.FC = () => {
     }
   };
 
-  const handleHeroSubmit = async (queryText?: string) => {
+  const handleHeroSubmit = async (queryText?: string, isVoiceMode = false) => {
     const textToProcess = queryText || heroQuery;
     if (!textToProcess.trim()) return;
 
@@ -62,6 +62,13 @@ export const HeroSection: React.FC = () => {
       const triageResult = await groqAI.runSymptomAndSchemeTriage(textToProcess, language);
       setHeroTriage(triageResult);
       setHeroQuery('');
+
+      if (isVoiceMode && triageResult.summary) {
+        setIsSpeakingHero(true);
+        bhashiniAI.speakText(triageResult.summary, language, () => {
+          setIsSpeakingHero(false);
+        });
+      }
     } catch (e) {
       console.warn('Groq triage notice in hero:', e);
     } finally {
@@ -123,7 +130,7 @@ export const HeroSection: React.FC = () => {
           recognitionRef.current = null;
           // Auto submit if text exists
           if (heroQuery && heroQuery.trim()) {
-            handleHeroSubmit(heroQuery.trim());
+            handleHeroSubmit(heroQuery.trim(), true);
           }
         };
 
@@ -139,7 +146,7 @@ export const HeroSection: React.FC = () => {
       language,
       (transcript) => {
         setHeroQuery(transcript);
-        handleHeroSubmit(transcript);
+        handleHeroSubmit(transcript, true);
       },
       () => setIsListening(false),
       () => setIsListening(false)

@@ -68,7 +68,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
 
   // 1. Function to handle user message send
-  const handleUserSend = async (textToSend?: string) => {
+  const handleUserSend = async (textToSend?: string, isVoiceMode = false) => {
     const query = textToSend || inputVal;
     if (!query.trim()) return;
 
@@ -108,6 +108,11 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
 
       setMessages(prev => [...prev, aiMsg]);
       setIsTyping(false);
+
+      // Auto-reply with voice if query was spoken by voice
+      if (isVoiceMode) {
+        handlePlayAudio(aiMsgId, localizedAnswer);
+      }
     } catch (err) {
       console.warn('Groq triage error:', err);
       const fallbackResponse = processHealthQuery(query);
@@ -126,10 +131,14 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
 
       setMessages(prev => [...prev, aiMsg]);
       setIsTyping(false);
+
+      if (isVoiceMode) {
+        handlePlayAudio(aiMsgId, localizedFallback);
+      }
     }
   };
 
-  // 2. Play Audio via Bhashini TTS (voluntary)
+  // 2. Play Audio via Bhashini TTS (voluntary or voice-to-voice)
   const handlePlayAudio = (msgId: string, text: string) => {
     if (currentlySpeakingId === msgId) {
       bhashiniAI.stopSpeaking();
@@ -164,7 +173,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
 
     const queryToSend = inputVal.trim() || interimTranscript.trim();
     if (queryToSend && shouldProcess) {
-      handleUserSend(queryToSend);
+      handleUserSend(queryToSend, true);
       setInterimTranscript('');
     }
   };
