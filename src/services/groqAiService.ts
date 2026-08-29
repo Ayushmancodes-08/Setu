@@ -127,6 +127,56 @@ class GroqAiService {
   }
 
   /**
+   * Transcribe Voice Audio using Groq Whisper Cloud (whisper-large-v3-turbo)
+   * Ultra-fast (< 300ms) multilingual speech-to-text without requiring Gemini API
+   */
+  async transcribeAudioWithGroq(audioBlob: Blob, promptLang?: Language): Promise<string> {
+    const apiKey = this.config.apiKey.trim();
+    if (!apiKey) {
+      throw new Error('Groq API Key is not configured. Please add your Groq API key in AI Config.');
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', audioBlob, 'patient_voice.webm');
+      formData.append('model', 'whisper-large-v3-turbo');
+      formData.append('temperature', '0.0');
+
+      if (promptLang) {
+        const whisperLangMap: Record<Language, string> = {
+          mr: 'mr',
+          hi: 'hi',
+          or: 'hi', // Fallback context for Odia
+          bn: 'bn',
+          ur: 'ur',
+          en: 'en'
+        };
+        formData.append('language', whisperLangMap[promptLang] || 'en');
+      }
+
+      const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`Groq Whisper transcription error (${response.status}):`, errorText);
+        throw new Error(`Groq Whisper (${response.status}): ${errorText}`);
+      }
+
+      const result = await response.json();
+      return result.text || '';
+    } catch (err: any) {
+      console.warn('Groq Whisper failed:', err);
+      throw err;
+    }
+  }
+
+  /**
    * System Prompt tailored for rural Maharashtra healthcare, triage, and multi-turn diagnosis
    */
   private buildSystemPrompt(lang: Language): string {

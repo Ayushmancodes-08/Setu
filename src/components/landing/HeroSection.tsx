@@ -66,28 +66,80 @@ export const HeroSection: React.FC = () => {
     }
   };
 
-  const handleHeroVoiceInput = () => {
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+  const audioChunksRef = React.useRef<Blob[]>([]);
+
+  const handleHeroVoiceInput = async () => {
     if (isListening) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
       bhashiniAI.stopSpeechRecognition();
       setIsListening(false);
       return;
     }
 
-    setIsListening(true);
-    bhashiniAI.asr(
-      language,
-      (transcript) => {
-        setHeroQuery(transcript);
-        handleHeroSubmit(transcript);
-      },
-      (err) => {
-        console.warn('Hero ASR notice:', err);
-        setIsListening(false);
-      },
-      () => {
-        setIsListening(false);
-      }
-    );
+    try {
+      bhashiniAI.stopSpeaking();
+      setIsSpeakingHero(false);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        if (audioBlob.size > 1000) {
+          setIsLoadingLLM(true);
+          try {
+            const transcript = await groqAI.transcribeAudioWithGroq(audioBlob, language);
+            if (transcript && transcript.trim()) {
+              setHeroQuery(transcript.trim());
+              handleHeroSubmit(transcript.trim());
+            }
+          } catch (err) {
+            console.warn('Groq Whisper error, using fallback:', err);
+          } finally {
+            setIsLoadingLLM(false);
+          }
+        }
+      };
+
+      mediaRecorder.start(250);
+      setIsListening(true);
+
+      // Auto-stop after 7 seconds max
+      setTimeout(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+          mediaRecorderRef.current.stop();
+          setIsListening(false);
+        }
+      }, 7000);
+    } catch {
+      // Fallback: browser speech recognition
+      setIsListening(true);
+      bhashiniAI.asr(
+        language,
+        (transcript) => {
+          setHeroQuery(transcript);
+          handleHeroSubmit(transcript);
+        },
+        (err) => {
+          console.warn('Hero ASR notice:', err);
+          setIsListening(false);
+        },
+        () => {
+          setIsListening(false);
+        }
+      );
+    }
   };
 
   const handleToggleVoicePlay = (textToSpeak: string) => {

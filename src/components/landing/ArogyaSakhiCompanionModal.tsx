@@ -33,7 +33,8 @@ import {
   Clock,
   MapPin,
   CheckCircle2,
-  Sparkle
+  Sparkle,
+  Loader2
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -62,24 +63,30 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
   const [inputVal, setInputVal] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isAiSettingsOpen, setIsAiSettingsOpen] = useState(false);
-  const [autoSpeak, setAutoSpeak] = useState(false);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const silenceTimerRef = useRef<any>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Initialize greeting or initial query
+  // Initialize clean, friendly greeting
   useEffect(() => {
     if (isAiCompanionOpen) {
       if (messages.length === 0) {
         const welcomeGreetings: Record<string, string> = {
-          mr: 'नमस्कार! मी सेतू AI (SetuAI), महाराष्ट्र शासनाचा क्लिनिकल ट्रायज व आरोग्य योजना मार्गदर्शक आहे.\n\nतुमची लक्षणे (उदा. ताप, छातीत दुखणे, गरोदरपणातील समस्या) सांगा किंवा महात्मा फुले जन आरोग्य योजनेअंतर्गत (MJPJAY) मोफत उपचारांची माहिती मिळवा.',
-          hi: 'नमस्कार! मैं सेतु AI (SetuAI), महाराष्ट्र सरकार का क्लिनिकल ट्रायज एवं स्वास्थ्य योजना मार्गदर्शक हूँ।\n\nअपने लक्षण (जैसे बुखार, सीने में दर्द, गर्भावस्था संबंधी समस्या) बताएं या सरकारी मुफ्त योजनाओं की जानकारी प्राप्त करें।',
-          or: 'ନମସ୍କାର! ମୁଁ ସେତୁ AI (SetuAI), ଆପଣଙ୍କର ସ୍ୱାସ୍ଥ୍ୟ ସହାୟକ। ଆପଣଙ୍କର ଲକ୍ଷଣ କୁହନ୍ତୁ ଏବଂ ମାଗଣା ସରକାରୀ ଯୋଜନା ବିଷୟରେ ଜାଣନ୍ତୁ।',
-          bn: 'নমস্কার! আমি সেতু AI (SetuAI), আপনার স্বাস্থ্য সহায়ক। আপনার উপসর্গ জানান এবং সরকারি বিনামূল্যে চিকিৎসা সুবিধা সম্পর্কে জানুন।',
-          ur: 'سلام! میں سیتو AI (SetuAI) ہوں، آپ کا ہیلتھ گائیڈ۔ اپنی علامات بتائیں اور سرکاری مفت علاج کی معلومات حاصل کریں۔',
-          en: 'Namaskar! I am SetuAI (सेतू AI), your official AI Clinical Triage & Government Healthcare Scheme Navigator for Maharashtra.\n\nDescribe your symptoms (e.g. fever, chest pain, pregnancy concerns) or discover 100% cashless treatment under MJPJAY / JSSK.'
+          mr: 'नमस्कार! मी सेतू AI (SetuAI) आहे. मी तुम्हाला कशी मदत करू शकतो? तुम्ही कोणतीही लक्षणे किंवा आरोग्याविषयी समस्या सांगू शकता.',
+          hi: 'नमस्ते! मैं सेतु AI (SetuAI) हूँ। मैं आपकी क्या सहायता कर सकता हूँ? आप अपनी कोई भी बीमारी, लक्षण या स्वास्थ्य समस्या बता सकते हैं।',
+          or: 'ନମସ୍କାର! ମୁଁ ସେତୁ AI (SetuAI) । ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି? ଆପଣଙ୍କର ସ୍ୱାସ୍ଥ୍ୟ ସମସ୍ୟା କୁହନ୍ତୁ।',
+          bn: 'নমস্কার! আমি সেতু AI (SetuAI)। আমি আপনাকে কীভাবে সাহায্য করতে পারি? আপনার স্বাস্থ্য সংক্রান্ত যেকোনো সমস্যা বলতে পারেন।',
+          ur: 'سلام! میں سیتو AI (SetuAI) ہوں۔ میں آپ کی کیا مدد کر سکتا ہوں؟ آپ اپنی کوئی بھی صحت کی پریشانی بتا سکتے ہیں۔',
+          en: 'Hello! I am SetuAI. How can I help you today? You can describe any symptoms or health concerns.'
         };
 
         const welcomeText = welcomeGreetings[language] || welcomeGreetings.en;
@@ -93,13 +100,13 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
               summary: welcomeText,
               urgency: 'green',
               urgencyLabel: 'SetuAI Active',
-              primaryAssessment: 'Interactive Clinical Assessment & Government Schemes',
+              primaryAssessment: 'Clinical Triage & Health Navigator',
               clarifyingQuestion: language === 'mr' ? 'आज तुम्हाला काय त्रास जाणवत आहे?' : language === 'hi' ? 'आज आपको मुख्य रूप से क्या समस्या हो रही है?' : 'What health symptoms are you feeling today?',
               choiceChips: language === 'mr' 
-                ? ['ताप व थंडी', 'छातीत कळ / अस्वस्थता', 'गरोदरपण तपासणी (ANC)', 'रक्तदाब / शुगर तपासणी']
+                ? ['ताप व थंडी (Fever)', 'छातीत कळ (Chest Pain)', 'गरोदरपण तपासणी (Pregnancy)', 'रक्तदाब / डोकेदुखी']
                 : language === 'hi'
-                ? ['बुखार और ठंड', 'सीने में दर्द/भारीपन', 'गर्भावस्था जांच (ANC)', 'बीपी/शुगर जांच']
-                : ['High Fever & Chills', 'Chest Pain / Pressure', 'Pregnancy Checkup', 'BP / Sugar Check'],
+                ? ['तेज बुखार (Fever)', 'सीने में दर्द (Chest Pain)', 'गर्भावस्था जांच (ANC)', 'सिरदर्द / बीपी']
+                : ['Fever & Chills', 'Chest Discomfort', 'Pregnancy Checkup', 'Headache & BP'],
               redFlags: [],
               recommendedAction: 'Describe your symptoms or tap a quick topic above.',
               nearestFacilityType: 'Primary Health Centre (PHC)',
@@ -124,19 +131,23 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
     } else {
       bhashiniAI.stopSpeaking();
       bhashiniAI.stopSpeechRecognition();
+      stopVoiceRecording(false);
       setCurrentlySpeakingId(null);
     }
   }, [isAiCompanionOpen, companionInitialQuery]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping, interimTranscript]);
+  }, [messages, isTyping, isTranscribing]);
 
   if (!isAiCompanionOpen) return null;
 
   const handleUserSend = async (textToSend?: string) => {
     const query = textToSend || inputVal;
     if (!query.trim()) return;
+
+    bhashiniAI.stopSpeaking();
+    setCurrentlySpeakingId(null);
 
     const userMsg: ChatMessage = {
       id: `usr-${Date.now()}`,
@@ -171,11 +182,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
 
       setMessages(prev => [...prev, aiMsg]);
       setIsTyping(false);
-
-      // Auto-play audio readout if enabled
-      if (autoSpeak) {
-        handlePlayAudio(aiMsgId, localizedAnswer);
-      }
     } catch (err) {
       console.warn('Groq triage error:', err);
       const fallbackResponse = processHealthQuery(query);
@@ -194,9 +200,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
 
       setMessages(prev => [...prev, aiMsg]);
       setIsTyping(false);
-      if (autoSpeak) {
-        handlePlayAudio(aiMsgId, localizedFallback);
-      }
     }
   };
 
@@ -213,34 +216,162 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
     });
   };
 
-  const toggleVoiceRecording = () => {
-    if (isRecording) {
-      bhashiniAI.stopSpeechRecognition();
-      setIsRecording(false);
-      if (interimTranscript.trim()) {
-        handleUserSend(interimTranscript);
+  /**
+   * Start Voice Recording with MediaRecorder + Groq Whisper Speech-to-Text & Silence Detection
+   */
+  const startVoiceRecording = async () => {
+    try {
+      bhashiniAI.stopSpeaking();
+      setCurrentlySpeakingId(null);
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      audioChunksRef.current = [];
+
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      // Silence detection setup
+      try {
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          const audioCtx = new AudioContextClass();
+          audioContextRef.current = audioCtx;
+          const source = audioCtx.createMediaStreamSource(stream);
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 256;
+          source.connect(analyser);
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+
+          let silenceStart = Date.now();
+          const checkSilence = () => {
+            if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') return;
+            analyser.getByteFrequencyData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < bufferLength; i++) {
+              sum += dataArray[i];
+            }
+            const average = sum / bufferLength;
+
+            if (average < 10) {
+              if (Date.now() - silenceStart > 2400 && audioChunksRef.current.length > 0) {
+                stopVoiceRecording(true);
+                return;
+              }
+            } else {
+              silenceStart = Date.now();
+            }
+
+            silenceTimerRef.current = requestAnimationFrame(checkSilence);
+          };
+
+          silenceTimerRef.current = requestAnimationFrame(checkSilence);
+        }
+      } catch (e) {
+        console.warn('Silence analyser init notice:', e);
       }
-    } else {
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        if (audioBlob.size > 1000) {
+          setIsTranscribing(true);
+          try {
+            // Transcribe with Groq Whisper API (whisper-large-v3-turbo)
+            const transcript = await groqAI.transcribeAudioWithGroq(audioBlob, language);
+            setIsTranscribing(false);
+            if (transcript && transcript.trim()) {
+              handleUserSend(transcript.trim());
+            } else {
+              showToast('No speech detected. Please speak clearly into your mic.');
+            }
+          } catch (err: any) {
+            console.warn('Groq Whisper error, fallback to browser speech:', err);
+            setIsTranscribing(false);
+            // Fallback: Browser Web Speech
+            bhashiniAI.startSpeechRecognition(
+              language,
+              (text) => {
+                if (text.trim()) handleUserSend(text.trim());
+              },
+              () => {},
+              () => {}
+            );
+          }
+        }
+      };
+
+      mediaRecorder.start(250);
       setIsRecording(true);
       setInterimTranscript('');
-
-      const started = bhashiniAI.startSpeechRecognition(
+    } catch (err) {
+      console.warn('Microphone access notice:', err);
+      // Fallback: browser speech recognition
+      setIsRecording(true);
+      bhashiniAI.startSpeechRecognition(
         language,
         (transcript) => {
           setInterimTranscript(transcript);
         },
         (err) => {
-          console.warn('Voice recognition notice:', err);
+          console.warn('ASR fallback error:', err);
           setIsRecording(false);
         },
         () => {
           setIsRecording(false);
+          if (interimTranscript.trim()) {
+            handleUserSend(interimTranscript.trim());
+          }
         }
       );
+    }
+  };
 
-      if (!started) {
-        setIsRecording(false);
-      }
+  const stopVoiceRecording = (shouldProcess = true) => {
+    if (silenceTimerRef.current) {
+      cancelAnimationFrame(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+      try {
+        audioContextRef.current.close();
+      } catch {}
+      audioContextRef.current = null;
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch {}
+      mediaRecorderRef.current = null;
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+
+    bhashiniAI.stopSpeechRecognition();
+    setIsRecording(false);
+
+    if (interimTranscript.trim() && shouldProcess) {
+      handleUserSend(interimTranscript.trim());
+      setInterimTranscript('');
+    }
+  };
+
+  const toggleVoiceRecording = () => {
+    if (isRecording) {
+      stopVoiceRecording(true);
+    } else {
+      startVoiceRecording();
     }
   };
 
@@ -287,7 +418,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                 <h3 className="font-extrabold text-base tracking-tight">SetuAI (सेतू AI)</h3>
                 <span className="bg-emerald-400/20 text-emerald-300 text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-400/30 uppercase tracking-wider flex items-center gap-1">
                   <Radio className="w-2.5 h-2.5 text-emerald-400 animate-pulse" />
-                  Clinical Triage & Navigator
+                  Groq Whisper + LLaMA 3.3
                 </span>
               </div>
               <p className="text-[11px] text-emerald-200/80">Voice-First Diagnostic Companion for Maharashtra</p>
@@ -295,18 +426,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Auto-Audio Toggle */}
-            <button
-              onClick={() => setAutoSpeak(!autoSpeak)}
-              className={`text-xs font-bold px-2 py-1.5 rounded-lg border flex items-center gap-1 transition-all ${
-                autoSpeak ? 'bg-emerald-500/30 border-emerald-400/40 text-emerald-200' : 'bg-white/10 border-white/20 text-slate-400'
-              }`}
-              title="Toggle Auto Audio Narration"
-            >
-              {autoSpeak ? <Volume2 className="w-3.5 h-3.5 text-emerald-300" /> : <VolumeX className="w-3.5 h-3.5 text-slate-400" />}
-              <span className="text-[10px] hidden sm:inline">{autoSpeak ? 'Voice: ON' : 'Voice: OFF'}</span>
-            </button>
-
             {/* Model Config Button */}
             <button
               onClick={() => setIsAiSettingsOpen(true)}
@@ -333,6 +452,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
             <button
               onClick={() => {
                 bhashiniAI.stopSpeaking();
+                stopVoiceRecording(false);
                 setIsAiCompanionOpen(false);
               }}
               className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
@@ -426,7 +546,23 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                   </div>
                 )}
 
-                {/* 2. GROQ / OFFLINE TRIAGE URGENCY BANNER */}
+                {/* 2. SAFE HOME REMEDIES & FIRST AID PILL LIST */}
+                {msg.groqTriage?.homeRemedies && msg.groqTriage.homeRemedies.length > 0 && (
+                  <div className="bg-emerald-50/70 border border-emerald-200 p-3 rounded-2xl space-y-1.5 text-xs">
+                    <div className="text-emerald-950 font-bold flex items-center gap-1.5 pb-1 border-b border-emerald-200/60">
+                      <HeartHandshake className="w-4 h-4 text-emerald-700" />
+                      <span>{language === 'mr' ? 'सुरक्षित प्राथमिक / घरगुती उपाय:' : language === 'hi' ? 'सुरक्षित प्राथमिक एवं घरेलू उपाय:' : 'Safe Home Care & First Aid Tips:'}</span>
+                    </div>
+                    {msg.groqTriage.homeRemedies.map((remedy, idx) => (
+                      <div key={idx} className="flex items-start gap-1.5 text-slate-700 pt-0.5">
+                        <span className="text-emerald-600 font-bold">🌿</span>
+                        <span>{remedy}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 3. GROQ / OFFLINE TRIAGE URGENCY BANNER */}
                 {msg.groqTriage && (
                   <div className={`p-3 rounded-xl border text-xs ${
                     msg.groqTriage.urgency === 'red'
@@ -441,7 +577,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                         {msg.groqTriage.urgency === 'amber' && <Info className="w-4 h-4 text-amber-600" />}
                         {msg.groqTriage.urgency === 'green' && <CheckCircle className="w-4 h-4 text-emerald-600" />}
                         <span>
-                          {msg.groqTriage.urgency === 'red' && 'RED FLAG: Immediate Emergency'}
+                          {msg.groqTriage.urgency === 'red' && 'RED FLAG: Immediate Emergency 108'}
                           {msg.groqTriage.urgency === 'amber' && 'AMBER: Urgent Medical Attention Required'}
                           {msg.groqTriage.urgency === 'green' && 'GREEN: Routine Primary Care / Home Care'}
                         </span>
@@ -470,7 +606,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                   </div>
                 )}
 
-                {/* 3. NEAREST PUBLIC HOSPITAL / PHC CARD */}
+                {/* 4. NEAREST PUBLIC HOSPITAL / PHC CARD */}
                 {msg.groqTriage?.hospitalCard && (
                   <div className="bg-gradient-to-br from-slate-900 to-[#00241b] text-white p-3.5 rounded-2xl border border-emerald-500/30 shadow-md space-y-2">
                     <div className="flex items-center justify-between">
@@ -523,7 +659,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                   </div>
                 )}
 
-                {/* 4. NEAREST MEDICAL STORE / PHARMACY CARD */}
+                {/* 5. NEAREST MEDICAL STORE / PHARMACY CARD */}
                 {msg.groqTriage?.pharmacyCard && (
                   <div className="bg-amber-50/90 border border-amber-300 p-3 rounded-2xl space-y-2 text-xs">
                     <div className="flex items-center justify-between">
@@ -562,22 +698,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                         <span>Check Availability</span>
                       </button>
                     </div>
-                  </div>
-                )}
-
-                {/* 5. SAFE HOME REMEDIES & FIRST AID PILL LIST */}
-                {msg.groqTriage?.homeRemedies && msg.groqTriage.homeRemedies.length > 0 && (
-                  <div className="bg-emerald-50/70 border border-emerald-200 p-3 rounded-2xl space-y-1.5 text-xs">
-                    <div className="text-emerald-950 font-bold flex items-center gap-1.5 pb-1 border-b border-emerald-200/60">
-                      <HeartHandshake className="w-4 h-4 text-emerald-700" />
-                      <span>{language === 'mr' ? 'सुरक्षित प्राथमिक / घरगुती उपाय:' : language === 'hi' ? 'सुरक्षित प्राथमिक एवं घरेलू उपाय:' : 'Safe Home Care & First Aid Tips:'}</span>
-                    </div>
-                    {msg.groqTriage.homeRemedies.map((remedy, idx) => (
-                      <div key={idx} className="flex items-start gap-1.5 text-slate-700 pt-0.5">
-                        <span className="text-emerald-600 font-bold">🌿</span>
-                        <span>{remedy}</span>
-                      </div>
-                    ))}
                   </div>
                 )}
 
@@ -636,11 +756,19 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
             </div>
           ))}
 
-          {/* Typing Indicator */}
+          {/* Transcribing with Groq Whisper Indicator */}
+          {isTranscribing && (
+            <div className="flex items-center gap-2 text-emerald-800 text-xs bg-emerald-50 p-3 rounded-2xl max-w-fit shadow-xs border border-emerald-300 animate-pulse">
+              <Loader2 className="w-4 h-4 text-emerald-600 animate-spin" />
+              <span>⚡ Groq Whisper (whisper-large-v3-turbo) is transcribing your voice...</span>
+            </div>
+          )}
+
+          {/* Typing / LLM Triage Indicator */}
           {isTyping && (
             <div className="flex items-center gap-2 text-slate-500 text-xs bg-white p-3 rounded-2xl max-w-fit shadow-xs border border-slate-200">
               <Sparkles className="w-4 h-4 text-emerald-600 animate-spin" />
-              <span>SetuAI is clinically evaluating symptoms & locating nearest facilities...</span>
+              <span>SetuAI is evaluating symptoms & locating nearest hospital & chemist...</span>
             </div>
           )}
 
@@ -653,7 +781,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-red-600 rounded-full animate-ping" />
               <div className="text-xs font-bold text-red-950">
-                <span>Listening in {language.toUpperCase()}...</span>
+                <span>Listening with Silence Detection... Speak into your mic</span>
                 {interimTranscript && (
                   <span className="italic font-normal text-slate-800 ml-1.5">“{interimTranscript}”</span>
                 )}
@@ -661,7 +789,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
             </div>
 
             <button
-              onClick={toggleVoiceRecording}
+              onClick={() => stopVoiceRecording(true)}
               className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-xs"
             >
               Done / Send
@@ -687,7 +815,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                   ? 'bg-red-600 text-white animate-pulse ring-4 ring-red-200'
                   : 'bg-emerald-600 hover:bg-emerald-700 text-white'
               }`}
-              title="Speak in Marathi, Hindi, Odia, Bengali, Urdu or English"
+              title="Speak in Hindi, Marathi, Odia, Bengali, Urdu or English via Groq Whisper"
             >
               {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </button>
@@ -698,9 +826,9 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
               onChange={(e) => setInputVal(e.target.value)}
               placeholder={
                 language === 'mr' 
-                  ? 'तुमची लक्षणे सांगा (उदा. २ दिवसांपासून तीव्र ताप व डोकेदुखी आहे)...' 
+                  ? 'उदा. मला २ दिवसांपासून ताप आहे / औषधांची माहिती हवी आहे...' 
                   : language === 'hi'
-                  ? 'अपने लक्षण बताएं (उदा. 2 दिन से तेज बुखार और सिरदर्द है)...'
+                  ? 'उदा. मुझे 2 दिन से बुखार है / दवाइयों की जानकारी चाहिए...'
                   : 'Describe your symptoms or ask in your native language...'
               }
               className="flex-1 bg-slate-100 hover:bg-slate-50 focus:bg-white border border-slate-300 focus:border-emerald-500 rounded-2xl px-4 py-3 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
