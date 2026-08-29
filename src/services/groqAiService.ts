@@ -10,7 +10,38 @@
  */
 
 import { Language } from '../types';
-import { bhashiniAI } from './bhashiniService';
+
+/**
+ * Pure language detection helper to prevent circular module imports
+ */
+function detectLanguage(text: string, fallbackLang: Language = 'en'): Language {
+  if (!text || !text.trim()) return fallbackLang;
+  const lower = text.toLowerCase();
+
+  // Arabic/Perso-Arabic script detection (Urdu)
+  if (/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text)) return 'ur';
+  // Bengali script detection
+  if (/[\u0980-\u09FF]/.test(text)) return 'bn';
+  // Odia script detection
+  if (/[\u0B00-\u0B7F]/.test(text)) return 'or';
+  // Devanagari script detection
+  if (/[\u0900-\u097F]/.test(text)) {
+    if (/आहे|नाही|माझे|माझ्या|डोक्यात|डोके|चक्कर|कसे|कुठे|कधी|गोळी|दवाखाना|हॉस्पिटल|साखर|त्रास|पोटात|छातीत|कळ|खोकला|उलट्या|बाळ|गरोदर/.test(text)) {
+      return 'mr';
+    }
+    return 'hi';
+  }
+  // Romanized Marathi
+  if (/\b(mala|maza|mazya|ahe|nahi|dokadukhi|dokyat|doke|tras|trass|chhati|kall|potat|tapa|khokla|aushadh|davakhana|goli|garodar|baal)\b/i.test(lower)) return 'mr';
+  // Romanized Hindi
+  if (/\b(mujhe|mera|meri|mere|hai|hain|nahi|bukhar|dard|sir|pet|chhati|dawa|dawai|khansi|chakkar|ulti|bimar|seene|taklif)\b/i.test(lower)) return 'hi';
+  // Romanized Odia
+  if (/\b(mote|mora|houchi|jwara|munda|bindha|byatha|chhati|oushadha)\b/i.test(lower)) return 'or';
+  // Romanized Bengali
+  if (/\b(amar|amake|ache|nei|jor|matha|batha|khasi|oushodh|buk)\b/i.test(lower)) return 'bn';
+
+  return fallbackLang;
+}
 
 export interface GroqConfig {
   apiKey: string;
@@ -225,7 +256,7 @@ Always output ONLY valid JSON conforming to the requested schema.`;
     conversationHistory?: ChatHistoryItem[]
   ): Promise<GroqTriageOutput> {
     // Resolve effective language: if targetLang is en but query is in Hindi/Marathi/etc, detect it!
-    const detectedLang = bhashiniAI.detectLanguage(userQuery, targetLang);
+    const detectedLang = detectLanguage(userQuery, targetLang);
     const effectiveLang = (targetLang && targetLang !== 'en') ? targetLang : detectedLang;
 
     const apiKey = this.config.apiKey.trim();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useHealthData } from '../../context/HealthDataContext';
 import { bhashiniAI, PatientVoiceTriageResult } from '../../services/bhashiniService';
@@ -40,6 +40,9 @@ export const HeroSection: React.FC = () => {
   const [heroTriage, setHeroTriage] = useState<GroqTriageOutput | null>(null);
   const [isSpeakingHero, setIsSpeakingHero] = useState<boolean>(false);
 
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
   const scrollToPortals = () => {
     const el = document.getElementById('role-portals-section');
     if (el) {
@@ -65,9 +68,6 @@ export const HeroSection: React.FC = () => {
       setIsLoadingLLM(false);
     }
   };
-
-  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
-  const audioChunksRef = React.useRef<Blob[]>([]);
 
   const handleHeroVoiceInput = async () => {
     if (isListening) {
