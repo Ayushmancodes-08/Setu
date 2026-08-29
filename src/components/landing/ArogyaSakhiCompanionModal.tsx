@@ -20,20 +20,12 @@ import {
   Volume2, 
   VolumeX, 
   Radio,
-  Languages,
-  Layers,
   FileText,
-  Settings,
   Zap,
-  Activity,
   Navigation,
   Pill,
   HeartHandshake,
   HelpCircle,
-  Clock,
-  MapPin,
-  CheckCircle2,
-  Sparkle,
   Loader2
 } from 'lucide-react';
 
@@ -54,7 +46,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
     setCompanionInitialQuery, 
     language, 
     setLanguage,
-    t,
     setIsEmergencyModalOpen,
     setCurrentView,
     showToast
@@ -76,72 +67,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
   const silenceTimerRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Initialize clean, friendly greeting
-  useEffect(() => {
-    if (isAiCompanionOpen) {
-      if (messages.length === 0) {
-        const welcomeGreetings: Record<string, string> = {
-          mr: 'नमस्कार! मी सेतू AI (SetuAI) आहे. मी तुम्हाला कशी मदत करू शकतो? तुम्ही कोणतीही लक्षणे किंवा आरोग्याविषयी समस्या सांगू शकता.',
-          hi: 'नमस्ते! मैं सेतु AI (SetuAI) हूँ। मैं आपकी क्या सहायता कर सकता हूँ? आप अपनी कोई भी बीमारी, लक्षण या स्वास्थ्य समस्या बता सकते हैं।',
-          or: 'ନମସ୍କାର! ମୁଁ ସେତୁ AI (SetuAI) । ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି? ଆପଣଙ୍କର ସ୍ୱାସ୍ଥ୍ୟ ସମସ୍ୟା କୁହନ୍ତୁ।',
-          bn: 'নমস্কার! আমি সেতু AI (SetuAI)। আমি আপনাকে কীভাবে সাহায্য করতে পারি? আপনার স্বাস্থ্য সংক্রান্ত যেকোনো সমস্যা বলতে পারেন।',
-          ur: 'سلام! میں سیتو AI (SetuAI) ہوں۔ میں آپ کی کیا مدد کر سکتا ہوں؟ آپ اپنی کوئی بھی صحت کی پریشانی بتا سکتے ہیں۔',
-          en: 'Hello! I am SetuAI. How can I help you today? You can describe any symptoms or health concerns.'
-        };
-
-        const welcomeText = welcomeGreetings[language] || welcomeGreetings.en;
-        const initMsgId = 'msg-init';
-        setMessages([
-          {
-            id: initMsgId,
-            sender: 'ai',
-            text: welcomeText,
-            groqTriage: {
-              summary: welcomeText,
-              urgency: 'green',
-              urgencyLabel: 'SetuAI Active',
-              primaryAssessment: 'Clinical Triage & Health Navigator',
-              clarifyingQuestion: language === 'mr' ? 'आज तुम्हाला काय त्रास जाणवत आहे?' : language === 'hi' ? 'आज आपको मुख्य रूप से क्या समस्या हो रही है?' : 'What health symptoms are you feeling today?',
-              choiceChips: language === 'mr' 
-                ? ['ताप व थंडी (Fever)', 'छातीत कळ (Chest Pain)', 'गरोदरपण तपासणी (Pregnancy)', 'रक्तदाब / डोकेदुखी']
-                : language === 'hi'
-                ? ['तेज बुखार (Fever)', 'सीने में दर्द (Chest Pain)', 'गर्भावस्था जांच (ANC)', 'सिरदर्द / बीपी']
-                : ['Fever & Chills', 'Chest Discomfort', 'Pregnancy Checkup', 'Headache & BP'],
-              redFlags: [],
-              recommendedAction: 'Describe your symptoms or tap a quick topic above.',
-              nearestFacilityType: 'Primary Health Centre (PHC)',
-              matchedSchemes: [],
-              suggestedMedicationsOrFirstAid: [],
-              suggestedActionButtons: [
-                { label: '📹 Book Teleconsultation', actionType: 'BOOK_TELECONSULT' },
-                { label: '🛡️ Check MJPJAY Free Benefits', actionType: 'CHECK_SCHEME' }
-              ],
-              confidenceScore: 0.99,
-              modelUsed: 'SetuAI Clinical Engine'
-            },
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
-      }
-
-      if (companionInitialQuery) {
-        handleUserSend(companionInitialQuery);
-        setCompanionInitialQuery('');
-      }
-    } else {
-      bhashiniAI.stopSpeaking();
-      bhashiniAI.stopSpeechRecognition();
-      stopVoiceRecording(false);
-      setCurrentlySpeakingId(null);
-    }
-  }, [isAiCompanionOpen, companionInitialQuery]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping, isTranscribing]);
-
-  if (!isAiCompanionOpen) return null;
-
+  // 1. Function to handle user message send
   const handleUserSend = async (textToSend?: string) => {
     const query = textToSend || inputVal;
     if (!query.trim()) return;
@@ -203,6 +129,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
     }
   };
 
+  // 2. Play Audio via Bhashini TTS (voluntary)
   const handlePlayAudio = (msgId: string, text: string) => {
     if (currentlySpeakingId === msgId) {
       bhashiniAI.stopSpeaking();
@@ -216,9 +143,42 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
     });
   };
 
-  /**
-   * Start Voice Recording with MediaRecorder + Groq Whisper Speech-to-Text & Silence Detection
-   */
+  // 3. Stop Voice Recording Helper
+  const stopVoiceRecording = (shouldProcess = true) => {
+    if (silenceTimerRef.current) {
+      cancelAnimationFrame(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+      try {
+        audioContextRef.current.close();
+      } catch {}
+      audioContextRef.current = null;
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch {}
+      mediaRecorderRef.current = null;
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+
+    bhashiniAI.stopSpeechRecognition();
+    setIsRecording(false);
+
+    if (interimTranscript.trim() && shouldProcess) {
+      handleUserSend(interimTranscript.trim());
+      setInterimTranscript('');
+    }
+  };
+
+  // 4. Start Voice Recording with MediaRecorder + Groq Whisper
   const startVoiceRecording = async () => {
     try {
       bhashiniAI.stopSpeaking();
@@ -283,7 +243,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
         if (audioBlob.size > 1000) {
           setIsTranscribing(true);
           try {
-            // Transcribe with Groq Whisper API (whisper-large-v3-turbo)
             const transcript = await groqAI.transcribeAudioWithGroq(audioBlob, language);
             setIsTranscribing(false);
             if (transcript && transcript.trim()) {
@@ -294,7 +253,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
           } catch (err: any) {
             console.warn('Groq Whisper error, fallback to browser speech:', err);
             setIsTranscribing(false);
-            // Fallback: Browser Web Speech
             bhashiniAI.startSpeechRecognition(
               language,
               (text) => {
@@ -312,7 +270,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
       setInterimTranscript('');
     } catch (err) {
       console.warn('Microphone access notice:', err);
-      // Fallback: browser speech recognition
       setIsRecording(true);
       bhashiniAI.startSpeechRecognition(
         language,
@@ -330,40 +287,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
           }
         }
       );
-    }
-  };
-
-  const stopVoiceRecording = (shouldProcess = true) => {
-    if (silenceTimerRef.current) {
-      cancelAnimationFrame(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-
-    if (audioContextRef.current) {
-      try {
-        audioContextRef.current.close();
-      } catch {}
-      audioContextRef.current = null;
-    }
-
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      try {
-        mediaRecorderRef.current.stop();
-      } catch {}
-      mediaRecorderRef.current = null;
-    }
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
-      streamRef.current = null;
-    }
-
-    bhashiniAI.stopSpeechRecognition();
-    setIsRecording(false);
-
-    if (interimTranscript.trim() && shouldProcess) {
-      handleUserSend(interimTranscript.trim());
-      setInterimTranscript('');
     }
   };
 
@@ -397,6 +320,73 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
       showToast('Opening ASHA Frontline Health Worker Portal...');
     }
   };
+
+  // Initialize clean greeting or initial query
+  useEffect(() => {
+    if (isAiCompanionOpen) {
+      if (messages.length === 0) {
+        const welcomeGreetings: Record<string, string> = {
+          mr: 'नमस्कार! मी सेतू AI (SetuAI) आहे. मी तुम्हाला कशी मदत करू शकतो? तुम्ही कोणतीही लक्षणे किंवा आरोग्याविषयी समस्या सांगू शकता.',
+          hi: 'नमस्ते! मैं सेतु AI (SetuAI) हूँ। मैं आपकी क्या सहायता कर सकता हूँ? आप अपनी कोई भी बीमारी, लक्षण या स्वास्थ्य समस्या बता सकते हैं।',
+          or: 'ନମସ୍କାର! ମୁଁ ସେତୁ AI (SetuAI) । ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି? ଆପଣଙ୍କର ସ୍ୱାସ୍ଥ୍ୟ ସମସ୍ୟା କୁହନ୍ତୁ।',
+          bn: 'নমস্কার! আমি সেতু AI (SetuAI)। আমি আপনাকে কীভাবে সাহায্য করতে পারি? আপনার স্বাস্থ্য সংক্রান্ত যেকোনো সমস্যা বলতে পারেন।',
+          ur: 'سلام! میں سیتو AI (SetuAI) ہوں۔ میں آپ کی کیا مدد کر سکتا ہوں؟ آپ اپنی کوئی بھی صحت کی پریشانی بتا سکتے ہیں۔',
+          en: 'Hello! I am SetuAI. How can I help you today? You can describe any symptoms or health concerns.'
+        };
+
+        const welcomeText = welcomeGreetings[language] || welcomeGreetings.en;
+        const initMsgId = 'msg-init';
+        setMessages([
+          {
+            id: initMsgId,
+            sender: 'ai',
+            text: welcomeText,
+            groqTriage: {
+              summary: welcomeText,
+              urgency: 'green',
+              urgencyLabel: 'SetuAI Active',
+              primaryAssessment: 'Clinical Triage & Health Navigator',
+              clarifyingQuestion: language === 'mr' ? 'आज तुम्हाला काय त्रास जाणवत आहे?' : language === 'hi' ? 'आज आपको मुख्य रूप से क्या समस्या हो रही है?' : 'What health symptoms are you feeling today?',
+              choiceChips: language === 'mr' 
+                ? ['ताप व थंडी (Fever)', 'छातीत कळ (Chest Pain)', 'गरोदरपण तपासणी (Pregnancy)', 'रक्तदाब / डोकेदुखी']
+                : language === 'hi'
+                ? ['तेज बुखार (Fever)', 'सीने में दर्द (Chest Pain)', 'गर्भावस्था जांच (ANC)', 'सिरदर्द / बीपी']
+                : ['Fever & Chills', 'Chest Discomfort', 'Pregnancy Checkup', 'Headache & BP'],
+              redFlags: [],
+              recommendedAction: 'Describe your symptoms or tap a quick topic above.',
+              nearestFacilityType: 'Primary Health Centre (PHC)',
+              matchedSchemes: [],
+              suggestedMedicationsOrFirstAid: [],
+              suggestedActionButtons: [
+                { label: '📹 Book Teleconsultation', actionType: 'BOOK_TELECONSULT' },
+                { label: '🛡️ Check MJPJAY Free Benefits', actionType: 'CHECK_SCHEME' }
+              ],
+              confidenceScore: 0.99,
+              modelUsed: 'SetuAI Clinical Engine'
+            },
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }
+
+      if (companionInitialQuery) {
+        handleUserSend(companionInitialQuery);
+        setCompanionInitialQuery('');
+      }
+    } else {
+      bhashiniAI.stopSpeaking();
+      bhashiniAI.stopSpeechRecognition();
+      stopVoiceRecording(false);
+      setCurrentlySpeakingId(null);
+    }
+  }, [isAiCompanionOpen, companionInitialQuery]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isTyping, isTranscribing]);
+
+  // Clean exit if closed
+  if (!isAiCompanionOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
