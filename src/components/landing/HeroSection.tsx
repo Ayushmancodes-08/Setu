@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 
 export const HeroSection: React.FC = () => {
-  const { setCurrentView, setIsEmergencyModalOpen, setIsAiSettingsModalOpen, language, t } = useApp();
+  const { setCurrentView, setIsEmergencyModalOpen, setIsAiSettingsModalOpen, language, t, setCompanionInitialQuery, setIsAiCompanionOpen } = useApp();
   const { openRoleAuthModal, facilities, patients } = useHealthData();
 
   // Language-Agnostic Setu AI Navigator State
@@ -234,15 +234,27 @@ export const HeroSection: React.FC = () => {
                 {heroResult.triageGuidance}
               </p>
 
-              <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800 text-[11px]">
                 <span className="text-emerald-300 font-bold">Action: {heroResult.suggestedAction}</span>
-                <button
-                  onClick={() => bhashiniAI.tts(heroResult.triageGuidance, heroResult.detectedLanguage)}
-                  className="text-emerald-400 hover:text-white font-bold flex items-center gap-1"
-                >
-                  <Volume2 className="w-3.5 h-3.5" />
-                  <span>Listen Voice</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => bhashiniAI.tts(heroResult.triageGuidance, heroResult.detectedLanguage)}
+                    className="text-emerald-400 hover:text-white font-bold flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                    <span>Listen</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCompanionInitialQuery(heroResult.canonicalQuery);
+                      setIsAiCompanionOpen(true);
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1 rounded-lg flex items-center gap-1 shadow-sm"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Open SetuAI Navigator</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}
