@@ -3,6 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { useHealthData } from '../../context/HealthDataContext';
 import { bhashiniAI } from '../../services/bhashiniService';
 import { Appointment } from '../../types';
+import { VideoConsultationRoom } from '../video/VideoConsultationRoom';
+import { LabTestBookingModal } from '../modals/LabTestBookingModal';
 import { 
   User, 
   Heart, 
@@ -165,7 +167,7 @@ export const PatientPortal: React.FC = () => {
     ]
   };
 
-  const [activeModule, setActiveModule] = useState<'dashboard' | 'appointments' | 'medications' | 'reports' | 'healthcare' | 'schemes' | 'women_child' | 'chronic' | 'wellbeing' | 'emergency'>('dashboard');
+  const [activeModule, setActiveModule] = useState<'dashboard' | 'appointments' | 'medications' | 'reports' | 'healthcare' | 'schemes' | 'women_child' | 'chronic' | 'wellbeing' | 'emergency' | 'timeline'>('dashboard');
   const [elderlyMode, setElderlyMode] = useState<boolean>(false);
   const [showFullProfile, setShowFullProfile] = useState<boolean>(false);
 
@@ -178,6 +180,10 @@ export const PatientPortal: React.FC = () => {
     actionText: string;
     escalateToAsha: boolean;
   } | null>(null);
+
+  // Lab Test Booking Modal State
+  const [isLabBookingOpen, setIsLabBookingOpen] = useState<boolean>(false);
+  const [labPrefillTestId, setLabPrefillTestId] = useState<string | undefined>(undefined);
 
   // Appointment Booking Modal State
   const [isBookModalOpen, setIsBookModalOpen] = useState<boolean>(false);
@@ -503,7 +509,8 @@ export const PatientPortal: React.FC = () => {
             { id: 'women_child', label: '👩 Women & Child Care', icon: Baby },
             { id: 'chronic', label: '💗 Chronic Care (BP/Sugar)', icon: Heart },
             { id: 'wellbeing', label: '🧠 Wellbeing Check-in', icon: Smile },
-            { id: 'emergency', label: '🚨 Emergency SOS', icon: PhoneCall }
+            { id: 'emergency', label: '🚨 Emergency SOS', icon: PhoneCall },
+            { id: 'timeline', label: '📋 Health Timeline', icon: Activity }
           ].map((tab) => {
             const isActive = activeModule === tab.id;
             return (
@@ -520,6 +527,13 @@ export const PatientPortal: React.FC = () => {
               </button>
             );
           })}
+          {/* Special action button — Lab Test Booking */}
+          <button
+            onClick={() => { setLabPrefillTestId(undefined); setIsLabBookingOpen(true); }}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl transition-all whitespace-nowrap bg-purple-700 hover:bg-purple-800 text-white shadow-xs border border-purple-800 font-bold"
+          >
+            <span>🧪 Book Lab Test</span>
+          </button>
         </div>
 
         {/* MODULE 1: HEALTH OVERVIEW DASHBOARD */}
@@ -890,18 +904,40 @@ export const PatientPortal: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
+                  <div className="pt-2 border-t border-slate-200 flex items-center justify-between gap-2">
                     <span className="text-[10px] text-slate-400">{lab.reportedAt}</span>
-                    <button
-                      onClick={() => showToast(`Report shared with ASHA Manisha Kadam for follow-up review.`)}
-                      className="text-xs text-teal-800 hover:text-teal-900 font-bold flex items-center gap-1"
-                    >
-                      <Share2 className="w-3.5 h-3.5" />
-                      <span>Discuss with ASHA / CHO</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => showToast(`Report shared with ASHA Manisha Kadam for follow-up review.`)}
+                        className="text-[11px] text-teal-800 hover:text-teal-900 font-bold flex items-center gap-1"
+                      >
+                        <Share2 className="w-3 h-3" />
+                        <span>Share</span>
+                      </button>
+                      <button
+                        onClick={() => { setLabPrefillTestId(undefined); setIsLabBookingOpen(true); }}
+                        className="bg-purple-700 hover:bg-purple-800 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition-all"
+                      >
+                        🔁 Book Repeat Test
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Book new test CTA */}
+            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div>
+                <div className="font-black text-sm text-purple-900">Need a new lab test?</div>
+                <p className="text-xs text-purple-700 mt-0.5">Compare prices & distance across 5 nearby diagnostic centers. Free tests under JSSK/MJPJAY highlighted.</p>
+              </div>
+              <button
+                onClick={() => { setLabPrefillTestId(undefined); setIsLabBookingOpen(true); }}
+                className="shrink-0 bg-purple-700 hover:bg-purple-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md shadow-purple-700/20"
+              >
+                🧪 Book Lab Test
+              </button>
             </div>
           </div>
         )}
@@ -1271,6 +1307,108 @@ export const PatientPortal: React.FC = () => {
           </div>
         )}
 
+        {/* MODULE 11: HEALTH TIMELINE */}
+        {activeModule === 'timeline' && (() => {
+          const timelineEvents = [
+            { id: 'tl-1', date: 'Today, 10:30 AM', type: 'visit', icon: '🩺', title: 'Teleconsultation — Dr. Rohini Kulkarni', detail: 'BP reviewed, Iron supplement dose adjusted. Follow-up in 30 days.', badge: 'Completed', badgeColor: 'emerald' },
+            { id: 'tl-2', date: 'Today, 10:15 AM', type: 'prescription', icon: '💊', title: 'e-Prescription Issued — RX-9921', detail: 'Amlodipine 5mg + Telmisartan 40mg. 30-day supply. Dispensed by Anand Deshmukh, Pharmacist.', badge: 'Dispensed', badgeColor: 'teal' },
+            { id: 'tl-3', date: '2 days ago', type: 'lab', icon: '🧪', title: 'Lab Report — Lipid Profile + FBS', detail: 'Cholesterol 182 mg/dL (Normal). FBS 104 mg/dL (Borderline). Flagged for dietary counseling.', badge: 'Borderline', badgeColor: 'amber' },
+            { id: 'tl-4', date: '1 week ago', type: 'visit', icon: '🏥', title: 'OPD Visit — Otur PHC', detail: 'Hypertension follow-up. New prescription issued. BP: 142/90.', badge: 'Completed', badgeColor: 'emerald' },
+            { id: 'tl-5', date: '2 weeks ago', type: 'vitals', icon: '❤️', title: 'Vitals Recorded by ASHA — Manisha Kadam', detail: 'BP: 148/92, SpO₂: 97%, Pulse: 82 bpm, Temp: 98.4°F. Moderate risk flag raised.', badge: 'Moderate Risk', badgeColor: 'orange' },
+            { id: 'tl-6', date: '1 month ago', type: 'referral', icon: '🚑', title: 'Referral — Junnar Rural Hospital', detail: 'Referred for hypertension specialist consultation. Reason: BP persistently >140/90.', badge: 'Completed', badgeColor: 'blue' },
+            { id: 'tl-7', date: '2 months ago', type: 'prescription', icon: '💊', title: 'e-Prescription — RX-9112', detail: 'Telmisartan 40mg (Night). First-line hypertension management. Dispensed.', badge: 'Dispensed', badgeColor: 'teal' },
+            { id: 'tl-8', date: '3 months ago', type: 'lab', icon: '🧪', title: 'Lab Report — CBC + HbA1c', detail: 'Hb: 12.1 g/dL (Low Normal). HbA1c: 5.9% (Pre-diabetic range). Lifestyle counseling recommended.', badge: 'Action Required', badgeColor: 'red' },
+            { id: 'tl-9', date: '3 months ago', type: 'visit', icon: '🩺', title: 'Initial NCD Screening — ASHA Visit', detail: 'ASHA Manisha Kadam first documented hypertension. Patient enrolled in NCD registry.', badge: 'Enrolled', badgeColor: 'slate' },
+          ];
+
+          const TYPE_COLORS: Record<string, { bg: string; border: string; dot: string }> = {
+            visit:        { bg: 'bg-teal-50',    border: 'border-teal-200',    dot: 'bg-teal-600'    },
+            prescription: { bg: 'bg-blue-50',    border: 'border-blue-200',    dot: 'bg-blue-600'    },
+            lab:          { bg: 'bg-purple-50',  border: 'border-purple-200',  dot: 'bg-purple-600'  },
+            vitals:       { bg: 'bg-rose-50',    border: 'border-rose-200',    dot: 'bg-rose-500'    },
+            referral:     { bg: 'bg-amber-50',   border: 'border-amber-200',   dot: 'bg-amber-500'   },
+          };
+
+          const BADGE_COLORS: Record<string, string> = {
+            emerald: 'bg-emerald-100 text-emerald-800 border border-emerald-300',
+            teal:    'bg-teal-100 text-teal-800 border border-teal-300',
+            amber:   'bg-amber-100 text-amber-800 border border-amber-300',
+            orange:  'bg-orange-100 text-orange-800 border border-orange-300',
+            blue:    'bg-blue-100 text-blue-800 border border-blue-300',
+            red:     'bg-red-100 text-red-800 border border-red-300',
+            slate:   'bg-slate-100 text-slate-700 border border-slate-300',
+          };
+
+          return (
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">Health Timeline</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Complete chronological history — visits, prescriptions, lab reports, referrals</p>
+                </div>
+                <button
+                  onClick={() => showToast('Health summary downloading as PDF...')}
+                  className="bg-[#003527] text-white text-xs font-bold px-3.5 py-2 rounded-xl hover:bg-[#064e3b] flex items-center gap-1.5 transition-all"
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  Export PDF
+                </button>
+              </div>
+
+              {/* Filter pills */}
+              <div className="flex gap-2 flex-wrap">
+                {['All', 'Visits', 'Prescriptions', 'Lab Reports', 'Vitals', 'Referrals'].map(f => (
+                  <button key={f} className="bg-slate-100 hover:bg-[#003527] hover:text-white text-slate-700 text-xs font-bold px-3 py-1.5 rounded-full border border-slate-200 transition-all">
+                    {f}
+                  </button>
+                ))}
+              </div>
+
+              {/* Timeline list */}
+              <div className="relative space-y-0">
+                {/* Vertical connector line */}
+                <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-slate-200 z-0" />
+                
+                <div className="space-y-3">
+                  {timelineEvents.map((event, idx) => {
+                    const colors = TYPE_COLORS[event.type] || TYPE_COLORS.visit;
+                    return (
+                      <div key={event.id} className="relative flex gap-3">
+                        {/* Dot indicator */}
+                        <div className={`w-10 h-10 rounded-full ${colors.dot} flex items-center justify-center shrink-0 z-10 text-base shadow-sm`}>
+                          {event.icon}
+                        </div>
+                        {/* Card */}
+                        <div className={`flex-1 border ${colors.border} ${colors.bg} rounded-2xl p-3.5`}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-[10px] text-slate-400 font-semibold">{event.date}</div>
+                              <div className="font-bold text-sm text-slate-900 mt-0.5 leading-snug">{event.title}</div>
+                              <p className="text-xs text-slate-600 mt-1 leading-relaxed">{event.detail}</p>
+                            </div>
+                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full shrink-0 ${BADGE_COLORS[event.badgeColor] || BADGE_COLORS.slate}`}>
+                              {event.badge}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="text-center pt-2">
+                <button
+                  onClick={() => showToast('Loading earlier health history...')}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-5 py-2.5 rounded-xl border border-slate-200 transition-all"
+                >
+                  Load Earlier Records
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+
       </div>
 
       {/* BOOK APPOINTMENT MODAL */}
@@ -1394,100 +1532,38 @@ export const PatientPortal: React.FC = () => {
         </div>
       )}
 
-      {/* LIVE TELECONSULTATION VIDEO ROOM MODAL */}
+      {/* LIVE TELECONSULTATION VIDEO ROOM (ZOOM / AGORA COMPATIBLE) */}
       {activeVideoApt && (
-        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-          <div className="bg-slate-900 rounded-3xl max-w-3xl w-full border border-slate-800 shadow-2xl p-6 space-y-5 text-white animate-in fade-in zoom-in-95 duration-200">
-            
-            {/* Call Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800 text-xs">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping" />
-                <div>
-                  <h4 className="font-black text-base text-white">{activeVideoApt.doctorName}</h4>
-                  <p className="text-[11px] text-slate-400">{activeVideoApt.doctorSpecialty} • Token: {activeVideoApt.appointmentToken}</p>
-                </div>
-              </div>
-
-              <span className="bg-emerald-500/20 text-emerald-300 font-mono font-bold px-3 py-1 rounded-full border border-emerald-500/30">
-                Live e-Sanjeevani Teleconsult
-              </span>
-            </div>
-
-            {/* Video Streams Simulated Box */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
-              {/* Doctor Remote Stream */}
-              <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700 h-64 flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent z-10" />
-                <div className="relative z-20 flex items-center justify-between text-xs">
-                  <span className="bg-slate-900/80 px-2 py-1 rounded font-bold">{activeVideoApt.doctorName} (Doctor)</span>
-                  <span className="text-emerald-400 font-bold">● Connected (HD)</span>
-                </div>
-                <div className="flex items-center justify-center h-full relative z-20">
-                  <div className="w-20 h-20 rounded-full bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 flex items-center justify-center text-2xl font-black">
-                    DR
-                  </div>
-                </div>
-                <div className="relative z-20 text-[11px] text-slate-300">
-                  Audio & Video Linked • e-Rx Generation Active
-                </div>
-              </div>
-
-              {/* Patient Local Stream */}
-              <div className="bg-slate-800 rounded-2xl p-4 border border-slate-700 h-64 flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent z-10" />
-                <div className="relative z-20 flex items-center justify-between text-xs">
-                  <span className="bg-slate-900/80 px-2 py-1 rounded font-bold">You ({patient.name})</span>
-                  <span className="text-slate-400 font-mono text-[10px]">Village Spoke</span>
-                </div>
-                <div className="flex items-center justify-center h-full relative z-20">
-                  <div className="w-20 h-20 rounded-full bg-teal-900/60 border border-teal-500/40 text-teal-300 flex items-center justify-center text-2xl font-black">
-                    {patient.name.slice(0, 2).toUpperCase()}
-                  </div>
-                </div>
-                <div className="relative z-20 text-[11px] text-slate-300">
-                  BP: {patient.vitals.bp} • SpO2: {patient.vitals.spo2}
-                </div>
-              </div>
-
-            </div>
-
-            {/* Video Controls Bar */}
-            <div className="flex items-center justify-center gap-4 pt-3 border-t border-slate-800">
-              <button
-                onClick={() => setIsMuted(!isMuted)}
-                className={`p-3.5 rounded-full transition-colors ${
-                  isMuted ? 'bg-red-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'
-                }`}
-              >
-                {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-              </button>
-
-              <button
-                onClick={() => setIsVideoOff(!isVideoOff)}
-                className={`p-3.5 rounded-full transition-colors ${
-                  isVideoOff ? 'bg-red-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-white'
-                }`}
-              >
-                {isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
-              </button>
-
-              <button
-                onClick={() => {
-                  setActiveVideoApt(null);
-                  showToast('Teleconsultation session closed. Doctor e-Prescription will sync automatically.');
-                }}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-2xl text-xs transition-colors flex items-center gap-2"
-              >
-                <PhoneCall className="w-4 h-4 rotate-[135deg]" />
-                <span>Leave Teleconsult</span>
-              </button>
-            </div>
-
-          </div>
-        </div>
+        <VideoConsultationRoom
+          isOpen={!!activeVideoApt}
+          onClose={() => {
+            setActiveVideoApt(null);
+            showToast('Teleconsultation session closed. Doctor e-Prescription will sync automatically.');
+          }}
+          config={{
+            channelName: `e-sanjeevani-${activeVideoApt.appointmentToken || '9921'}`,
+            userRole: 'patient',
+            participantName: patient.name,
+            remoteParticipantName: activeVideoApt.doctorName,
+            remoteParticipantRole: activeVideoApt.doctorSpecialty || 'Specialist Doctor',
+            appointmentToken: activeVideoApt.appointmentToken
+          }}
+          patientVitals={{
+            bp: patient.vitals.bp,
+            pulse: `${patient.vitals.pulse} bpm`,
+            spo2: `${patient.vitals.spo2}%`,
+            sugar: patient.vitals.bloodSugar,
+            temp: patient.vitals.temp
+          }}
+        />
       )}
+
+      {/* LAB TEST BOOKING MODAL — Real-time Price + Distance Comparison */}
+      <LabTestBookingModal
+        isOpen={isLabBookingOpen}
+        onClose={() => setIsLabBookingOpen(false)}
+        prefillTestId={labPrefillTestId}
+      />
 
     </div>
   );

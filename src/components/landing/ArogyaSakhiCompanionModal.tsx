@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { processHealthQuery, AIResponse } from '../../services/aiHealthCompanion';
+import { groqAI, GroqTriageOutput } from '../../services/groqAiService';
 import { bhashiniAI } from '../../services/bhashiniService';
 import { 
   Sparkles, 
@@ -18,7 +19,9 @@ import {
   Volume2, 
   VolumeX, 
   Radio,
-  Languages
+  Languages,
+  Layers,
+  FileText
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -26,6 +29,7 @@ interface ChatMessage {
   sender: 'user' | 'ai';
   text: string;
   responseObj?: AIResponse;
+  groqTriage?: GroqTriageOutput;
   timestamp: string;
 }
 
@@ -85,7 +89,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
 
   if (!isAiCompanionOpen) return null;
 
-  const handleUserSend = (textToSend?: string) => {
+  const handleUserSend = async (textToSend?: string) => {
     const query = textToSend || inputVal;
     if (!query.trim()) return;
 
@@ -101,18 +105,16 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
     setInterimTranscript('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const response = processHealthQuery(query);
-      let localizedAnswer = response.answerEn;
-      if (language === 'mr') localizedAnswer = response.answerMr;
-      if (language === 'hi') localizedAnswer = response.answerHi;
+    try {
+      const triageResult = await groqAI.runSymptomAndSchemeTriage(query, language);
+      const localizedAnswer = triageResult.summary;
 
       const aiMsgId = `ai-${Date.now()}`;
       const aiMsg: ChatMessage = {
         id: aiMsgId,
         sender: 'ai',
         text: localizedAnswer,
-        responseObj: response,
+        groqTriage: triageResult,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
@@ -121,7 +123,26 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
 
       // Play Bhashini Audio readout
       handlePlayAudio(aiMsgId, localizedAnswer);
-    }, 700);
+    } catch (err) {
+      console.warn('Groq triage error:', err);
+      const fallbackResponse = processHealthQuery(query);
+      let localizedFallback = fallbackResponse.answerEn;
+      if (language === 'mr') localizedFallback = fallbackResponse.answerMr;
+      if (language === 'hi') localizedFallback = fallbackResponse.answerHi;
+
+      const aiMsgId = `ai-${Date.now()}`;
+      const aiMsg: ChatMessage = {
+        id: aiMsgId,
+        sender: 'ai',
+        text: localizedFallback,
+        responseObj: fallbackResponse,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      setMessages(prev => [...prev, aiMsg]);
+      setIsTyping(false);
+      handlePlayAudio(aiMsgId, localizedFallback);
+    }
   };
 
   const handlePlayAudio = (msgId: string, text: string) => {
@@ -338,8 +359,104 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
 
                 <p className="whitespace-pre-line">{msg.text}</p>
 
-                {/* Triage Urgency Banner if provided */}
-                {msg.responseObj?.triage && (
+                {/* GROQ / GROK TRIAGE URGENCY BANNER */}
+                {msg.groqTriage && (
+                  <div className={`mt-3 p-3 rounded-xl border text-xs ${
+                    msg.groqTriage.urgency === 'red'
+                      ? 'bg-red-50 border-red-200 text-red-900'
+                      : msg.groqTriage.urgency === 'amber'
+                      ? 'bg-amber-50 border-amber-200 text-amber-900'
+                      : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                  }`}>
+                    <div className="flex items-center justify-between font-bold pb-1 mb-1 border-b border-current/10">
+                      <span className="flex items-center gap-1.5">
+                        {msg.groqTriage.urgency === 'red' && <AlertTriangle className="w-4 h-4 text-red-600 animate-bounce" />}
+                        {msg.groqTriage.urgency === 'amber' && <Info className="w-4 h-4 text-amber-600" />}
+                        {msg.groqTriage.urgency === 'green' && <CheckCircle className="w-4 h-4 text-emerald-600" />}
+                        <span>
+                          {msg.groqTriage.urgency === 'red' && 'RED FLAG: Immediate Emergency'}
+                          {msg.groqTriage.urgency === 'amber' && 'AMBER: Urgent Medical Attention Required'}
+                          {msg.groqTriage.urgency === 'green' && 'GREEN: Routine Primary Care'}
+                        </span>
+                      </span>
+                      <span className="text-[10px] font-mono opacity-75">{msg.groqTriage.modelUsed}</span>
+                    </div>
+
+                    <div className="font-bold pt-1">
+                      {msg.groqTriage.primaryAssessment}
+                    </div>
+
+                    <div className="text-[11px] opacity-90 pt-1">
+                      👉 {msg.groqTriage.recommendedAction}
+                    </div>
+
+                    {msg.groqTriage.redFlags && msg.groqTriage.redFlags.length > 0 && (
+                      <div className="mt-2 pt-1 border-t border-current/10 text-[10px] space-y-0.5">
+                        <span className="font-bold block uppercase tracking-wide">⚠️ Warning Red Flags to Monitor:</span>
+                        {msg.groqTriage.redFlags.map((rf, idx) => (
+                          <div key={idx} className="flex items-center gap-1">
+                            <span>•</span>
+                            <span>{rf}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* GROQ / GROK MATCHED GOVERNMENT SCHEMES CARD */}
+                {msg.groqTriage?.matchedSchemes && msg.groqTriage.matchedSchemes.length > 0 && (
+                  <div className="mt-3 bg-emerald-50/90 border border-emerald-300 p-3 rounded-xl shadow-xs">
+                    <div className="text-xs font-bold text-emerald-950 flex items-center gap-1.5 pb-1 border-b border-emerald-200/80">
+                      <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                      <span>Applicable Maharashtra & National Govt Schemes (100% Cashless):</span>
+                    </div>
+                    <div className="space-y-2 pt-2">
+                      {msg.groqTriage.matchedSchemes.map((sch, idx) => (
+                        <div key={idx} className="text-xs bg-white p-2.5 rounded-lg border border-emerald-200">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-emerald-900">{sch.name}</span>
+                            <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">
+                              {sch.coverageAmount}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-700 mt-1">{sch.benefit}</p>
+                          {sch.documentsRequired && (
+                            <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+                              <FileText className="w-3 h-3 text-slate-400" />
+                              <span>Documents: {sch.documentsRequired.join(', ')}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* GROQ ACTION BUTTONS */}
+                {msg.groqTriage?.suggestedActionButtons && msg.groqTriage.suggestedActionButtons.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-3 mt-2 border-t border-slate-100">
+                    {msg.groqTriage.suggestedActionButtons.map((btn, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleActionClick(btn.actionType, btn.actionPayload)}
+                        className={`text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all flex items-center gap-1.5 ${
+                          btn.actionType === 'EMERGENCY_CALL'
+                            ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse'
+                            : 'bg-emerald-700 hover:bg-emerald-800 text-white'
+                        }`}
+                      >
+                        {btn.actionType === 'EMERGENCY_CALL' && <PhoneCall className="w-3.5 h-3.5" />}
+                        {btn.actionType === 'BOOK_TELECONSULT' && <Video className="w-3.5 h-3.5" />}
+                        {btn.actionType === 'CHECK_SCHEME' && <ShieldCheck className="w-3.5 h-3.5" />}
+                        <span>{btn.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Legacy Fallback Triage Urgency Banner if provided */}
+                {!msg.groqTriage && msg.responseObj?.triage && (
                   <div className={`mt-3 p-3 rounded-xl border text-xs ${
                     msg.responseObj.triage.urgency === 'red'
                       ? 'bg-red-50 border-red-200 text-red-900'
@@ -347,7 +464,7 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                       ? 'bg-amber-50 border-amber-200 text-amber-900'
                       : 'bg-emerald-50 border-emerald-200 text-emerald-900'
                   }`}>
-                    <div className="flex items-center justify-between font-bold pb-1 mb-1 border-b border-current/10">
+                    <div className="flex items-center justify-between font-bold pb-1 mb-1 border-current/10">
                       <span className="flex items-center gap-1.5">
                         {msg.responseObj.triage.urgency === 'red' && <AlertTriangle className="w-4 h-4 text-red-600 animate-bounce" />}
                         {msg.responseObj.triage.urgency === 'amber' && <Info className="w-4 h-4 text-amber-600" />}
@@ -378,8 +495,8 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                   </div>
                 )}
 
-                {/* Matched Schemes Pill Card */}
-                {msg.responseObj?.matchedSchemes && msg.responseObj.matchedSchemes.length > 0 && (
+                {/* Legacy Matched Schemes Pill Card */}
+                {!msg.groqTriage && msg.responseObj?.matchedSchemes && msg.responseObj.matchedSchemes.length > 0 && (
                   <div className="mt-3 bg-emerald-50/70 border border-emerald-200 p-3 rounded-xl">
                     <div className="text-xs font-bold text-emerald-900 flex items-center gap-1.5 pb-1">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
@@ -394,8 +511,8 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                   </div>
                 )}
 
-                {/* Matched Facilities Card */}
-                {msg.responseObj?.matchedFacilities && msg.responseObj.matchedFacilities.length > 0 && (
+                {/* Legacy Matched Facilities Card */}
+                {!msg.groqTriage && msg.responseObj?.matchedFacilities && msg.responseObj.matchedFacilities.length > 0 && (
                   <div className="mt-3 bg-slate-50 border border-slate-200 p-3 rounded-xl">
                     <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5 pb-1">
                       <Building2 className="w-3.5 h-3.5 text-emerald-700" />
@@ -415,8 +532,8 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                   </div>
                 )}
 
-                {/* Quick Action CTAs */}
-                {msg.responseObj?.actionButtons && msg.responseObj.actionButtons.length > 0 && (
+                {/* Legacy Quick Action CTAs */}
+                {!msg.groqTriage && msg.responseObj?.actionButtons && msg.responseObj.actionButtons.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-3 mt-2 border-t border-slate-100">
                     {msg.responseObj.actionButtons.map((btn, idx) => (
                       <button

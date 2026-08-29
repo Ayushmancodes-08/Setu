@@ -15,8 +15,10 @@ import {
   Navigation,
   Send,
   Users,
-  X
+  X,
+  Truck
 } from 'lucide-react';
+import { KpiCard, QuickAction, ActivityFeed, AlertBanner, SectionHeader, ProgressBar, ActivityItem } from '../common/DashboardWidgets';
 
 export const FacilityPortal: React.FC = () => {
   const { showToast, language, t } = useApp();
@@ -26,7 +28,7 @@ export const FacilityPortal: React.FC = () => {
 
   const [generalBedsFree, setGeneralBedsFree] = useState<number>(activeHospital.availableBeds);
   const [icuBedsFree, setIcuBedsFree] = useState<number>(activeHospital.icuBedsAvailable);
-  const [activeTab, setActiveTab] = useState<'bed_manager' | 'incoming_referrals' | 'ambulance_dispatch' | 'duty_roster'>('bed_manager');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'bed_manager' | 'incoming_referrals' | 'ambulance_dispatch' | 'duty_roster'>('dashboard');
 
   // Ambulance Dispatch State
   const [ambulances, setAmbulances] = useState<Array<{
@@ -158,10 +160,11 @@ export const FacilityPortal: React.FC = () => {
         {/* Tabs Bar */}
         <div className="flex border-b border-slate-200 gap-2 overflow-x-auto pb-1">
           {[
+            { id: 'dashboard', label: '📊 Dashboard', icon: Activity },
             { id: 'bed_manager', label: 'Ward & Bed Management', icon: Bed },
-            { id: 'incoming_referrals', label: 'Incoming Specialty Referrals', icon: Send, count: referrals.length },
-            { id: 'ambulance_dispatch', label: '108 Ambulance Fleet & GPS', icon: Navigation, count: 2 },
-            { id: 'duty_roster', label: 'Doctor & Specialist Roster', icon: Users }
+            { id: 'incoming_referrals', label: 'Incoming Referrals', icon: Send, count: referrals.length },
+            { id: 'ambulance_dispatch', label: '108 Ambulance Fleet', icon: Navigation, count: ambulances.length },
+            { id: 'duty_roster', label: 'Specialist Roster', icon: Users }
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -171,7 +174,7 @@ export const FacilityPortal: React.FC = () => {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   isActive
-                    ? 'bg-[#003527] text-white shadow-xs'
+                    ? 'bg-indigo-700 text-white shadow-xs'
                     : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
                 }`}
               >
@@ -188,6 +191,152 @@ export const FacilityPortal: React.FC = () => {
             );
           })}
         </div>
+
+        {/* TAB 0: FACILITY COMMAND CENTER DASHBOARD */}
+        {activeTab === 'dashboard' && (() => {
+          const urgentReferrals = referrals.filter(r => r.urgency === 'red' || r.urgency === 'amber');
+          const availableAmbs = ambulances.filter(a => a.status === 'Available at Base');
+
+          const facilityActivity: ActivityItem[] = [
+            { id: 'f-1', icon: '🚑', title: '108 Ambulance Dispatched', sub: 'MH-14-AH-2918 · Toranmal Cardiac Transfer (ETA 12m)', time: '5m ago', badge: 'Active Run', badgeColor: 'red' },
+            { id: 'f-2', icon: '🛏️', title: 'Maternity Bed Reserved', sub: 'Sunita Shinde (Pre-eclampsia referral from ASHA)', time: '20m ago', badge: 'Admitted', badgeColor: 'emerald' },
+            { id: 'f-3', icon: '💨', title: 'Oxygen Plant Purity Verified', sub: '99.4% PSA Oxygen · 500 LPM Pressure Steady', time: '1h ago', badge: 'Normal', badgeColor: 'blue' },
+            { id: 'f-4', icon: '🩺', title: 'Specialist On-Call Joined', sub: 'Dr. Rohini Kulkarni (MD ObGyn) · OPD Room 4', time: '2h ago', badge: 'On Duty', badgeColor: 'purple' },
+            { id: 'f-5', icon: '🏥', title: 'Ward Patient Discharged', sub: 'General Medicine Bed #14 freed for new intake', time: '3h ago', badge: 'Discharged', badgeColor: 'emerald' }
+          ];
+
+          return (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+              {/* KPI Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <KpiCard
+                  label="General Beds Free"
+                  value={generalBedsFree}
+                  suffix={` / ${activeHospital.totalBeds}`}
+                  icon={Bed}
+                  iconColor="text-indigo-600"
+                  iconBg="bg-indigo-100"
+                  trend={generalBedsFree < 5 ? 'down' : 'up'}
+                  trendLabel={generalBedsFree < 5 ? 'High Census' : 'Adequate'}
+                  urgency={generalBedsFree <= 2 ? 'critical' : 'normal'}
+                  onClick={() => setActiveTab('bed_manager')}
+                />
+                <KpiCard
+                  label="ICU / Ventilator Free"
+                  value={icuBedsFree}
+                  suffix=" Beds"
+                  icon={Activity}
+                  iconColor="text-blue-600"
+                  iconBg="bg-blue-100"
+                  trend="flat"
+                  trendLabel="3 Total"
+                  urgency={icuBedsFree === 0 ? 'critical' : 'normal'}
+                  onClick={() => setActiveTab('bed_manager')}
+                />
+                <KpiCard
+                  label="Incoming Referrals"
+                  value={referrals.length}
+                  icon={Send}
+                  iconColor="text-red-600"
+                  iconBg="bg-red-100"
+                  trend="up"
+                  trendLabel="108 En route"
+                  urgency={urgentReferrals.length > 0 ? 'warning' : 'normal'}
+                  onClick={() => setActiveTab('incoming_referrals')}
+                />
+                <KpiCard
+                  label="108 Fleet Ready"
+                  value={availableAmbs.length}
+                  suffix={` / ${ambulances.length}`}
+                  icon={Navigation}
+                  iconColor="text-emerald-600"
+                  iconBg="bg-emerald-100"
+                  trend="flat"
+                  trendLabel="GPS Active"
+                  onClick={() => setActiveTab('ambulance_dispatch')}
+                />
+              </div>
+
+              {/* Facility Alert Banners */}
+              <div className="space-y-2">
+                {urgentReferrals.length > 0 && (
+                  <AlertBanner
+                    type="critical"
+                    title="🚨 Urgent Inbound Emergency Transfer"
+                    message="High-risk obstetrics referral en route from Otur Spoke. Emergency Trauma team standby activated."
+                    action={{ label: 'View Inbound', onClick: () => setActiveTab('incoming_referrals') }}
+                  />
+                )}
+                <AlertBanner
+                  type="info"
+                  title="PSA Oxygen Plant Generator Online"
+                  message="99.4% medical oxygen purity with 48-hour backup cylinder manifold at full charge."
+                />
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                <SectionHeader title="Hospital Operations Quick Actions" sub="Direct triage and hospital control" />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <QuickAction
+                    icon={Bed}
+                    label="Admit Patient"
+                    sub="Ward bed allocation"
+                    color="bg-indigo-700 text-white"
+                    onClick={handleAdmitPatient}
+                  />
+                  <QuickAction
+                    icon={Truck}
+                    label="Dispatch 108"
+                    sub="Ambulance tracking"
+                    color="bg-red-600 text-white"
+                    onClick={() => setActiveTab('ambulance_dispatch')}
+                    pulse={ambulances.some(a => a.status === 'En Route to Emergency')}
+                  />
+                  <QuickAction
+                    icon={Send}
+                    label="Accept Referral"
+                    sub="Inbound casualty"
+                    color="bg-amber-600 text-white"
+                    onClick={() => setActiveTab('incoming_referrals')}
+                  />
+                  <QuickAction
+                    icon={Users}
+                    label="Staff Roster"
+                    sub="Specialist on-call"
+                    color="bg-slate-800 text-white"
+                    onClick={() => setActiveTab('duty_roster')}
+                  />
+                </div>
+              </div>
+
+              {/* Activity Stream and Ward Census */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                  <SectionHeader
+                    title="Hospital Command Log"
+                    sub="Real-time admissions, discharges & trauma alerts"
+                    action={<button onClick={() => setActiveTab('incoming_referrals')} className="text-xs text-indigo-700 font-bold hover:underline">View Referrals</button>}
+                  />
+                  <ActivityFeed items={facilityActivity} maxItems={5} />
+                </div>
+
+                <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4">
+                  <SectionHeader title="Ward Bed Utilization" sub="Junnar Rural Hospital Capacity" />
+                  <ProgressBar value={activeHospital.totalBeds - generalBedsFree} max={activeHospital.totalBeds} color="bg-indigo-500" label={`General Ward (${Math.round(((activeHospital.totalBeds - generalBedsFree) / activeHospital.totalBeds) * 100)}%)`} />
+                  <ProgressBar value={activeHospital.icuBedsAvailable - icuBedsFree} max={activeHospital.icuBedsAvailable || 3} color="bg-red-500" label="ICU / Ventilator Ward" />
+                  <ProgressBar value={100} max={100} color="bg-emerald-500" label="Trauma OT Readiness (100%)" />
+                  <ProgressBar value={94} max={100} color="bg-teal-500" label="Emergency Drug Stock (94%)" />
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="text-slate-500">Facility Accreditation</span>
+                    <span className="font-black text-indigo-800">NQAS Certified Hub</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* TAB 1: BED MANAGER */}
         {activeTab === 'bed_manager' && (

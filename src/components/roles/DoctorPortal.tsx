@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useHealthData } from '../../context/HealthDataContext';
 import { Appointment } from '../../types';
+import { VideoConsultationRoom } from '../video/VideoConsultationRoom';
+import { KpiCard, QuickAction, ActivityFeed, AlertBanner, SectionHeader, ProgressBar, ActivityItem } from '../common/DashboardWidgets';
 import { 
   Stethoscope, 
   Video, 
@@ -43,7 +45,7 @@ export const DoctorPortal: React.FC = () => {
   // Selected queue patient
   const [selectedQueueItem, setSelectedQueueItem] = useState<any>(teleconsultQueue[0] || appointments[0] || null);
   const [isLiveConsulting, setIsLiveConsulting] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'consultation' | 'rx_builder' | 'lab_order' | 'record_lab' | 'referral'>('consultation');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'consultation' | 'rx_builder' | 'lab_order' | 'record_lab' | 'referral'>('dashboard');
   const [queueFilter, setQueueFilter] = useState<'all' | 'teleconsult' | 'appointments'>('all');
 
   // Consultation Clinical Notes
@@ -415,43 +417,81 @@ export const DoctorPortal: React.FC = () => {
             )}
 
             {/* Doctor Workbench Navigation Tabs */}
-            <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs font-bold overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('consultation')}
-                className={`flex-1 py-2 px-3 rounded-xl transition-all whitespace-nowrap ${
-                  activeTab === 'consultation' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                Clinical Evaluation
-              </button>
-              <button
-                onClick={() => setActiveTab('rx_builder')}
-                className={`flex-1 py-2 px-3 rounded-xl transition-all whitespace-nowrap flex items-center justify-center gap-1 ${
-                  activeTab === 'rx_builder' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <Pill className="w-3.5 h-3.5" />
-                <span>e-Prescription ({rxItems.length})</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('lab_order')}
-                className={`flex-1 py-2 px-3 rounded-xl transition-all whitespace-nowrap flex items-center justify-center gap-1 ${
-                  activeTab === 'lab_order' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Lab Requisition</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('referral')}
-                className={`flex-1 py-2 px-3 rounded-xl transition-all whitespace-nowrap flex items-center justify-center gap-1 ${
-                  activeTab === 'referral' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>Specialist Referral</span>
-              </button>
+            <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs font-bold overflow-x-auto gap-1">
+              {[
+                { id: 'dashboard', label: '📊 Dashboard' },
+                { id: 'consultation', label: '🩺 Consult' },
+                { id: 'rx_builder', label: `💊 e-Rx (${rxItems.length})` },
+                { id: 'lab_order', label: '🧪 Lab Order' },
+                { id: 'referral', label: '📤 Referral' },
+              ].map(tab => (
+                <button key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex-1 py-2 px-2 rounded-xl transition-all whitespace-nowrap ${
+                    activeTab === tab.id ? 'bg-blue-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 hover:bg-white'
+                  }`}
+                >{tab.label}</button>
+              ))}
             </div>
+
+            {/* TAB 0: DASHBOARD */}
+            {activeTab === 'dashboard' && (() => {
+              const doctorActivity: ActivityItem[] = [
+                { id: 'a1', icon: '✅', title: 'e-Rx issued — Sunita Shinde', sub: 'Ferrous Ascorbate 100mg · 30 days', time: '10m', badge: 'Dispensed', badgeColor: 'emerald' },
+                { id: 'a2', icon: '🧪', title: 'Lab order — CBC + Lipid Panel', sub: 'Rajesh Kumar Shinde · Junnar Lab', time: '25m', badge: 'Pending', badgeColor: 'amber' },
+                { id: 'a3', icon: '📹', title: 'Teleconsult completed — Priya Patil', sub: 'Otur PHC Spoke · BP 148/92', time: '1h', badge: 'Done', badgeColor: 'blue' },
+                { id: 'a4', icon: '🚑', title: 'Referral sent — Junnar RH', sub: 'High-risk ANC · Obstetrics ward', time: '2h', badge: 'Amber', badgeColor: 'amber' },
+                { id: 'a5', icon: '💊', title: 'e-Rx — Amlodipine 5mg', sub: 'Mohan Kale · Hypertension', time: '3h', badge: 'Dispensed', badgeColor: 'emerald' },
+              ];
+              return (
+                <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+                  {/* KPI Row */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <KpiCard label="Pending Queue" value={teleconsultQueue.length + appointments.length} icon={Activity} iconColor="text-blue-600" iconBg="bg-blue-100" trend="up" trendLabel="+2 today" urgency={teleconsultQueue.length + appointments.length > 5 ? 'warning' : 'normal'} onClick={() => setActiveTab('consultation')} />
+                    <KpiCard label="e-Rx Issued Today" value={3} icon={Pill} iconColor="text-emerald-600" iconBg="bg-emerald-100" trend="up" trendLabel="+1 vs yday" />
+                    <KpiCard label="Lab Orders" value={2} icon={FileText} iconColor="text-purple-600" iconBg="bg-purple-100" trend="flat" trendLabel="same" />
+                    <KpiCard label="Referrals" value={1} icon={Send} iconColor="text-amber-600" iconBg="bg-amber-100" trend="down" trendLabel="-1 vs yday" />
+                  </div>
+
+                  {/* Alerts */}
+                  <div className="space-y-2">
+                    {teleconsultQueue.filter(q => q.urgency === 'red').length > 0 && (
+                      <AlertBanner type="critical" title="🔴 RED triage patient waiting" message={`${teleconsultQueue.filter(q => q.urgency === 'red')[0]?.patientName || 'Patient'} — immediate consultation required`} action={{ label: 'See Now', onClick: () => { setSelectedQueueItem(teleconsultQueue.find(q => q.urgency === 'red')); setActiveTab('consultation'); } }} />
+                    )}
+                    <AlertBanner type="warning" title="Lab report ready for review" message="Sunita Shinde — Hb 8.2 g/dL (Critical). Action required." action={{ label: 'Review', onClick: () => setActiveTab('record_lab') }} />
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div>
+                    <SectionHeader title="Quick Actions" sub="Jump directly to key workflows" />
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <QuickAction icon={Video} label="Start Consult" sub="Next patient" color="bg-blue-700 text-white" onClick={() => { setSelectedQueueItem(teleconsultQueue[0] || appointments[0]); setActiveTab('consultation'); }} pulse={!!(teleconsultQueue.length + appointments.length)} />
+                      <QuickAction icon={Pill} label="Write e-Rx" sub="Rx builder" color="bg-emerald-700 text-white" onClick={() => setActiveTab('rx_builder')} />
+                      <QuickAction icon={FileText} label="Order Lab" sub="Lab requisition" color="bg-purple-700 text-white" onClick={() => setActiveTab('lab_order')} />
+                      <QuickAction icon={Send} label="Refer Patient" sub="Specialist" color="bg-amber-600 text-white" onClick={() => setActiveTab('referral')} />
+                    </div>
+                  </div>
+
+                  {/* Bottom row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4">
+                      <SectionHeader title="Today's Activity" sub="Live clinical feed" />
+                      <ActivityFeed items={doctorActivity} maxItems={5} />
+                    </div>
+                    <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 space-y-3">
+                      <SectionHeader title="Clinic Performance" sub="Today vs target" />
+                      <ProgressBar value={teleconsultQueue.length + appointments.length} max={20} color="bg-blue-500" label="Queue Served" />
+                      <ProgressBar value={3} max={10} color="bg-emerald-500" label="e-Prescriptions" />
+                      <ProgressBar value={1} max={5} color="bg-amber-500" label="Referrals Issued" />
+                      <div className="pt-2 border-t border-slate-200 text-xs text-slate-500">
+                        <div className="flex justify-between"><span>Avg consult time</span><span className="font-bold text-slate-800">12 mins</span></div>
+                        <div className="flex justify-between mt-1"><span>Patient satisfaction</span><span className="font-bold text-emerald-700">⭐ 4.8/5</span></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* TAB 1: CLINICAL EVALUATION */}
             {activeTab === 'consultation' && (
@@ -613,6 +653,38 @@ export const DoctorPortal: React.FC = () => {
         </div>
 
       </div>
+
+      {/* LIVE TELECONSULTATION VIDEO SUITE (ZOOM / AGORA COMPATIBLE) */}
+      {isLiveConsulting && selectedQueueItem && (
+        <VideoConsultationRoom
+          isOpen={isLiveConsulting}
+          onClose={() => {
+            setIsLiveConsulting(false);
+            showToast('Teleconsultation session completed.');
+          }}
+          config={{
+            channelName: `e-sanjeevani-${selectedQueueItem.tokenNumber || selectedQueueItem.appointmentToken || '9921'}`,
+            userRole: 'doctor',
+            participantName: 'Dr. Rohini Kulkarni, MD',
+            remoteParticipantName: selectedQueueItem.patientName,
+            remoteParticipantRole: 'Patient / Citizen Spoke',
+            appointmentToken: selectedQueueItem.tokenNumber || selectedQueueItem.appointmentToken
+          }}
+          patientVitals={{
+            bp: selectedQueueItem.vitals?.bp || '138/88 mmHg',
+            pulse: selectedQueueItem.vitals?.pulse || '78 bpm',
+            spo2: selectedQueueItem.vitals?.spo2 || '98%',
+            sugar: selectedQueueItem.vitals?.sugar || '142 mg/dL',
+            temp: selectedQueueItem.vitals?.temp || '98.6 °F'
+          }}
+          onIssuePrescription={() => {
+            setIsLiveConsulting(false);
+            setActiveTab('rx_builder');
+            showToast('Opening e-Prescription builder for this consultation.');
+          }}
+        />
+      )}
+
     </div>
   );
 };

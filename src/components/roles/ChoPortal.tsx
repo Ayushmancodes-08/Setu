@@ -16,8 +16,11 @@ import {
   FileText, 
   ArrowRight,
   X,
-  Bell
+  Bell,
+  Package,
+  Heart
 } from 'lucide-react';
+import { KpiCard, QuickAction, ActivityFeed, AlertBanner, SectionHeader, ProgressBar, ActivityItem } from '../common/DashboardWidgets';
 
 export const ChoPortal: React.FC = () => {
   const { showToast, language, setCurrentView, t } = useApp();
@@ -33,7 +36,7 @@ export const ChoPortal: React.FC = () => {
     directives
   } = useHealthData();
 
-  const [activeTab, setActiveTab] = useState<'opd_queue' | 'triage_intake' | 'rapid_tests' | 'subcenter_stock'>('opd_queue');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'opd_queue' | 'triage_intake' | 'rapid_tests' | 'subcenter_stock'>('dashboard');
   
   // Triage Intake Form State
   const [patientName, setPatientName] = useState<string>('Sunita Ravindra Shinde');
@@ -184,40 +187,192 @@ export const ChoPortal: React.FC = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs font-bold w-full max-w-2xl">
+        <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs font-bold w-full max-w-3xl gap-1 overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex-1 py-2.5 px-3 rounded-xl transition-all whitespace-nowrap ${
+              activeTab === 'dashboard' ? 'bg-teal-700 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            📊 Dashboard
+          </button>
           <button
             onClick={() => setActiveTab('opd_queue')}
-            className={`flex-1 py-2.5 rounded-xl transition-all ${
-              activeTab === 'opd_queue' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            className={`flex-1 py-2.5 px-3 rounded-xl transition-all whitespace-nowrap ${
+              activeTab === 'opd_queue' ? 'bg-teal-700 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             {t.teleconsultQueueTitle} ({teleconsultQueue.length})
           </button>
           <button
             onClick={() => setActiveTab('triage_intake')}
-            className={`flex-1 py-2.5 rounded-xl transition-all ${
-              activeTab === 'triage_intake' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            className={`flex-1 py-2.5 px-3 rounded-xl transition-all whitespace-nowrap ${
+              activeTab === 'triage_intake' ? 'bg-teal-700 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             + {t.subCenterTriage}
           </button>
           <button
             onClick={() => setActiveTab('rapid_tests')}
-            className={`flex-1 py-2.5 rounded-xl transition-all ${
-              activeTab === 'rapid_tests' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            className={`flex-1 py-2.5 px-3 rounded-xl transition-all whitespace-nowrap ${
+              activeTab === 'rapid_tests' ? 'bg-teal-700 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            POC Rapid Tests ({pocTests.length})
+            POC Tests ({pocTests.length})
           </button>
           <button
             onClick={() => setActiveTab('subcenter_stock')}
-            className={`flex-1 py-2.5 rounded-xl transition-all ${
-              activeTab === 'subcenter_stock' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            className={`flex-1 py-2.5 px-3 rounded-xl transition-all whitespace-nowrap ${
+              activeTab === 'subcenter_stock' ? 'bg-teal-700 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            Drug Kit Stock
+            Drug Stock
           </button>
         </div>
+
+        {/* TAB 0: CHO COMMAND CENTER DASHBOARD */}
+        {activeTab === 'dashboard' && (() => {
+          const redUrgent = teleconsultQueue.filter(item => item.urgency === 'red').length;
+          const lowStockMeds = medicines.filter(m => m.currentStock <= m.reorderLevel).length;
+
+          const choActivity: ActivityItem[] = [
+            { id: 'c-1', icon: '📹', title: 'Teleconsultation Queued', sub: 'Sunita Shinde (3rd Tri ANC) · Token #9921', time: '10m ago', badge: 'RED Triage', badgeColor: 'red' },
+            { id: 'c-2', icon: '🧪', title: 'POC Hemoglobin Done', sub: '8.2 g/dL · Severe Anemia alert sent', time: '20m ago', badge: 'Critical', badgeColor: 'amber' },
+            { id: 'c-3', icon: '💊', title: 'Amlodipine 5mg Dispensed', sub: 'Rajesh Kumar (Hypertension refill)', time: '45m ago', badge: 'Dispensed', badgeColor: 'emerald' },
+            { id: 'c-4', icon: '📋', title: 'DHO Circular Received', sub: 'Monsoon Dengue & Malaria Larval Survey', time: '2h ago', badge: 'Directive', badgeColor: 'blue' },
+            { id: 'c-5', icon: '🩸', title: 'Random Blood Sugar Checked', sub: 'Ramesh Thoke · 142 mg/dL (Normal)', time: '3h ago', badge: 'Normal', badgeColor: 'purple' }
+          ];
+
+          return (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+              {/* KPI Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <KpiCard
+                  label="Teleconsult Queue"
+                  value={teleconsultQueue.length}
+                  icon={Video}
+                  iconColor="text-teal-600"
+                  iconBg="bg-teal-100"
+                  trend="up"
+                  trendLabel="Active link"
+                  urgency={redUrgent > 0 ? 'critical' : 'normal'}
+                  onClick={() => setActiveTab('opd_queue')}
+                />
+                <KpiCard
+                  label="POC Tests Logged"
+                  value={pocTests.length}
+                  icon={Activity}
+                  iconColor="text-blue-600"
+                  iconBg="bg-blue-100"
+                  trend="up"
+                  trendLabel="+4 today"
+                  onClick={() => setActiveTab('rapid_tests')}
+                />
+                <KpiCard
+                  label="Sub-Centre Drug Stock"
+                  value={96}
+                  suffix="%"
+                  icon={Package}
+                  iconColor="text-emerald-600"
+                  iconBg="bg-emerald-100"
+                  trend="flat"
+                  trendLabel="Zero stockout"
+                  onClick={() => setActiveTab('subcenter_stock')}
+                />
+                <KpiCard
+                  label="DHO Directives"
+                  value={directives.length}
+                  icon={Bell}
+                  iconColor="text-amber-600"
+                  iconBg="bg-amber-100"
+                  trend="down"
+                  trendLabel="Actioned"
+                />
+              </div>
+
+              {/* Status Alert Banners */}
+              <div className="space-y-2">
+                {redUrgent > 0 && (
+                  <AlertBanner
+                    type="critical"
+                    title="🔴 Immediate Specialist Teleconsult Required"
+                    message="High-risk pregnancy triage queued with maternal anemia & elevated blood pressure."
+                    action={{ label: 'Open Video Queue', onClick: () => setActiveTab('opd_queue') }}
+                  />
+                )}
+                {lowStockMeds > 0 && (
+                  <AlertBanner
+                    type="warning"
+                    title="Sub-Centre Drug Threshold Warning"
+                    message={`${lowStockMeds} essential medicines approaching reorder point at Khamgaon Sub-Centre.`}
+                    action={{ label: 'Check Stock', onClick: () => setActiveTab('subcenter_stock') }}
+                  />
+                )}
+              </div>
+
+              {/* Quick Action Grid */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                <SectionHeader title="Clinical Quick Actions" sub="Frontline Sub-Centre workflows" />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <QuickAction
+                    icon={Stethoscope}
+                    label="Triage Intake"
+                    sub="Log symptoms & vitals"
+                    color="bg-teal-700 text-white"
+                    onClick={() => setActiveTab('triage_intake')}
+                  />
+                  <QuickAction
+                    icon={Activity}
+                    label="Log POC Test"
+                    sub="Strip / RDT / Glucose"
+                    color="bg-blue-700 text-white"
+                    onClick={() => setActiveTab('rapid_tests')}
+                  />
+                  <QuickAction
+                    icon={Video}
+                    label="e-Sanjeevani Queue"
+                    sub="Connect to MD Doctor"
+                    color="bg-emerald-700 text-white"
+                    onClick={() => setActiveTab('opd_queue')}
+                    pulse={teleconsultQueue.length > 0}
+                  />
+                  <QuickAction
+                    icon={Package}
+                    label="Inventory Kit"
+                    sub="Medicine stock update"
+                    color="bg-slate-800 text-white"
+                    onClick={() => setActiveTab('subcenter_stock')}
+                  />
+                </div>
+              </div>
+
+              {/* Activity Feed & Sub-Centre Health Metrics */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                  <SectionHeader
+                    title="Today's Sub-Centre Stream"
+                    sub="Real-time OPD & Tele-Clinic intake"
+                    action={<button onClick={() => setActiveTab('opd_queue')} className="text-xs text-teal-700 font-bold hover:underline">View Queue</button>}
+                  />
+                  <ActivityFeed items={choActivity} maxItems={5} />
+                </div>
+
+                <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4">
+                  <SectionHeader title="Ayushman Mandir Goals" sub="Khamgaon Village Health Metrics" />
+                  <ProgressBar value={14} max={16} color="bg-teal-500" label="Daily OPD Consults (88%)" />
+                  <ProgressBar value={5} max={5} color="bg-emerald-500" label="Teleconsultations Completed (100%)" />
+                  <ProgressBar value={9} max={10} color="bg-blue-500" label="NCD Strip Blood Sugar Checks (90%)" />
+                  <ProgressBar value={100} max={100} color="bg-purple-500" label="ABHA EHR Integration (100%)" />
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="text-slate-500">Sub-Centre Performance</span>
+                    <span className="font-black text-teal-800">⭐⭐⭐⭐⭐ Excellent</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* TAB 1: LIVE OPD QUEUE */}
         {activeTab === 'opd_queue' && (

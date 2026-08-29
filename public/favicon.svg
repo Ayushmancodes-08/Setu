@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#002b1f"/>
+      <stop offset="50%" stop-color="#004d38"/>
+      <stop offset="100%" stop-color="#065f46"/>
+    </linearGradient>
+
+    <!-- Golden Bridge Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+
+    <!-- Emerald Glow -->
+    <linearGradient id="crossGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Base Rounded Hexagon/Shield Canvas -->
+  <rect width="128" height="128" rx="28" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle Outer Border -->
+  <rect x="2" y="2" width="124" height="124" rx="26" fill="none" stroke="#10b981" stroke-width="2.5" stroke-opacity="0.4"/>
+
+  <!-- Medical Cross (White & Emerald) -->
+  <g filter="url(#shadow)">
+    <!-- Vertical Bar -->
+    <rect x="54" y="24" width="20" height="56" rx="6" fill="#ffffff"/>
+    <!-- Horizontal Bar -->
+    <rect x="36" y="42" width="56" height="20" rx="6" fill="#ffffff"/>
+    
+    <!-- Central Emerald Heart Core -->
+    <circle cx="64" cy="52" r="6" fill="#10b981"/>
+  </g>
+
+  <!-- Health Setu (Bridge Arch) -->
+  <g filter="url(#shadow)">
+    <!-- Bridge Roadway Span -->
+    <path d="M 16 98 C 40 76, 88 76, 112 98 L 112 106 C 88 86, 40 86, 16 106 Z" fill="url(#goldGrad)"/>
+    
+    <!-- Bridge Support Pillars -->
+    <rect x="36" y="87" width="4" height="19" rx="2" fill="#f59e0b" opacity="0.9"/>
+    <rect x="50" y="83" width="4" height="23" rx="2" fill="#f59e0b" opacity="0.9"/>
+    <rect x="64" y="82" width="4" height="24" rx="2" fill="#fbbf24"/>
+    <rect x="78" y="83" width="4" height="23" rx="2" fill="#f59e0b" opacity="0.9"/>
+    <rect x="92" y="87" width="4" height="19" rx="2" fill="#f59e0b" opacity="0.9"/>
+
+    <!-- Pulse Line Across Bridge -->
+    <path d="M 22 101 L 44 101 L 52 92 L 60 108 L 68 88 L 76 104 L 84 101 L 106 101" 
+          fill="none" 
+          stroke="#ffffff" 
+          stroke-width="2.5" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+  </g>
+</svg>

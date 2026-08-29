@@ -23,8 +23,10 @@ import {
   AlertOctagon,
   Calendar,
   Filter,
-  AlertCircle
+  AlertCircle,
+  Radio
 } from 'lucide-react';
+import { KpiCard, QuickAction, ActivityFeed, AlertBanner, SectionHeader, ProgressBar, ActivityItem } from '../common/DashboardWidgets';
 
 export const DhoPortal: React.FC = () => {
   const { showToast, language, t } = useApp();
@@ -37,7 +39,7 @@ export const DhoPortal: React.FC = () => {
     reportOutbreakAlert 
   } = useHealthData();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'map_intelligence' | 'alerts' | 'directives'>('overview');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'overview' | 'map_intelligence' | 'alerts' | 'directives'>('dashboard');
   
   // Map filter states
   const [selectedBlock, setSelectedBlock] = useState<string>('All');
@@ -209,28 +211,36 @@ export const DhoPortal: React.FC = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs font-bold w-full max-w-2xl overflow-x-auto">
+        <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 text-xs font-bold w-full max-w-3xl overflow-x-auto gap-1">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex-1 py-2.5 px-3 rounded-xl transition-all whitespace-nowrap ${
+              activeTab === 'dashboard' ? 'bg-red-800 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            📊 Command Center
+          </button>
           <button
             onClick={() => setActiveTab('overview')}
             className={`flex-1 py-2.5 px-3 rounded-xl transition-all whitespace-nowrap ${
-              activeTab === 'overview' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+              activeTab === 'overview' ? 'bg-red-800 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            District Overview & Analytics
+            Taluka Analytics
           </button>
           <button
             onClick={() => setActiveTab('map_intelligence')}
             className={`flex-1 py-2.5 px-3 rounded-xl transition-all whitespace-nowrap flex items-center justify-center gap-1.5 ${
-              activeTab === 'map_intelligence' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+              activeTab === 'map_intelligence' ? 'bg-red-800 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Map className="w-3.5 h-3.5 text-red-700" />
-            <span>District Health Map</span>
+            <Map className="w-3.5 h-3.5" />
+            <span>GIS Map</span>
           </button>
           <button
             onClick={() => setActiveTab('alerts')}
             className={`flex-1 py-2.5 px-3 rounded-xl transition-all whitespace-nowrap ${
-              activeTab === 'alerts' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+              activeTab === 'alerts' ? 'bg-red-800 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             {t.activeSurveillanceAlerts} ({outbreakAlerts.length})
@@ -238,12 +248,152 @@ export const DhoPortal: React.FC = () => {
           <button
             onClick={() => setActiveTab('directives')}
             className={`flex-1 py-2.5 px-3 rounded-xl transition-all whitespace-nowrap ${
-              activeTab === 'directives' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+              activeTab === 'directives' ? 'bg-red-800 text-white shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            {t.issueDistrictDirective} ({directives.length})
+            Directives ({directives.length})
           </button>
         </div>
+
+        {/* TAB 0: DHO COMMAND CENTER DASHBOARD */}
+        {activeTab === 'dashboard' && (() => {
+          const redAlerts = outbreakAlerts.filter(a => a.severity === 'RED_ALERT');
+
+          const dhoActivity: ActivityItem[] = [
+            { id: 'd-1', icon: '🚨', title: 'Outbreak Alert: Dengue Vector Cluster', sub: 'Toranmal Hill Sector · 18 confirmed cases', time: '10m ago', badge: 'RED ALERT', badgeColor: 'red' },
+            { id: 'd-2', icon: '📢', title: 'Health Directive Broadcasted', sub: 'DIR-MH-9921 · Pre-monsoon screening to 24 PHCs', time: '1h ago', badge: 'Broadcast', badgeColor: 'blue' },
+            { id: 'd-3', icon: '🏥', title: 'Junnar RH Bed Census Reported', sub: '14 General / 3 ICU Beds Free · O2 at 99.4%', time: '2h ago', badge: 'Normal', badgeColor: 'emerald' },
+            { id: 'd-4', icon: '📈', title: 'District NCD Screening Milestone', sub: '88,400 citizens screened across 4 Talukas', time: '4h ago', badge: 'Target Met', badgeColor: 'purple' },
+            { id: 'd-5', icon: '📦', title: 'District Drug Indent Dispatched', sub: 'Central Medical Store released 50k IFA Tabs', time: '6h ago', badge: 'Supplied', badgeColor: 'emerald' }
+          ];
+
+          return (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+              {/* KPI Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <KpiCard
+                  label="District Population Tracked"
+                  value={482}
+                  suffix="k Citizens"
+                  icon={Users}
+                  iconColor="text-red-700"
+                  iconBg="bg-red-100"
+                  trend="up"
+                  trendLabel="Pune Rural"
+                  onClick={() => setActiveTab('overview')}
+                />
+                <KpiCard
+                  label="Active Disease Alerts"
+                  value={outbreakAlerts.length}
+                  icon={ShieldAlert}
+                  iconColor="text-amber-600"
+                  iconBg="bg-amber-100"
+                  trend={outbreakAlerts.length > 0 ? 'up' : 'down'}
+                  trendLabel={outbreakAlerts.length > 0 ? 'Surveillance Active' : 'Clear'}
+                  urgency={redAlerts.length > 0 ? 'critical' : 'normal'}
+                  onClick={() => setActiveTab('alerts')}
+                />
+                <KpiCard
+                  label="Essential Drug Stock Rate"
+                  value={94}
+                  suffix="%"
+                  icon={ShieldCheck}
+                  iconColor="text-emerald-600"
+                  iconBg="bg-emerald-100"
+                  trend="flat"
+                  trendLabel="24 PHCs"
+                />
+                <KpiCard
+                  label="Directives Active"
+                  value={directives.length}
+                  icon={Radio}
+                  iconColor="text-blue-600"
+                  iconBg="bg-blue-100"
+                  trend="up"
+                  trendLabel="State Integrated"
+                  onClick={() => setActiveTab('directives')}
+                />
+              </div>
+
+              {/* Epidemic Surveillance Alerts */}
+              <div className="space-y-2">
+                {redAlerts.length > 0 && (
+                  <AlertBanner
+                    type="critical"
+                    title="🔴 Active Epidemic Cluster Flagged by IDSP"
+                    message="Toranmal / Khamgaon tribal spoke: Rapid spike in vector-borne dengue & acute gastroenteritis. Mobile testing van deployed."
+                    action={{ label: 'View Alert & Deploy', onClick: () => setActiveTab('alerts') }}
+                  />
+                )}
+                <AlertBanner
+                  type="info"
+                  title="State Health Mission Real-Time Telemetry Live"
+                  message="All 24 PHCs, 148 Sub-Centres, and 2 Sub-District Hospitals transmitting live census every 60 seconds."
+                />
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                <SectionHeader title="District Health Command Actions" sub="High-level public health authority workflows" />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <QuickAction
+                    icon={Send}
+                    label="Broadcast Directive"
+                    sub="Official circular to all PHCs"
+                    color="bg-red-800 text-white"
+                    onClick={() => setActiveTab('directives')}
+                  />
+                  <QuickAction
+                    icon={AlertOctagon}
+                    label="Declare Outbreak"
+                    sub="Trigger rapid response"
+                    color="bg-amber-600 text-white"
+                    onClick={() => setIsOutbreakModalOpen(true)}
+                  />
+                  <QuickAction
+                    icon={Map}
+                    label="GIS Heatmap"
+                    sub="Disease cluster map"
+                    color="bg-blue-700 text-white"
+                    onClick={() => setActiveTab('map_intelligence')}
+                  />
+                  <QuickAction
+                    icon={Download}
+                    label="HMIS State Export"
+                    sub="Official summary report"
+                    color="bg-slate-800 text-white"
+                    onClick={() => showToast('District Health Annual & Monthly Summary exported to State HMIS portal format (PDF/XLS).')}
+                  />
+                </div>
+              </div>
+
+              {/* Feed and District Health Goals */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                  <SectionHeader
+                    title="District Health Intelligence Feed"
+                    sub="Live epidemiological tracking & field incident log"
+                    action={<button onClick={() => setActiveTab('alerts')} className="text-xs text-red-800 font-bold hover:underline">View All Alerts</button>}
+                  />
+                  <ActivityFeed items={dhoActivity} maxItems={5} />
+                </div>
+
+                <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4">
+                  <SectionHeader title="National Health Mission (NHM) Goals" sub="Pune Rural District Targets" />
+                  <ProgressBar value={92} max={100} color="bg-emerald-500" label="Institutional Deliveries (92%)" />
+                  <ProgressBar value={88} max={100} color="bg-teal-500" label="Universal NCD Screening (88%)" />
+                  <ProgressBar value={96} max={100} color="bg-blue-500" label="Childhood Full Immunization (96%)" />
+                  <ProgressBar value={100} max={100} color="bg-purple-500" label="e-Sanjeevani Teleconsult Target (100%)" />
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="text-slate-500">District Health Index Rank</span>
+                    <span className="font-black text-emerald-800">Rank #2 in Maharashtra</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* TAB 1: DISTRICT OVERVIEW & TALUKA PERFORMANCE */}
         {activeTab === 'overview' && (

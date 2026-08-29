@@ -14,8 +14,10 @@ import {
   Package, 
   Send,
   X,
-  Printer
+  Printer,
+  Activity
 } from 'lucide-react';
+import { KpiCard, QuickAction, ActivityFeed, AlertBanner, SectionHeader, ProgressBar, ActivityItem } from '../common/DashboardWidgets';
 
 export const PharmacistPortal: React.FC = () => {
   const { showToast, language, t } = useApp();
@@ -27,7 +29,7 @@ export const PharmacistPortal: React.FC = () => {
     updateMedicineStock 
   } = useHealthData();
 
-  const [activeTab, setActiveTab] = useState<'pending_rx' | 'inventory' | 'inward_stock' | 'indents'>('pending_rx');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'pending_rx' | 'inventory' | 'inward_stock' | 'indents'>('dashboard');
   const [searchDrug, setSearchDrug] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
@@ -145,6 +147,7 @@ export const PharmacistPortal: React.FC = () => {
         {/* Tabs Bar */}
         <div className="flex border-b border-slate-200 gap-2 overflow-x-auto pb-1">
           {[
+            { id: 'dashboard', label: '📊 Dashboard', icon: Activity },
             { id: 'pending_rx', label: 'Doctor e-Prescription Queue', icon: Clock, count: prescriptionOrders.filter(p => p.status === 'QUEUED').length },
             { id: 'inventory', label: 'Live Drug Stock & Formulary', icon: Package, count: medicines.length },
             { id: 'inward_stock', label: 'Inward Drug Consignment', icon: Plus },
@@ -175,6 +178,152 @@ export const PharmacistPortal: React.FC = () => {
             );
           })}
         </div>
+
+        {/* TAB 0: PHARMACY COMMAND CENTER DASHBOARD */}
+        {activeTab === 'dashboard' && (() => {
+          const pendingOrders = prescriptionOrders.filter(p => p.status === 'QUEUED');
+          const dispensedOrders = prescriptionOrders.filter(p => p.status === 'DISPENSED');
+          const criticalMeds = medicines.filter(m => m.status === 'Critical Stock-Out' || m.status === 'Low Stock');
+
+          const pharmaActivity: ActivityItem[] = [
+            { id: 'ph-1', icon: '💊', title: 'e-Rx Dispensed & Verified', sub: 'Sunita Shinde (Ferrous Ascorbate + Calcium)', time: '12m ago', badge: 'Fulfilled', badgeColor: 'emerald' },
+            { id: 'ph-2', icon: '📦', title: 'Stock Inward Logged', sub: '+1000 Tabs Ferrous Ascorbate (Batch BT-9921)', time: '40m ago', badge: 'Inward', badgeColor: 'blue' },
+            { id: 'ph-3', icon: '⚠️', title: 'Low Stock Auto-Trigger', sub: 'Labetalol 100mg fell below 50 units threshold', time: '1h ago', badge: 'Indent Req', badgeColor: 'amber' },
+            { id: 'ph-4', icon: '🩺', title: 'e-Rx Arrived from Dr. Rohini', sub: 'Rajesh Kumar (Telmisartan 40mg · 30d)', time: '2h ago', badge: 'Queued', badgeColor: 'purple' },
+            { id: 'ph-5', icon: '🚚', title: 'District Indent Dispatched', sub: 'IND-MH-8819 approved by Pune Warehouse', time: '4h ago', badge: 'In Transit', badgeColor: 'blue' }
+          ];
+
+          return (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+              {/* KPI Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <KpiCard
+                  label="Pending e-Rx Queue"
+                  value={pendingOrders.length}
+                  icon={Clock}
+                  iconColor="text-amber-600"
+                  iconBg="bg-amber-100"
+                  trend="up"
+                  trendLabel="Live stream"
+                  urgency={pendingOrders.length > 0 ? 'warning' : 'normal'}
+                  onClick={() => setActiveTab('pending_rx')}
+                />
+                <KpiCard
+                  label="Dispensed Today"
+                  value={dispensedOrders.length + 8}
+                  icon={CheckCircle2}
+                  iconColor="text-emerald-600"
+                  iconBg="bg-emerald-100"
+                  trend="up"
+                  trendLabel="+6 vs yday"
+                  onClick={() => setActiveTab('pending_rx')}
+                />
+                <KpiCard
+                  label="Essential Formulary SKUs"
+                  value={medicines.length}
+                  icon={Package}
+                  iconColor="text-blue-600"
+                  iconBg="bg-blue-100"
+                  trend="flat"
+                  trendLabel="EDL 2026"
+                  onClick={() => setActiveTab('inventory')}
+                />
+                <KpiCard
+                  label="Critical Stock Alerts"
+                  value={criticalMeds.length}
+                  icon={AlertTriangle}
+                  iconColor="text-red-600"
+                  iconBg="bg-red-100"
+                  trend={criticalMeds.length > 0 ? 'up' : 'down'}
+                  trendLabel={criticalMeds.length > 0 ? 'Action required' : 'Optimal'}
+                  urgency={criticalMeds.length > 0 ? 'critical' : 'normal'}
+                  onClick={() => setActiveTab('indents')}
+                />
+              </div>
+
+              {/* Actionable Alerts */}
+              <div className="space-y-2">
+                {pendingOrders.length > 0 && (
+                  <AlertBanner
+                    type="critical"
+                    title="💊 Unfulfilled Doctor e-Prescriptions Waiting"
+                    message={`${pendingOrders.length} teleconsult prescription(s) signed by Specialist Doctors pending patient pickup.`}
+                    action={{ label: 'Dispense Now', onClick: () => setActiveTab('pending_rx') }}
+                  />
+                )}
+                {criticalMeds.length > 0 && (
+                  <AlertBanner
+                    type="warning"
+                    title="Buffer Stock Warning"
+                    message={`${criticalMeds.map(m => m.name).join(', ')} reached reorder point. Auto-indent ready.`}
+                    action={{ label: 'Review Indent', onClick: () => setActiveTab('indents') }}
+                  />
+                )}
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                <SectionHeader title="Dispensary Quick Actions" sub="Direct pharmacy operations" />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <QuickAction
+                    icon={CheckCircle2}
+                    label="Dispense Queue"
+                    sub="Verify QR & Dispense"
+                    color="bg-emerald-700 text-white"
+                    onClick={() => setActiveTab('pending_rx')}
+                    pulse={pendingOrders.length > 0}
+                  />
+                  <QuickAction
+                    icon={Plus}
+                    label="Stock Inward"
+                    sub="Log incoming batch"
+                    color="bg-amber-600 text-white"
+                    onClick={() => setActiveTab('inward_stock')}
+                  />
+                  <QuickAction
+                    icon={Package}
+                    label="Formulary Search"
+                    sub="Check stock levels"
+                    color="bg-blue-700 text-white"
+                    onClick={() => setActiveTab('inventory')}
+                  />
+                  <QuickAction
+                    icon={Send}
+                    label="Raise Indent"
+                    sub="Warehouse requisition"
+                    color="bg-purple-700 text-white"
+                    onClick={() => setActiveTab('indents')}
+                  />
+                </div>
+              </div>
+
+              {/* Feed and Formulary Compliance */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                  <SectionHeader
+                    title="Dispensary Event Stream"
+                    sub="Barcode verification & dispensing log"
+                    action={<button onClick={() => setActiveTab('pending_rx')} className="text-xs text-emerald-800 font-bold hover:underline">View All</button>}
+                  />
+                  <ActivityFeed items={pharmaActivity} maxItems={5} />
+                </div>
+
+                <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4">
+                  <SectionHeader title="Formulary Availability" sub="Junnar RH Dispensary Compliance" />
+                  <ProgressBar value={94} max={100} color="bg-emerald-500" label="Essential Drug Availability (94%)" />
+                  <ProgressBar value={100} max={100} color="bg-teal-500" label="Maternal & ANC Supplements (100%)" />
+                  <ProgressBar value={88} max={100} color="bg-blue-500" label="NCD & Hypertension Drugs (88%)" />
+                  <ProgressBar value={100} max={100} color="bg-purple-500" label="QR / Batch Traceability (100%)" />
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="text-slate-500">Inventory Status</span>
+                    <span className="font-black text-emerald-700">🟢 98.2% In-Stock</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* TAB 1: E-PRESCRIPTION DISPENSING QUEUE */}
         {activeTab === 'pending_rx' && (

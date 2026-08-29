@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useHealthData } from '../../context/HealthDataContext';
 import { bhashiniAI, VitalsVoiceExtraction } from '../../services/bhashiniService';
 import { Language } from '../../types';
+import { KpiCard, QuickAction, ActivityFeed, AlertBanner, SectionHeader, ProgressBar, ActivityItem } from '../common/DashboardWidgets';
 import { 
   HeartHandshake, 
   UserPlus, 
@@ -38,7 +39,7 @@ export const AshaPortal: React.FC = () => {
   const { isOnline, setIsOnline, showToast, language, setCurrentView, t } = useApp();
   const { ashaTasks, completeAshaTask, addAshaTask, registerPatient, patients, createReferral } = useHealthData();
 
-  const [activeTab, setActiveTab] = useState<'today_work' | 'patients' | 'visit_workflow' | 'language_bridge' | 'referrals' | 'offline_sync'>('today_work');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'today_work' | 'patients' | 'visit_workflow' | 'language_bridge' | 'referrals' | 'offline_sync'>('dashboard');
   const [searchQuery, setSearchQuery] = useState<string>('');
   
   // Offline sync queue state
@@ -249,9 +250,10 @@ export const AshaPortal: React.FC = () => {
         {/* Navigation Tabs */}
         <div className="flex border-b border-slate-200 gap-2 overflow-x-auto pb-1 text-xs font-bold">
           {[
+          { id: 'dashboard', label: '📊 Dashboard', icon: Activity },
             { id: 'today_work', label: `📋 ${t.fieldHomeVisits} (${ashaTasks.filter(item => !item.completedAt).length})`, icon: ClipboardList },
             { id: 'visit_workflow', label: `🩺 ${t.logVisitSubmit}`, icon: Activity },
-            { id: 'language_bridge', label: '🌐 Bhashini Language Bridge', icon: Languages },
+            { id: 'language_bridge', label: '🌐 Language Bridge', icon: Languages },
             { id: 'patients', label: `👥 ${t.householdRoster} (${patients.length})`, icon: Users },
             { id: 'referrals', label: `🚑 ${t.referPatientBtn}`, icon: Send }
           ].map((tab) => {
@@ -271,6 +273,152 @@ export const AshaPortal: React.FC = () => {
             );
           })}
         </div>
+
+        {/* TAB 0: ASHA COMMAND CENTER DASHBOARD */}
+        {activeTab === 'dashboard' && (() => {
+          const pendingTasks = ashaTasks.filter(item => !item.completedAt);
+          const highRiskCount = patients.filter((p: any) => p.riskLevel === 'High-Risk').length;
+          const maternalCount = patients.filter((p: any) => p.category?.toLowerCase().includes('anc') || p.category?.toLowerCase().includes('maternal')).length;
+          
+          const ashaActivity: ActivityItem[] = [
+            { id: 'act-1', icon: '🩺', title: 'ANC Checkup completed', sub: 'Sunita Shinde (32w) · BP: 148/92', time: '15m ago', badge: 'High Risk', badgeColor: 'red' },
+            { id: 'act-2', icon: '👶', title: 'Infant Immunization Logged', sub: 'Aarav Patil (Pentavalent-2)', time: '1h ago', badge: 'Completed', badgeColor: 'emerald' },
+            { id: 'act-3', icon: '🚑', title: 'Emergency Referral Issued', sub: 'Pre-eclampsia referral to Junnar RH', time: '2h ago', badge: 'Urgent', badgeColor: 'amber' },
+            { id: 'act-4', icon: '💊', title: 'IFA Tablets Distributed', sub: '30 Iron tablets to Meena Gaikwad', time: '3h ago', badge: 'Routine', badgeColor: 'blue' },
+            { id: 'act-5', icon: '📝', title: 'New Citizen Registered', sub: 'Ramesh Thoke (NCD Registry)', time: '4h ago', badge: 'ABHA Linked', badgeColor: 'purple' }
+          ];
+
+          return (
+            <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-500">
+              {/* KPI Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <KpiCard
+                  label="Pending Visits"
+                  value={pendingTasks.length}
+                  icon={ClipboardList}
+                  iconColor="text-rose-600"
+                  iconBg="bg-rose-100"
+                  trend="down"
+                  trendLabel="2 completed"
+                  urgency={pendingTasks.length > 0 ? 'warning' : 'normal'}
+                  onClick={() => setActiveTab('today_work')}
+                />
+                <KpiCard
+                  label="High-Risk Cases"
+                  value={highRiskCount}
+                  icon={AlertTriangle}
+                  iconColor="text-red-600"
+                  iconBg="bg-red-100"
+                  trend="up"
+                  trendLabel="Needs attention"
+                  urgency="critical"
+                  onClick={() => setActiveTab('patients')}
+                />
+                <KpiCard
+                  label="Maternal / ANC"
+                  value={maternalCount}
+                  icon={Baby}
+                  iconColor="text-pink-600"
+                  iconBg="bg-pink-100"
+                  trend="flat"
+                  trendLabel="Tracked"
+                  onClick={() => setActiveTab('patients')}
+                />
+                <KpiCard
+                  label="Enrolled Families"
+                  value={patients.length}
+                  icon={Users}
+                  iconColor="text-purple-600"
+                  iconBg="bg-purple-100"
+                  trend="up"
+                  trendLabel="+3 this week"
+                  onClick={() => setActiveTab('patients')}
+                />
+              </div>
+
+              {/* Status Alert Banners */}
+              <div className="space-y-2">
+                {highRiskCount > 0 && (
+                  <AlertBanner
+                    type="critical"
+                    title="⚠️ High-Risk Maternal Follow-up Alert"
+                    message="Sunita Shinde (Khamgaon) recorded BP 148/92 mmHg during previous screening. Re-check scheduled today."
+                    action={{ label: 'Start Visit Now', onClick: () => { setSelectedPatientForVisit(patients[0]); setActiveTab('visit_workflow'); } }}
+                  />
+                )}
+                {offlinePendingCount > 0 && (
+                  <AlertBanner
+                    type="warning"
+                    title="Local Queue Offline"
+                    message={`${offlinePendingCount} field visits cached locally on device. Tap to sync.`}
+                    action={{ label: 'Sync to Cloud', onClick: handleSyncOfflineQueue }}
+                  />
+                )}
+              </div>
+
+              {/* Quick Action Buttons */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                <SectionHeader title="Quick Actions" sub="Primary frontline clinical tasks" />
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <QuickAction
+                    icon={Activity}
+                    label="Log Field Visit"
+                    sub="Record vitals & symptoms"
+                    color="bg-rose-700 text-white"
+                    onClick={() => setActiveTab('visit_workflow')}
+                    pulse={pendingTasks.length > 0}
+                  />
+                  <QuickAction
+                    icon={UserPlus}
+                    label="Register Citizen"
+                    sub="Generate ABHA ID"
+                    color="bg-purple-700 text-white"
+                    onClick={() => setIsRegisterModalOpen(true)}
+                  />
+                  <QuickAction
+                    icon={Languages}
+                    label="Language Bridge"
+                    sub="Live Voice Translation"
+                    color="bg-indigo-700 text-white"
+                    onClick={() => setActiveTab('language_bridge')}
+                  />
+                  <QuickAction
+                    icon={Send}
+                    label="Refer Patient"
+                    sub="Transfer to PHC/SDH"
+                    color="bg-amber-600 text-white"
+                    onClick={() => setActiveTab('referrals')}
+                  />
+                </div>
+              </div>
+
+              {/* Bottom Row: Recent Feed & Village Progress */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                  <SectionHeader
+                    title="Recent Field Activities"
+                    sub="Live synchronization trail"
+                    action={<button onClick={() => setActiveTab('today_work')} className="text-xs text-rose-700 font-bold hover:underline">View All Tasks</button>}
+                  />
+                  <ActivityFeed items={ashaActivity} maxItems={5} />
+                </div>
+
+                <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4">
+                  <SectionHeader title="Sector 4 Coverage" sub="Khamgaon Village Target: 100%" />
+                  <ProgressBar value={12} max={15} color="bg-rose-500" label="Daily Target Visits (80%)" />
+                  <ProgressBar value={8} max={8} color="bg-emerald-500" label="ANC 3rd Trimester Scanned (100%)" />
+                  <ProgressBar value={24} max={30} color="bg-purple-500" label="NCD Screening Complete (80%)" />
+                  <ProgressBar value={18} max={20} color="bg-blue-500" label="IFA & Calcium Adherence (90%)" />
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <span className="text-slate-500">ASHA Honorarium Score</span>
+                    <span className="font-black text-emerald-700">₹4,850 (Grade A)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* TAB 1: TODAY'S FIELD VISITS QUEUE */}
         {activeTab === 'today_work' && (
