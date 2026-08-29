@@ -174,13 +174,16 @@ KEY RESPONSIBILITIES:
     apiKey: string,
     patientContext?: any
   ): Promise<GroqTriageOutput> {
-    const systemPrompt = this.buildSystemPrompt(targetLang);
+    const modelName = this.config.model || 'llama-3.3-70b-versatile';
+    
+    // Groq requires the word 'json' to appear in messages when response_format is json_object
+    const systemPrompt = `${this.buildSystemPrompt(targetLang)}\nIMPORTANT: You must output ONLY a raw JSON object conforming strictly to the requested schema. Do not include markdown codeblocks or conversational preamble.`;
     const contextStr = patientContext ? `\nPatient Demographics: Age ${patientContext.age || 'Unknown'}, Gender ${patientContext.gender || 'Unknown'}, Pregnancy: ${patientContext.isPregnant ? 'Yes' : 'No'}, Vitals: ${JSON.stringify(patientContext.vitals || {})}` : '';
 
-    const userPrompt = `Patient Query: "${userQuery}"${contextStr}
-Please analyze this clinical query and respond ONLY with a valid JSON object following this exact schema:
+    const userPrompt = `Patient Clinical Query: "${userQuery}"${contextStr}
+Respond with a valid JSON object formatted exactly as:
 {
-  "summary": "Clear compassionate explanation of symptoms and advice in target language",
+  "summary": "Clear compassionate explanation of symptoms and advice in target language (${targetLang})",
   "urgency": "red" | "amber" | "green",
   "urgencyLabel": "Emergency 108" | "Urgent PHC Visit" | "Routine Consultation",
   "primaryAssessment": "Likely medical cause in English + target language",
@@ -200,14 +203,13 @@ Please analyze this clinical query and respond ONLY with a valid JSON object fol
   "suggestedActionButtons": [
     {
       "label": "Action button text in target language",
-      "actionType": "EMERGENCY_CALL" | "BOOK_TELECONSULT" | "FIND_FACILITY" | "CHECK_SCHEME" | "TALK_TO_ASHA",
+      "actionType": "EMERGENCY_CALL",
       "actionPayload": "108"
     }
   ],
-  "confidenceScore": 0.95
+  "confidenceScore": 0.96
 }`;
 
-    const modelName = this.config.model || 'llama-3.3-70b-versatile';
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -220,19 +222,33 @@ Please analyze this clinical query and respond ONLY with a valid JSON object fol
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.2,
+        temperature: 0.1,
         response_format: { type: 'json_object' }
       })
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      throw new Error(`Groq API error (${response.status}): ${errText}`);
+      console.error(`Groq Cloud API responded with status ${response.status}:`, errText);
+      throw new Error(`Groq API (${response.status}): ${errText}`);
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-    const parsed = JSON.parse(content);
+    let rawContent = data.choices?.[0]?.message?.content || '{}';
+    // Strip markdown code fences if model wrapped response in ```json ... ```
+    rawContent = rawContent.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(rawContent);
+    } catch {
+      const match = rawContent.match(/\{[\s\S]*\}/);
+      if (match) {
+        parsed = JSON.parse(match[0]);
+      } else {
+        throw new Error('Groq returned non-JSON content');
+      }
+    }
 
     return {
       summary: parsed.summary || 'Clinical evaluation completed.',
@@ -244,9 +260,15 @@ Please analyze this clinical query and respond ONLY with a valid JSON object fol
       nearestFacilityType: parsed.nearestFacilityType || 'Primary Health Centre (PHC)',
       matchedSchemes: Array.isArray(parsed.matchedSchemes) ? parsed.matchedSchemes : [],
       suggestedMedicationsOrFirstAid: Array.isArray(parsed.suggestedMedicationsOrFirstAid) ? parsed.suggestedMedicationsOrFirstAid : [],
-      suggestedActionButtons: Array.isArray(parsed.suggestedActionButtons) ? parsed.suggestedActionButtons : [],
-      confidenceScore: parsed.confidenceScore || 0.94,
-      modelUsed: `Groq (${modelName})`
+      suggestedActionButtons: Array.isArray(parsed.suggestedActionButtons) && parsed.suggestedActionButtons.length > 0
+        ? parsed.suggestedActionButtons 
+        : [
+            { label: '📹 Book Teleconsultation', actionType: 'BOOK_TELECONSULT' },
+            { label: '🛡️ Check MJPJAY Scheme', actionType: 'CHECK_SCHEME' },
+            { label: '🏥 Find Nearest PHC', actionType: 'FIND_FACILITY' }
+          ],
+      confidenceScore: parsed.confidenceScore || 0.96,
+      modelUsed: `⚡ Groq Cloud (${modelName})`
     };
   }
 

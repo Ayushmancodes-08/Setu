@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useHealthData } from '../../context/HealthDataContext';
 import { bhashiniAI, PatientVoiceTriageResult } from '../../services/bhashiniService';
 import { huggingFaceAI } from '../../services/huggingFaceService';
+import { groqAI } from '../../services/groqAiService';
 import { 
   Building2, 
   Stethoscope, 
@@ -48,15 +49,14 @@ export const HeroSection: React.FC = () => {
     // Automatic Language Detection -> Intent Engine -> Same Language Triage Response
     const result = bhashiniAI.runPatientVoiceTriagePipeline(textToProcess);
 
-    if (huggingFaceAI.isConfigured()) {
-      try {
-        const llmRes = await huggingFaceAI.queryTriageLLM(textToProcess, result.detectedLanguage);
-        result.triageGuidance = llmRes.guidance;
-        result.suggestedAction = llmRes.suggestedAction;
-        result.severity = llmRes.severity;
-      } catch (e) {
-        console.warn('HF query fallback:', e);
-      }
+    try {
+      const groqRes = await groqAI.runSymptomAndSchemeTriage(textToProcess, result.detectedLanguage);
+      result.triageGuidance = groqRes.summary;
+      result.suggestedAction = groqRes.recommendedAction;
+      result.severity = groqRes.urgency === 'red' ? 'URGENT' : groqRes.urgency === 'amber' ? 'MODERATE' : 'LOW';
+      result.canonicalIntent.understoodSummaryLocalized = `${groqRes.primaryAssessment} (${groqRes.modelUsed})`;
+    } catch (e) {
+      console.warn('Groq triage notice in hero:', e);
     }
 
     setHeroResult(result);

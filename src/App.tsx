@@ -88,7 +88,7 @@ export const App: React.FC = () => {
             <Volume2 className="w-4 h-4 text-emerald-300 animate-pulse" />
           </div>
           <span className="hidden sm:inline font-extrabold text-xs tracking-tight">
-            ArogyaSakhi Voice Guide
+            SetuAI Clinical Navigator
           </span>
         </button>
 

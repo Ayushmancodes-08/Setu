@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { processHealthQuery, AIResponse } from '../../services/aiHealthCompanion';
 import { groqAI, GroqTriageOutput } from '../../services/groqAiService';
 import { bhashiniAI } from '../../services/bhashiniService';
+import { AiSettingsModal } from '../modals/AiSettingsModal';
 import { 
   Sparkles, 
   X, 
@@ -21,7 +22,10 @@ import {
   Radio,
   Languages,
   Layers,
-  FileText
+  FileText,
+  Settings,
+  Zap,
+  Activity
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -53,13 +57,14 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
   const [interimTranscript, setInterimTranscript] = useState('');
+  const [isAiSettingsOpen, setIsAiSettingsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Initialize greeting or initial query
   useEffect(() => {
     if (isAiCompanionOpen) {
       if (messages.length === 0) {
-        const welcomeText = t.aiGreeting;
+        const welcomeText = `Namaskar! I am SetuAI (सेतू AI), your official AI Clinical Triage & Government Healthcare Scheme Navigator for Maharashtra.\n\nDescribe your symptoms (e.g. fever, chest pain, pregnancy issues), check 100% cashless hospital coverage under MJPJAY / JSSK, or connect to emergency healthcare.`;
         setMessages([
           {
             id: 'msg-init',
@@ -176,7 +181,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
         },
         (err) => {
           console.warn('Bhashini speech fallback triggered:', err);
-          // High quality simulated voice query fallback if browser speech permissions are not granted
           setTimeout(() => {
             const voiceQuery = language === 'mr' 
               ? 'माझ्या आईला २ दिवसांपासून तीव्र ताप व डोकेदुखी आहे, काय करावे?' 
@@ -192,20 +196,6 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
           setIsRecording(false);
         }
       );
-
-      if (!started) {
-        // Fallback simulation
-        setTimeout(() => {
-          const voiceQuery = language === 'mr' 
-            ? 'माझ्या आईला २ दिवसांपासून तीव्र ताप व डोकेदुखी आहे, काय करावे?' 
-            : language === 'hi'
-            ? 'मेरी माताजी को २ दिन से तेज बुखार और सिरदर्द है, क्या करें?'
-            : 'My mother has severe continuous fever and headache for 2 days, what should we do?';
-          setInterimTranscript(voiceQuery);
-          handleUserSend(voiceQuery);
-          setIsRecording(false);
-        }, 1800);
-      }
     }
   };
 
@@ -216,25 +206,28 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
     } else if (actionType === 'BOOK_TELECONSULT') {
       setIsAiCompanionOpen(false);
       setCurrentView('patient');
+      showToast('Navigating to Patient Portal to book Teleconsultation...');
     } else if (actionType === 'FIND_FACILITY') {
       setIsAiCompanionOpen(false);
-      const el = document.getElementById('find-care');
-      el?.scrollIntoView({ behavior: 'smooth' });
+      setCurrentView('patient');
+      showToast('Opening Healthcare Facilities Finder...');
     } else if (actionType === 'CHECK_SCHEME') {
       setIsAiCompanionOpen(false);
-      const el = document.getElementById('schemes');
-      el?.scrollIntoView({ behavior: 'smooth' });
+      setCurrentView('patient');
+      showToast('Opening Maharashtra Government Cashless Schemes...');
     } else if (actionType === 'TALK_TO_ASHA') {
       setIsAiCompanionOpen(false);
       setCurrentView('asha');
+      showToast('Opening ASHA Frontline Health Worker Portal...');
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-sm flex justify-end animate-in fade-in duration-200">
+      <AiSettingsModal isOpen={isAiSettingsOpen} onClose={() => setIsAiSettingsOpen(false)} />
       <div className="w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col justify-between border-l border-slate-200 animate-in slide-in-from-right duration-300">
         
-        {/* Header with Bhashini Indic Engine Branding */}
+        {/* Header with SetuAI Branding */}
         <div className="bg-gradient-to-r from-[#003527] via-[#064e3b] to-[#002117] text-white px-5 py-4 flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-400/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300 relative">
@@ -245,55 +238,38 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-extrabold text-base tracking-tight">{t.aiTitle}</h3>
+                <h3 className="font-extrabold text-base tracking-tight">SetuAI (सेतू AI)</h3>
                 <span className="bg-emerald-400/20 text-emerald-300 text-[9px] font-black px-2 py-0.5 rounded-full border border-emerald-400/30 uppercase tracking-wider flex items-center gap-1">
                   <Radio className="w-2.5 h-2.5 text-emerald-400 animate-pulse" />
-                  Bhashini AI Voice
+                  Clinical Triage
                 </span>
               </div>
-              <p className="text-[11px] text-emerald-200/80">Digital India Bhashini • Multilingual Clinical Triage in Marathi, Hindi, English</p>
+              <p className="text-[11px] text-emerald-200/80">Clinical Triage & Government Scheme Predictor</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Language Quick Switch inside Companion */}
-            <div className="flex bg-white/10 p-0.5 rounded-lg text-[11px] font-bold overflow-x-auto max-w-[150px] sm:max-w-none">
-              <button
-                onClick={() => setLanguage('mr')}
-                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'mr' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
-              >
-                मराठी
-              </button>
-              <button
-                onClick={() => setLanguage('hi')}
-                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'hi' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
-              >
-                हिंदी
-              </button>
-              <button
-                onClick={() => setLanguage('or')}
-                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'or' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
-              >
-                ଓଡ଼ିଆ
-              </button>
-              <button
-                onClick={() => setLanguage('bn')}
-                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'bn' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
-              >
-                বাংলা
-              </button>
-              <button
-                onClick={() => setLanguage('ur')}
-                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'ur' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
-              >
-                اردو
-              </button>
-              <button
-                onClick={() => setLanguage('en')}
-                className={`px-1.5 py-0.5 rounded transition-colors ${language === 'en' ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
-              >
-                EN
-              </button>
+            {/* Direct Model Config Button */}
+            <button
+              onClick={() => setIsAiSettingsOpen(true)}
+              className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg border border-white/20 flex items-center gap-1.5 transition-all"
+              title="Configure Groq API Key / Models"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">AI Config</span>
+            </button>
+
+            {/* Language Quick Switch */}
+            <div className="flex bg-white/10 p-0.5 rounded-lg text-[11px] font-bold overflow-x-auto max-w-[130px] sm:max-w-none">
+              {(['mr', 'hi', 'en', 'or', 'bn', 'ur'] as const).map(langCode => (
+                <button
+                  key={langCode}
+                  onClick={() => setLanguage(langCode)}
+                  className={`px-1.5 py-0.5 rounded transition-colors ${language === langCode ? 'bg-emerald-500 text-white' : 'text-slate-300 hover:text-white'}`}
+                >
+                  {langCode === 'mr' ? 'मराठी' : langCode === 'hi' ? 'हिंदी' : langCode.toUpperCase()}
+                </button>
+              ))}
             </div>
 
             <button
@@ -325,9 +301,16 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
                 {/* AI Badge header with Bhashini Audio Readout Button */}
                 {msg.sender === 'ai' && (
                   <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 text-xs font-semibold text-emerald-800">
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-1.5 font-bold">
                       <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                      ArogyaSakhi Clinical Guide
+                      <span>SetuAI</span>
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${
+                        msg.groqTriage?.modelUsed?.includes('Groq')
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                          : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                      }`}>
+                        {msg.groqTriage?.modelUsed || 'SetuAI Engine'}
+                      </span>
                     </span>
 
                     <div className="flex items-center gap-2">

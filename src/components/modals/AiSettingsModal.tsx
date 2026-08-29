@@ -71,8 +71,8 @@ export const AiSettingsModal: React.FC<AiSettingsModalProps> = ({ isOpen, onClos
 
     showToast(
       provider === 'native' 
-        ? 'Using Setu Native Offline Clinical Engine.' 
-        : `${provider.toUpperCase()} AI Engine Activated with ${selectedModel}!`
+        ? 'Using SetuAI Native Offline Clinical Engine.' 
+        : `⚡ ${provider.toUpperCase()} Activated with ${selectedModel}!`
     );
     onClose();
   };
@@ -86,11 +86,14 @@ export const AiSettingsModal: React.FC<AiSettingsModalProps> = ({ isOpen, onClos
     setIsTesting(true);
     try {
       groqAI.saveConfig({ apiKey: apiKey.trim(), provider, model: selectedModel, isEnabled: true });
+      const t0 = performance.now();
       const res = await groqAI.runSymptomAndSchemeTriage('मुझे बुखार और बदन दर्द है', language);
-      showToast(`Success! Connected to ${res.modelUsed}`);
+      const elapsed = Math.round(performance.now() - t0);
+      showToast(`✅ Success! Connected to ${res.modelUsed} in ${elapsed}ms`);
       setIsEnabled(true);
-    } catch (e) {
-      showToast(`Connection test failed for ${provider.toUpperCase()}. Check API key.`);
+    } catch (e: any) {
+      console.error('Connection test failed:', e);
+      showToast(`❌ Connection test failed: ${e?.message || 'Check your API key and connection.'}`);
     } finally {
       setIsTesting(false);
     }
@@ -108,14 +111,15 @@ export const AiSettingsModal: React.FC<AiSettingsModalProps> = ({ isOpen, onClos
             </div>
             <div>
               <h3 className="text-base font-extrabold text-slate-900">
-                AI Engine & Clinical LLM Configuration
+                SetuAI Engine Configuration
               </h3>
-              <p className="text-xs text-slate-500">
-                Train & power Symptom Checker, Scheme Predictor & 24/7 Chatbot
-              </p>
+              <p className="text-xs text-slate-500">Choose between Live Groq Cloud LLM, xAI Grok, or Offline Engine</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100">
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
