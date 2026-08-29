@@ -69,77 +69,81 @@ export const HeroSection: React.FC = () => {
     }
   };
 
-  const handleHeroVoiceInput = async () => {
+  const recognitionRef = useRef<any>(null);
+
+  const handleHeroVoiceInput = () => {
     if (isListening) {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        mediaRecorderRef.current.stop();
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {}
+        recognitionRef.current = null;
       }
-      bhashiniAI.stopSpeechRecognition();
       setIsListening(false);
       return;
     }
 
-    try {
-      bhashiniAI.stopSpeaking();
-      setIsSpeakingHero(false);
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      audioChunksRef.current = [];
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
+    bhashiniAI.stopSpeaking();
+    setIsSpeakingHero(false);
+    setIsListening(true);
 
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) {
-          audioChunksRef.current.push(e.data);
-        }
-      };
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
-      mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        if (audioBlob.size > 1000) {
-          setIsLoadingLLM(true);
-          try {
-            const transcript = await groqAI.transcribeAudioWithGroq(audioBlob, language);
-            if (transcript && transcript.trim()) {
-              setHeroQuery(transcript.trim());
-              handleHeroSubmit(transcript.trim());
-            }
-          } catch (err) {
-            console.warn('Groq Whisper error, using fallback:', err);
-          } finally {
-            setIsLoadingLLM(false);
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        if (language === 'mr') recognition.lang = 'mr-IN';
+        else if (language === 'hi') recognition.lang = 'hi-IN';
+        else if (language === 'bn') recognition.lang = 'bn-IN';
+        else if (language === 'ur') recognition.lang = 'ur-IN';
+        else recognition.lang = 'en-IN';
+
+        recognitionRef.current = recognition;
+
+        recognition.onresult = (event: any) => {
+          let currentTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            currentTranscript += event.results[i][0].transcript;
           }
-        }
-      };
+          if (currentTranscript && currentTranscript.trim()) {
+            setHeroQuery(currentTranscript.trim());
+          }
+        };
 
-      mediaRecorder.start(250);
-      setIsListening(true);
+        recognition.onerror = (event: any) => {
+          console.warn('Speech recognition notice:', event.error);
+          setIsListening(false);
+        };
 
-      // Auto-stop after 7 seconds max
-      setTimeout(() => {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-          mediaRecorderRef.current.stop();
+        recognition.onend = () => {
           setIsListening(false);
-        }
-      }, 7000);
-    } catch {
-      // Fallback: browser speech recognition
-      setIsListening(true);
-      bhashiniAI.asr(
-        language,
-        (transcript) => {
-          setHeroQuery(transcript);
-          handleHeroSubmit(transcript);
-        },
-        (err) => {
-          console.warn('Hero ASR notice:', err);
-          setIsListening(false);
-        },
-        () => {
-          setIsListening(false);
-        }
-      );
+          recognitionRef.current = null;
+          // Auto submit if text exists
+          if (heroQuery && heroQuery.trim()) {
+            handleHeroSubmit(heroQuery.trim());
+          }
+        };
+
+        recognition.start();
+        return;
+      } catch (e) {
+        console.warn('SpeechRecognition start failed, trying fallback:', e);
+      }
     }
+
+    // Fallback: Browser microphone prompt
+    bhashiniAI.asr(
+      language,
+      (transcript) => {
+        setHeroQuery(transcript);
+        handleHeroSubmit(transcript);
+      },
+      () => setIsListening(false),
+      () => setIsListening(false)
+    );
   };
 
   const handleToggleVoicePlay = (textToSpeak: string) => {

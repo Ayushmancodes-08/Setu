@@ -143,25 +143,15 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
     });
   };
 
+  const recognitionRef = useRef<any>(null);
+
   // 3. Stop Voice Recording Helper
   const stopVoiceRecording = (shouldProcess = true) => {
-    if (silenceTimerRef.current) {
-      cancelAnimationFrame(silenceTimerRef.current);
-      silenceTimerRef.current = null;
-    }
-
-    if (audioContextRef.current) {
+    if (recognitionRef.current) {
       try {
-        audioContextRef.current.close();
+        recognitionRef.current.stop();
       } catch {}
-      audioContextRef.current = null;
-    }
-
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      try {
-        mediaRecorderRef.current.stop();
-      } catch {}
-      mediaRecorderRef.current = null;
+      recognitionRef.current = null;
     }
 
     if (streamRef.current) {
@@ -172,122 +162,75 @@ export const ArogyaSakhiCompanionModal: React.FC = () => {
     bhashiniAI.stopSpeechRecognition();
     setIsRecording(false);
 
-    if (interimTranscript.trim() && shouldProcess) {
-      handleUserSend(interimTranscript.trim());
+    const queryToSend = inputVal.trim() || interimTranscript.trim();
+    if (queryToSend && shouldProcess) {
+      handleUserSend(queryToSend);
       setInterimTranscript('');
     }
   };
 
-  // 4. Start Voice Recording with MediaRecorder + Groq Whisper
-  const startVoiceRecording = async () => {
-    try {
-      bhashiniAI.stopSpeaking();
-      setCurrentlySpeakingId(null);
+  // 4. Start Voice Recording with Instant Live Speech Recognition & Groq Whisper Fallback
+  const startVoiceRecording = () => {
+    bhashiniAI.stopSpeaking();
+    setCurrentlySpeakingId(null);
+    setIsRecording(true);
+    setInterimTranscript('');
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      audioChunksRef.current = [];
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      // Silence detection setup
+    if (SpeechRecognition) {
       try {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        if (AudioContextClass) {
-          const audioCtx = new AudioContextClass();
-          audioContextRef.current = audioCtx;
-          const source = audioCtx.createMediaStreamSource(stream);
-          const analyser = audioCtx.createAnalyser();
-          analyser.fftSize = 256;
-          source.connect(analyser);
-          const bufferLength = analyser.frequencyBinCount;
-          const dataArray = new Uint8Array(bufferLength);
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
 
-          let silenceStart = Date.now();
-          const checkSilence = () => {
-            if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'recording') return;
-            analyser.getByteFrequencyData(dataArray);
-            let sum = 0;
-            for (let i = 0; i < bufferLength; i++) {
-              sum += dataArray[i];
-            }
-            const average = sum / bufferLength;
+        if (language === 'mr') recognition.lang = 'mr-IN';
+        else if (language === 'hi') recognition.lang = 'hi-IN';
+        else if (language === 'bn') recognition.lang = 'bn-IN';
+        else if (language === 'ur') recognition.lang = 'ur-IN';
+        else recognition.lang = 'en-IN';
 
-            if (average < 10) {
-              if (Date.now() - silenceStart > 2400 && audioChunksRef.current.length > 0) {
-                stopVoiceRecording(true);
-                return;
-              }
-            } else {
-              silenceStart = Date.now();
-            }
+        recognitionRef.current = recognition;
 
-            silenceTimerRef.current = requestAnimationFrame(checkSilence);
-          };
+        recognition.onresult = (event: any) => {
+          let liveTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            liveTranscript += event.results[i][0].transcript;
+          }
+          if (liveTranscript && liveTranscript.trim()) {
+            setInterimTranscript(liveTranscript.trim());
+            setInputVal(liveTranscript.trim());
+          }
+        };
 
-          silenceTimerRef.current = requestAnimationFrame(checkSilence);
-        }
-      } catch (e) {
-        console.warn('Silence analyser init notice:', e);
+        recognition.onerror = (event: any) => {
+          console.warn('Speech recognition notice:', event.error);
+        };
+
+        recognition.onend = () => {
+          setIsRecording(false);
+          recognitionRef.current = null;
+        };
+
+        recognition.start();
+        return;
+      } catch (err) {
+        console.warn('SpeechRecognition init error:', err);
       }
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        if (audioBlob.size > 1000) {
-          setIsTranscribing(true);
-          try {
-            const transcript = await groqAI.transcribeAudioWithGroq(audioBlob, language);
-            setIsTranscribing(false);
-            if (transcript && transcript.trim()) {
-              handleUserSend(transcript.trim());
-            } else {
-              showToast('No speech detected. Please speak clearly into your mic.');
-            }
-          } catch (err: any) {
-            console.warn('Groq Whisper error, fallback to browser speech:', err);
-            setIsTranscribing(false);
-            bhashiniAI.startSpeechRecognition(
-              language,
-              (text) => {
-                if (text.trim()) handleUserSend(text.trim());
-              },
-              () => {},
-              () => {}
-            );
-          }
-        }
-      };
-
-      mediaRecorder.start(250);
-      setIsRecording(true);
-      setInterimTranscript('');
-    } catch (err) {
-      console.warn('Microphone access notice:', err);
-      setIsRecording(true);
-      bhashiniAI.startSpeechRecognition(
-        language,
-        (transcript) => {
-          setInterimTranscript(transcript);
-        },
-        (err) => {
-          console.warn('ASR fallback error:', err);
-          setIsRecording(false);
-        },
-        () => {
-          setIsRecording(false);
-          if (interimTranscript.trim()) {
-            handleUserSend(interimTranscript.trim());
-          }
-        }
-      );
     }
+
+    // Fallback: Browser speech recognition
+    bhashiniAI.startSpeechRecognition(
+      language,
+      (text) => {
+        if (text.trim()) {
+          setInterimTranscript(text.trim());
+          setInputVal(text.trim());
+        }
+      },
+      () => setIsRecording(false),
+      () => setIsRecording(false)
+    );
   };
 
   const toggleVoiceRecording = () => {

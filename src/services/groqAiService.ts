@@ -359,85 +359,95 @@ Respond with a valid JSON object formatted strictly as:
       }
     }
 
-    messages.push({ role: 'user', content: userPrompt });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4500);
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: modelName,
-        messages,
-        temperature: 0.1,
-        response_format: { type: 'json_object' }
-      })
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error(`Groq Cloud API responded with status ${response.status}:`, errText);
-      throw new Error(`Groq API (${response.status}): ${errText}`);
-    }
-
-    const data = await response.json();
-    let rawContent = data.choices?.[0]?.message?.content || '{}';
-    rawContent = rawContent.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-
-    let parsed: any;
     try {
-      parsed = JSON.parse(rawContent);
-    } catch {
-      const match = rawContent.match(/\{[\s\S]*\}/);
-      if (match) {
-        parsed = JSON.parse(match[0]);
-      } else {
-        throw new Error('Groq returned non-JSON content');
-      }
-    }
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: modelName,
+          messages,
+          temperature: 0.15,
+          max_tokens: 700,
+          response_format: { type: 'json_object' }
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
 
-    return {
-      summary: parsed.summary || 'Clinical evaluation completed.',
-      urgency: parsed.urgency || 'amber',
-      urgencyLabel: parsed.urgencyLabel || (parsed.urgency === 'red' ? 'Emergency 108' : 'Urgent Care'),
-      primaryAssessment: parsed.primaryAssessment || 'Clinical evaluation needed',
-      clarifyingQuestion: parsed.clarifyingQuestion,
-      choiceChips: Array.isArray(parsed.choiceChips) ? parsed.choiceChips : [],
-      homeRemedies: Array.isArray(parsed.homeRemedies) ? parsed.homeRemedies : [],
-      safeOtcGuidance: Array.isArray(parsed.safeOtcGuidance) ? parsed.safeOtcGuidance : [],
-      redFlags: Array.isArray(parsed.redFlags) ? parsed.redFlags : ['Difficulty breathing', 'Severe pain'],
-      recommendedAction: parsed.recommendedAction || 'Consult your nearest PHC medical officer.',
-      nearestFacilityType: parsed.nearestFacilityType || 'Primary Health Centre (PHC)',
-      hospitalCard: parsed.hospitalCard || {
-        name: 'Junnar Rural Hospital & Trauma Centre',
-        nameMr: 'जुन्नर ग्रामीण रुग्णालय व अपघात केंद्र',
-        type: 'Sub-District Hospital',
-        distanceKm: 4.8,
-        availableBeds: 14,
-        icuBeds: 3,
-        contactNumber: '+91 2132 222108',
-        isOpen24x7: true
-      },
-      pharmacyCard: parsed.pharmacyCard || {
-        name: 'Pradhan Mantri Jan Aushadhi Kendra (Junnar)',
-        distanceKm: 1.4,
-        stockRate: 94,
-        contactNumber: '+91 98221 44520',
-        openStatus: 'Open (8 AM - 10 PM)'
-      },
-      matchedSchemes: Array.isArray(parsed.matchedSchemes) ? parsed.matchedSchemes : [],
-      suggestedMedicationsOrFirstAid: Array.isArray(parsed.suggestedMedicationsOrFirstAid) ? parsed.suggestedMedicationsOrFirstAid : [],
-      suggestedActionButtons: Array.isArray(parsed.suggestedActionButtons) && parsed.suggestedActionButtons.length > 0
-        ? parsed.suggestedActionButtons 
-        : [
-            { label: '📹 Book Teleconsultation', actionType: 'BOOK_TELECONSULT' },
-            { label: '🛡️ Check MJPJAY Scheme', actionType: 'CHECK_SCHEME' },
-            { label: '🏥 Find Nearest PHC', actionType: 'FIND_FACILITY' }
-          ],
-      confidenceScore: parsed.confidenceScore || 0.96,
-      modelUsed: `⚡ Groq Cloud (${modelName})`
-    };
+      if (!response.ok) {
+        const errText = await response.text();
+        console.warn(`Groq Cloud API error (${response.status}):`, errText);
+        throw new Error(`Groq API (${response.status}): ${errText}`);
+      }
+
+      const data = await response.json();
+      let rawContent = data.choices?.[0]?.message?.content || '{}';
+      rawContent = rawContent.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+      let parsed: any;
+      try {
+        parsed = JSON.parse(rawContent);
+      } catch {
+        const match = rawContent.match(/\{[\s\S]*\}/);
+        if (match) {
+          parsed = JSON.parse(match[0]);
+        } else {
+          throw new Error('Groq returned non-JSON content');
+        }
+      }
+
+      return {
+        summary: parsed.summary || 'Clinical evaluation completed.',
+        urgency: parsed.urgency || 'amber',
+        urgencyLabel: parsed.urgencyLabel || (parsed.urgency === 'red' ? 'Emergency 108' : 'Urgent Care'),
+        primaryAssessment: parsed.primaryAssessment || 'Clinical evaluation needed',
+        clarifyingQuestion: parsed.clarifyingQuestion,
+        choiceChips: Array.isArray(parsed.choiceChips) ? parsed.choiceChips : [],
+        homeRemedies: Array.isArray(parsed.homeRemedies) ? parsed.homeRemedies : [],
+        safeOtcGuidance: Array.isArray(parsed.safeOtcGuidance) ? parsed.safeOtcGuidance : [],
+        redFlags: Array.isArray(parsed.redFlags) ? parsed.redFlags : ['Difficulty breathing', 'Severe pain'],
+        recommendedAction: parsed.recommendedAction || 'Consult your nearest PHC medical officer.',
+        nearestFacilityType: parsed.nearestFacilityType || 'Primary Health Centre (PHC)',
+        hospitalCard: parsed.hospitalCard || {
+          name: 'Junnar Rural Hospital & Trauma Centre',
+          nameMr: 'जुन्नर ग्रामीण रुग्णालय व अपघात केंद्र',
+          type: 'Sub-District Hospital',
+          distanceKm: 4.8,
+          availableBeds: 14,
+          icuBeds: 3,
+          contactNumber: '+91 2132 222108',
+          isOpen24x7: true
+        },
+        pharmacyCard: parsed.pharmacyCard || {
+          name: 'Pradhan Mantri Jan Aushadhi Kendra (Junnar)',
+          distanceKm: 1.4,
+          stockRate: 94,
+          contactNumber: '+91 98221 44520',
+          openStatus: 'Open (8 AM - 10 PM)'
+        },
+        matchedSchemes: Array.isArray(parsed.matchedSchemes) ? parsed.matchedSchemes : [],
+        suggestedMedicationsOrFirstAid: Array.isArray(parsed.suggestedMedicationsOrFirstAid) ? parsed.suggestedMedicationsOrFirstAid : [],
+        suggestedActionButtons: Array.isArray(parsed.suggestedActionButtons) && parsed.suggestedActionButtons.length > 0
+          ? parsed.suggestedActionButtons 
+          : [
+              { label: '📹 Book Teleconsultation', actionType: 'BOOK_TELECONSULT' },
+              { label: '🛡️ Check MJPJAY Scheme', actionType: 'CHECK_SCHEME' },
+              { label: '🏥 Find Nearest PHC', actionType: 'FIND_FACILITY' }
+            ],
+        confidenceScore: parsed.confidenceScore || 0.96,
+        modelUsed: `⚡ Groq Cloud (${modelName})`
+      };
+    } catch (err: any) {
+      clearTimeout(timeoutId);
+      console.warn('Groq chat call exception, falling back to local clinical engine:', err);
+      throw err;
+    }
   }
 
   /**
