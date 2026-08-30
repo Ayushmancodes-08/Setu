@@ -5,6 +5,8 @@ import { bhashiniAI } from '../../services/bhashiniService';
 import { Appointment } from '../../types';
 import { VideoConsultationRoom } from '../video/VideoConsultationRoom';
 import { LabTestBookingModal } from '../modals/LabTestBookingModal';
+import { UploadReportModal } from '../modals/UploadReportModal';
+import { EditProfileModal } from '../modals/EditProfileModal';
 import { 
   User, 
   Heart, 
@@ -42,7 +44,8 @@ import {
   Stethoscope,
   VideoOff,
   MicOff,
-  UserCheck
+  UserCheck,
+  FileCheck
 } from 'lucide-react';
 
 const AVAILABLE_DOCTORS = [
@@ -96,20 +99,26 @@ export const PatientPortal: React.FC = () => {
     updatePatientVitals, 
     appointments, 
     bookAppointment, 
-    cancelAppointment 
+    cancelAppointment,
+    currentUser,
+    diagnosticOrders
   } = useHealthData();
 
-  // Active patient profile (Rajesh Kumar / Sunita Shinde)
-  const patient: any = patients.find(p => p.id === 'p-001') || patients[0] || {
+  // Active patient profile dynamically mapped from currentUser
+  const patient: any = (currentUser && patients.find(p => 
+    (currentUser.identifierNumber && p.abhaId === currentUser.identifierNumber) ||
+    (currentUser.phone && p.mobile.replace(/[\s-+]/g, '') === currentUser.phone.replace(/[\s-+]/g, '')) ||
+    (currentUser.fullName && p.name.toLowerCase() === currentUser.fullName.toLowerCase())
+  )) || (currentUser && currentUser.fullName.toLowerCase().includes('sunita') ? patients.find(p => p.name.toLowerCase().includes('sunita')) : null) || patients.find(p => p.name.toLowerCase().includes('rajesh')) || patients[0] || {
     id: 'p-001',
-    name: 'Rajesh Kumar Shinde',
+    name: currentUser?.fullName || 'Rajesh Kumar Shinde',
     age: 47,
     gender: 'Male',
-    abhaId: '91-4821-9902-3312',
-    village: 'Khamgaon',
-    taluka: 'Junnar',
-    district: 'Pune',
-    mobile: '+91 98230 44512',
+    abhaId: currentUser?.identifierNumber || '91-8841-2091-7741',
+    village: currentUser?.village || 'Khamgaon',
+    taluka: currentUser?.taluka || 'Junnar',
+    district: currentUser?.district || 'Pune',
+    mobile: currentUser?.phone || '+91 98230 44512',
     bloodGroup: 'B+',
     allergies: 'None reported',
     chronicConditions: 'Hypertension',
@@ -170,6 +179,8 @@ export const PatientPortal: React.FC = () => {
   const [activeModule, setActiveModule] = useState<'dashboard' | 'appointments' | 'medications' | 'reports' | 'healthcare' | 'schemes' | 'women_child' | 'chronic' | 'wellbeing' | 'emergency' | 'timeline'>('dashboard');
   const [elderlyMode, setElderlyMode] = useState<boolean>(false);
   const [showFullProfile, setShowFullProfile] = useState<boolean>(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
 
   // Setu AI Conversational Guidance State
   const [aiQuery, setAiQuery] = useState<string>('');
@@ -348,12 +359,20 @@ export const PatientPortal: React.FC = () => {
             </div>
 
             {/* Health Status Indicator & Quick Book CTA */}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <button
+                onClick={() => setIsEditProfileOpen(true)}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3.5 py-2.5 rounded-2xl text-xs border border-slate-300 transition-all flex items-center gap-1.5"
+              >
+                <User className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Edit Profile</span>
+              </button>
+
               <div className="bg-emerald-50 border border-emerald-200 px-3.5 py-2 rounded-2xl text-xs">
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Health Status</span>
                 <span className="font-extrabold text-emerald-800 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  🟢 Stable (Active Routine Care)
+                  🟢 Stable (Active Care)
                 </span>
               </div>
 
@@ -873,7 +892,7 @@ export const PatientPortal: React.FC = () => {
                 <p className="text-xs text-slate-500">Plain-language explanation of laboratory findings and reference values.</p>
               </div>
               <button
-                onClick={() => showToast('Report uploaded & added to your digital health profile.')}
+                onClick={() => setIsUploadModalOpen(true)}
                 className="bg-[#003527] hover:bg-[#064e3b] text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
               >
                 <Upload className="w-3.5 h-3.5" />
@@ -924,6 +943,73 @@ export const PatientPortal: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Booked Lab Tests Tracking List */}
+            <div className="bg-purple-50/60 border border-purple-200 rounded-3xl p-5 sm:p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-purple-200 text-purple-800 flex items-center justify-center font-bold">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-sm text-purple-950">Your Booked Lab Tests & Orders</h4>
+                    <p className="text-[11px] text-purple-700">Real-time status of scheduled sample collections & laboratory processing</p>
+                  </div>
+                </div>
+                <span className="bg-purple-200 text-purple-900 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                  {diagnosticOrders.length > 0 ? `${diagnosticOrders.length} Active Orders` : '1 Scheduled'}
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                {diagnosticOrders.length > 0 ? (
+                  diagnosticOrders.map((order) => (
+                    <div key={order.id} className="bg-white p-4 rounded-2xl border border-purple-200 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-slate-900">{order.testName}</span>
+                          <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">
+                            {order.orderNumber}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Facility: <strong>{order.facility}</strong> • Sample: {order.sampleType}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                          order.sampleStatus === 'Validated' 
+                            ? 'bg-emerald-100 text-emerald-800' 
+                            : 'bg-amber-100 text-amber-800 animate-pulse'
+                        }`}>
+                          {order.sampleStatus || 'Sample Collection Scheduled'}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="bg-white p-4 rounded-2xl border border-purple-200 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-black text-slate-900">Complete Blood Count (CBC) + ESR</span>
+                        <span className="font-mono text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">
+                          LAB-2026-8821
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Facility: <strong>Junnar Rural Hospital Diagnostic Wing</strong> • Home Phlebotomist: <strong>Rahul Deshmukh</strong>
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <Clock className="w-3 h-3 animate-spin" />
+                        <span>Home Collection: Tomorrow 08:30 AM</span>
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Book new test CTA */}
@@ -1563,6 +1649,19 @@ export const PatientPortal: React.FC = () => {
         isOpen={isLabBookingOpen}
         onClose={() => setIsLabBookingOpen(false)}
         prefillTestId={labPrefillTestId}
+      />
+
+      {/* UPLOAD DIAGNOSTIC REPORT MODAL */}
+      <UploadReportModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        patientId={patient.id}
+      />
+
+      {/* GLOBAL EDIT PROFILE MODAL */}
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
       />
 
     </div>

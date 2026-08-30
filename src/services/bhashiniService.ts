@@ -27,7 +27,7 @@ export interface VitalsVoiceExtraction {
 }
 
 export interface CanonicalHealthIntent {
-  symptomCode: 'FEVER' | 'CHEST_PAIN' | 'HEADACHE_BP' | 'MATERNAL_ANC' | 'DIABETES' | 'FIND_HEALTHCARE' | 'SCHEME_ELIGIBILITY' | 'GENERAL_CONSULT';
+  symptomCode: 'FEVER' | 'CHEST_PAIN' | 'HEADACHE_BP' | 'MATERNAL_ANC' | 'DIABETES' | 'DIABETES_NCD' | 'STOMACH_PAIN' | 'JOINT_PAIN' | 'GOV_SCHEME' | 'FIND_HEALTHCARE' | 'SCHEME_ELIGIBILITY' | 'GENERAL_CONSULT';
   durationDays?: number;
   detectedEntities: string[];
   severity: 'LOW' | 'MODERATE' | 'URGENT';
@@ -383,27 +383,199 @@ class BhashiniEngine {
       };
     }
 
+    // 5. Abdominal / Stomach Pain & Gastric Issues
+    if (lower.includes('stomach') || lower.includes('pet') || lower.includes('पोट') || lower.includes('पेट') || lower.includes('ପେଟ') || lower.includes('vomit') || lower.includes('उलटी') || lower.includes('वांती') || lower.includes('झड़ा') || lower.includes('gastric')) {
+      return {
+        symptomCode: 'STOMACH_PAIN',
+        durationDays,
+        detectedEntities: ['Abdominal Pain', 'Gastrointestinal', 'Hydration Assessment'],
+        severity: lower.includes('vomit') || lower.includes('उलटी') || lower.includes('blood') ? 'MODERATE' : 'LOW',
+        sourceLanguage: lang,
+        understoodSummaryEn: `Abdominal / Stomach pain & gastro discomfort (${durationDays} day(s))`,
+        understoodSummaryLocalized: 
+          lang === 'mr' ? `पोटदुखी व पचन समस्या (${durationDays} दिवसांपासून)` : 
+          lang === 'hi' ? `पेट दर्द और अपच की समस्या (${durationDays} दिन से)` : 
+          lang === 'or' ? `ପେଟ ଯନ୍ତ୍ରଣା ଓ ହଜମ ସମସ୍ୟା (${durationDays} ଦିନ ଧରି)` : 
+          lang === 'bn' ? `পেট ব্যথা ও বদহজমের সমস্যা (${durationDays} দিন ধরে)` :
+          lang === 'ur' ? `پیٹ میں درد اور ہاضمے کی تکلیف (${durationDays} دن سے)` :
+          `Stomach pain & discomfort (${durationDays} days)`,
+        responseGuidance: 
+          lang === 'mr' ? 'पोटदुखीसाठी हलका आहार व ओआरएस (ORS) पाणी प्या. तेलकट किंवा शिळे अन्न टाळा. दुखणे वाढल्यास आरोग्य केंद्रातील डॉक्टरांचा सल्ला घ्या.' : 
+          lang === 'hi' ? 'पेट दर्द के लिए हल्का सुपाच्य भोजन लें और ओआरएस या गुनगुना पानी पिएं। यदि उल्टी या दस्त हो तो तुरंत स्वास्थ्य केंद्र जाएं।' : 
+          lang === 'or' ? 'ପେଟ ଯନ୍ତ୍ରଣା ପାଇଁ ହାଲୁକା ଖାଦ୍ୟ ଖାଆନ୍ତୁ ଏବଂ ଓଆରଏସ୍ (ORS) ପାଣି ପିଅନ୍ତୁ। ଯଦି କଷ୍ଟ ବଢେ ତେବେ ଡାକ୍ତରଙ୍କ ପରାମର୍ଶ ନିଅନ୍ତୁ।' : 
+          lang === 'bn' ? 'পেট ব্যথার জন্য হালকা খাবার খান এবং ওআরএস বা জল পান করুন। ব্যথা না কমলে ডাক্তারের পরামর্শ নিন।' :
+          lang === 'ur' ? 'پیٹ کے درد کے لیے ہلکی غذا کھائیں اور او آر ایس یا نیم گرم پانی پییں۔ تکلیف بڑھنے پر ڈاکٹر سے رجوع کریں۔' :
+          'Take light meals, stay well-hydrated with ORS. If pain is severe or accompanied by persistent vomiting, consult your PHC doctor.',
+        responseAction: 
+          lang === 'mr' ? 'प्राथमिक आरोग्य केंद्रात मोफत तपासणी करा किंवा १-टॅप टेलीकन्सल्टेशन सुरू करा.' : 
+          lang === 'hi' ? 'पीएचसी में परामर्श लें या ऑनलाइन डॉक्टर टेलीकंसल्टेशन शुरू करें।' : 
+          lang === 'or' ? 'ଡାକ୍ତରଙ୍କ ସହିତ ଅନଲାଇନ୍ ପରାମର୍ଶ କରନ୍ତୁ।' : 
+          lang === 'bn' ? 'অনলাইন ডাক্তার পরামর্শ শুরু করুন।' :
+          lang === 'ur' ? 'آن لائن ڈاکٹر ٹیلی کنسلٹیشن شروع کریں۔' :
+          'Consult Primary Health Centre or start an online doctor teleconsultation.',
+        isEmergency: false
+      };
+    }
+
+    // 6. Pregnancy & Maternal Care (ANC)
+    if (lower.includes('pregnant') || lower.includes('pregnancy') || lower.includes('गर्भवती') || lower.includes('गर्भ') || lower.includes('ଗର୍ଭ') || lower.includes('delivery') || lower.includes('anc') || lower.includes('trimester') || lower.includes('बाळ')) {
+      return {
+        symptomCode: 'MATERNAL_ANC',
+        durationDays,
+        detectedEntities: ['Maternal Health', 'ANC Checkup', 'JSSK Free Delivery'],
+        severity: 'LOW',
+        sourceLanguage: lang,
+        understoodSummaryEn: 'Maternal Health & Pregnancy Care Inquiry',
+        understoodSummaryLocalized: 
+          lang === 'mr' ? 'मातृत्व व गरोदरपणातील आरोग्य सल्ला' : 
+          lang === 'hi' ? 'गर्भावस्था और मातृत्व स्वास्थ्य परामर्श' : 
+          lang === 'or' ? 'ଗର୍ଭଧାରଣ ଓ ମାତୃ ସ୍ୱାସ୍ଥ୍ୟ ପରାମର୍ଶ' : 
+          lang === 'bn' ? 'গর্ভাবস্থা ও মাতৃত্বকালীন স্বাস্থ্য পরামর্শ' :
+          lang === 'ur' ? 'حمل اور زچگی سے متعلق طبی رہنمائی' :
+          'Maternal Health & ANC Care',
+        responseGuidance: 
+          lang === 'mr' ? 'गरोदरपणात नियमित ANC तपासणी, फॉलिक अ‍ॅसिड/आयर्न गोळ्या आणि सकस आहार आवश्यक आहे. जननी सुरक्षा योजना (JSY/JSSK) अंतर्गत सर्व तपासण्या व प्रसूती शासकीय रुग्णालयात मोफत आहेत.' : 
+          lang === 'hi' ? 'गर्भावस्था में नियमित एएनसी जांच, आयरन और कैल्शियम की गोलियां लेना जरूरी है। जेएसएसके (JSSK) के तहत सरकारी अस्पताल में सभी जांच और प्रसव बिल्कुल निःशुल्क है।' : 
+          lang === 'or' ? 'ଗର୍ଭଧାରଣ ସମୟରେ ନିୟମିତ ଏଏନସି ଯାଞ୍ଚ ଏବଂ ଆଇରନ୍ ବଟିକା ଖାଇବା ଆବଶ୍ୟକ। ସରକାରୀ ଡାକ୍ତରଖାନାରେ ପ୍ରସବ ସମ୍ପୂର୍ଣ୍ଣ ମାଗଣା।' : 
+          lang === 'bn' ? 'গর্ভাবস্থায় নিয়মিত এএনসি পরীক্ষা ও পুষ্টিকর খাবার প্রয়োজন। সরকারি হাসপাতালে সমস্ত চিকিৎসা ও প্রসব সম্পূর্ণ বিনামূল্যে।' :
+          lang === 'ur' ? 'حمل کے دوران باقاعدہ معائنہ اور آئرن کی گولیاں لازمی ہیں۔ سرکاری ہسپتالوں میں ڈیلیوری بالکل مفت ہے۔' :
+          'Ensure regular ANC checkups, daily Iron/Calcium supplements, and ultrasound monitoring. Free hospital delivery is provided under JSSK entitlement.',
+        responseAction: 
+          lang === 'mr' ? 'डॉ. रोहिणी कुलकर्णी (स्त्रीरोग तज्ज्ञ) यांच्याशी अपॉइंटमेंट बुक करा.' : 
+          lang === 'hi' ? 'डॉ. रोहिणी कुलकर्णी (स्त्री रोग विशेषज्ञ) से ऑनलाइन परामर्श लें।' : 
+          lang === 'or' ? 'ସ୍ତ୍ରୀରୋଗ ବିଶେଷଜ୍ଞ ଡାକ୍ତରଙ୍କ ସହ ପରାମର୍ଶ କରନ୍ତୁ।' : 
+          lang === 'bn' ? 'গাইনোকোলজিস্ট ডাক্তারের সাথে পরামর্শ নিন।' :
+          lang === 'ur' ? 'لیڈی ڈاکٹر سے آن لائن اپائنٹمنٹ بک کریں۔' :
+          'Book a consultation with Dr. Rohini Kulkarni (OBGYN Specialist).',
+        isEmergency: false,
+        matchedScheme: 'JSSK Free Delivery & PM-Matru Vandana Yojana'
+      };
+    }
+
+    // 7. Diabetes & Blood Sugar
+    if (lower.includes('sugar') || lower.includes('diabetes') || lower.includes('मधुमेह') || lower.includes('साखर') || lower.includes('ଡାଇବେଟିସ')) {
+      return {
+        symptomCode: 'DIABETES_NCD',
+        durationDays,
+        detectedEntities: ['Blood Glucose', 'Diabetes Mellitus', 'NCD Care'],
+        severity: 'LOW',
+        sourceLanguage: lang,
+        understoodSummaryEn: 'Diabetes & Blood Sugar Monitoring',
+        understoodSummaryLocalized: 
+          lang === 'mr' ? 'मधुमेह व रक्तातील साखर तपासणी' : 
+          lang === 'hi' ? 'मधुमेह और ब्लड शुगर नियंत्रण' : 
+          lang === 'or' ? 'ଡାଇବେଟିସ ଓ ରକ୍ତ ଶର୍କରା ନିୟନ୍ତ୍ରଣ' : 
+          lang === 'bn' ? 'ডায়াবেটিস ও ব্লাড সুগার পর্যবেক্ষণ' :
+          lang === 'ur' ? 'شوگر اور ذیابیطس کنٹرول' :
+          'Diabetes & Blood Sugar',
+        responseGuidance: 
+          lang === 'mr' ? 'रक्तातील साखर नियमित तपासा (उपवाशी < 100 mg/dL, जेवणानंतर < 140 mg/dL). गोड पदार्थ टाळा, दररोज ३० मिनिटे चाला आणि औषधे वेळेवर घ्या.' : 
+          lang === 'hi' ? 'ब्लड शुगर की नियमित जांच करवाएं (फास्टिंग 70-100 mg/dL)। मीठे का परहेज रखें, रोजाना टहलें और डॉक्टर की सलाह अनुसार दवाएं लें।' : 
+          lang === 'or' ? 'ରକ୍ତରେ ଶର୍କରା ନିୟମିତ ପରୀକ୍ଷା କରନ୍ତୁ। ମିଠା ଖାଦ୍ୟ ତ୍ୟାଗ କରନ୍ତୁ ଏବଂ ନିୟମିତ ବ୍ୟାୟାମ କରନ୍ତୁ।' : 
+          lang === 'bn' ? 'নিয়মিত রক্তে শর্করার মাত্রা পরীক্ষা করুন এবং চিকিৎসকের পরামর্শমতো ওষুধ সেবন করুন।' :
+          lang === 'ur' ? 'خون میں شوگر کا باقاعدگی سے معائنہ کروائیں اور میٹھی چیزوں سے پرہیز کریں۔' :
+          'Monitor your fasting blood glucose regularly. Maintain balanced dietary fiber, 30 minutes daily walking, and continue prescribed medications.',
+        responseAction: 
+          lang === 'mr' ? 'मोफत Fasting Sugar Lab Test बुक करा किंवा औषधे रिफिल करा.' : 
+          lang === 'hi' ? 'मुफ्त ब्लड शुगर लैब टेस्ट बुक करें या दवाएं रीफिल करवाएं।' : 
+          lang === 'or' ? 'ମାଗଣା ବ୍ଲଡ୍ ସୁଗାର ଲ୍ୟାବ୍ ଟେଷ୍ଟ ବୁକ୍ କରନ୍ତୁ।' : 
+          lang === 'bn' ? 'বিনামূল্যে ব্লাড সুগার টেস্ট বুক করুন।' :
+          lang === 'ur' ? 'فری بلڈ شوگر لیب ٹیسٹ بک کریں۔' :
+          'Book a free fasting blood sugar test or request prescription refill.',
+        isEmergency: false
+      };
+    }
+
+    // 8. Joint Pain / Arthritis
+    if (lower.includes('joint') || lower.includes('arthritis') || lower.includes('knee') || lower.includes('घुटने') || lower.includes('सांधे') || lower.includes('ଗଣ୍ଠି') || lower.includes('হাঁটু') || lower.includes('जोड़ों')) {
+      return {
+        symptomCode: 'JOINT_PAIN',
+        durationDays,
+        detectedEntities: ['Joint Pain', 'Arthritis', 'Mobility Support'],
+        severity: 'LOW',
+        sourceLanguage: lang,
+        understoodSummaryEn: 'Joint & knee pain evaluation',
+        understoodSummaryLocalized: 
+          lang === 'mr' ? 'सांधेदुखी व गुडघेदुखी सल्ला' : 
+          lang === 'hi' ? 'जोड़ों और घुटनों के दर्द की सलाह' : 
+          lang === 'or' ? 'ଗଣ୍ଠି ଓ ଆଣ୍ଠୁ ଯନ୍ତ୍ରଣା ପରାମର୍ଶ' : 
+          lang === 'bn' ? 'হাঁটু ও জয়েন্টে ব্যথার পরামর্শ' :
+          lang === 'ur' ? 'جوڑوں اور گھٹنوں کے درد کی رہنمائی' :
+          'Joint & knee pain',
+        responseGuidance: 
+          lang === 'mr' ? 'सांधेदुखीसाठी कोमट पाण्याने शेक घ्या, जास्त वजन उचलणे टाळा आणि कॅल्शियमयुक्त आहार घ्या. गरज असल्यास फिजिओथेरपी सुरू करा.' : 
+          lang === 'hi' ? 'जोड़ों के दर्द में गर्म पानी से सिकाई करें, ज्यादा वजन उठाने से बचें और कैल्शियम युक्त आहार लें।' : 
+          lang === 'or' ? 'ଗରମ ପାଣିରେ ସେକ ଦିଅନ୍ତୁ ଏବଂ ଅଧିକ ଭାରି ଜିନିଷ ଉଠାନ୍ତୁ ନାହିଁ।' : 
+          lang === 'bn' ? 'জয়েন্টে ব্যথায় গরম সেঁক দিন এবং পুষ্টিকর খাবার খান।' :
+          lang === 'ur' ? 'جوڑوں کے درد کے لیے گرم پانی کا ٹکور کریں اور زیادہ وزن نہ اٹھائیں۔' :
+          'Apply warm compress, perform low-impact joint movements, and take Vitamin D/Calcium supplements as advised.',
+        responseAction: 
+          lang === 'mr' ? 'डॉक्टरांशी ऑनलाइन अपॉइंटमेंट बुक करा.' : 
+          lang === 'hi' ? 'डॉक्टर से ऑनलाइन परामर्श लें।' : 
+          lang === 'or' ? 'ଡାକ୍ତରଙ୍କ ସହିତ ପରାମର୍ଶ କରନ୍ତୁ।' : 
+          lang === 'bn' ? 'ডাক্তারের সাথে পরামর্শ করুন।' :
+          lang === 'ur' ? 'ڈاکٹر سے اپائنٹمنٹ لیں۔' :
+          'Schedule a teleconsultation with a general physician.',
+        isEmergency: false
+      };
+    }
+
+    // 9. Government Schemes & Free Health Services (PM-JAY / MJPJAY)
+    if (lower.includes('scheme') || lower.includes('yojana') || lower.includes('free') || lower.includes('card') || lower.includes('mjpjay') || lower.includes('pmjay') || lower.includes('योजना') || lower.includes('मोफत') || lower.includes('ମାଗଣା')) {
+      return {
+        symptomCode: 'GOV_SCHEME',
+        durationDays,
+        detectedEntities: ['PM-JAY', 'MJPJAY', '100% Cashless Treatment'],
+        severity: 'LOW',
+        sourceLanguage: lang,
+        understoodSummaryEn: 'Government Health Schemes & Cashless Benefits',
+        understoodSummaryLocalized: 
+          lang === 'mr' ? 'शासकीय आरोग्य योजना व मोफत उपचार' : 
+          lang === 'hi' ? 'सरकारी स्वास्थ्य योजनाएं व कैशलेस इलाज' : 
+          lang === 'or' ? 'ସରକାରୀ ସ୍ୱାସ୍ଥ୍ୟ ଯୋଜନା ଓ ମାଗଣା ଚିକିତ୍ସା' : 
+          lang === 'bn' ? 'সরকারি স্বাস্থ্য প্রকল্প ও বিনামূল্যে চিকিৎসা' :
+          lang === 'ur' ? 'سرکاری ہیلتھ اسکیم اور مفت علاج' :
+          'Government Health Schemes',
+        responseGuidance: 
+          lang === 'mr' ? 'महात्मा ज्योतिराव फुले जन आरोग्य योजना (MJPJAY) व PM-JAY अंतर्गत सर्व शिधापत्रिका धारकांना ५ लाख रुपयांपर्यंत मोफत कॅशलेस उपचार मिळतात.' : 
+          lang === 'hi' ? 'महात्मा ज्योतिराव फुले योजना और आयुष्मान भारत (PM-JAY) के तहत ₹5 लाख तक का अस्पताल में मुफ्त कैशलेस इलाज उपलब्ध है।' : 
+          lang === 'or' ? 'ସରକାରୀ ଯୋଜନା ଅଧୀନରେ ୫ ଲକ୍ଷ ଟଙ୍କା ପର୍ଯ୍ୟନ୍ତ ମାଗଣା କ୍ୟାସଲେସ୍ ଚିକିତ୍ସା ସୁବିଧା ଉପଲବ୍ଧ।' : 
+          lang === 'bn' ? 'সরকারি স্বাস্থ্য প্রকল্পের আওতায় ৫ লক্ষ টাকা পর্যন্ত বিনামূল্যে চিকিৎসা পাওয়া যায়।' :
+          lang === 'ur' ? 'سرکاری اسکیم کے تحت 5 لاکھ روپے تک کا مفت علاج دستیاب ہے۔' :
+          'All Maharashtra citizens are eligible for up to ₹5 Lakhs cashless hospital treatment under MJPJAY and Ayushman Bharat PM-JAY.',
+        responseAction: 
+          lang === 'mr' ? 'तुमचे ABHA व योजना पात्रता कार्ड तपासा.' : 
+          lang === 'hi' ? 'अपनी आयुष्मान योजना पात्रता चेक करें।' : 
+          lang === 'or' ? 'ଆପଣଙ୍କ ଯୋଜନା ଯୋଗ୍ୟତା ଯାଞ୍ଚ କରନ୍ତୁ।' : 
+          lang === 'bn' ? 'আপনার যোজনার যোগ্যতা যাচাই করুন।' :
+          lang === 'ur' ? 'اپنی اسکیم کی اہلیت چیک کریں۔' :
+          'Check your scheme coverage and eligible network hospitals.',
+        isEmergency: false,
+        matchedScheme: 'Mahatma Jyotirao Phule Jan Arogya Yojana (MJPJAY)'
+      };
+    }
+
     // Default General Consultation
     return {
       symptomCode: 'GENERAL_CONSULT',
       detectedEntities: ['General Inpatient / Outpatient Consultation'],
       severity: 'LOW',
       sourceLanguage: lang,
-      understoodSummaryEn: 'General Health Inquiry',
+      understoodSummaryEn: `Health Guidance for: "${input.slice(0, 40)}"`,
       understoodSummaryLocalized: 
-        lang === 'mr' ? 'सामान्य आरोग्य सल्ला' : 
-        lang === 'hi' ? 'सामान्य स्वास्थ्य परामर्श' : 
-        lang === 'or' ? 'ସାଧାରଣ ସ୍ୱାସ୍ଥ୍ୟ ପରାମର୍ଶ' : 
-        lang === 'bn' ? 'সাধারণ স্বাস্থ্য পরামর্শ' :
-        lang === 'ur' ? 'عام طبی مشورہ' :
-        'General Health Inquiry',
+        lang === 'mr' ? `आरोग्य सल्ला: "${input.slice(0, 30)}"` : 
+        lang === 'hi' ? `स्वास्थ्य परामर्श: "${input.slice(0, 30)}"` : 
+        lang === 'or' ? `ସ୍ୱାସ୍ଥ୍ୟ ପରାମର୍ଶ: "${input.slice(0, 30)}"` : 
+        lang === 'bn' ? `স্বাস্থ্য পরামর্শ: "${input.slice(0, 30)}"` :
+        lang === 'ur' ? `طبی مشورہ: "${input.slice(0, 30)}"` :
+        `Health Guidance: "${input.slice(0, 30)}"`,
       responseGuidance: 
-        lang === 'mr' ? 'तुमच्या लक्षणांनुसार योग्य ती काळजी घ्या. तुम्ही १-क्लिक द्वारे तज्ज्ञ डॉक्टरांशी व्हिडिओ कन्सल्टेशन बुक करू शकता.' : 
-        lang === 'hi' ? 'अपने लक्षणों के अनुसार प्राथमिक देखभाल रखें। आप डॉक्टर से ऑनलाइन टेलीकंसल्टेशन बुक कर सकते हैं।' : 
-        lang === 'or' ? 'ଆପଣ ଡାକ୍ତରଙ୍କ ସହିତ ଅନଲାଇନ୍ ଭିଡିଓ ପରାମର୍ଶ ବୁକ୍ କରିପାରିବେ।' : 
-        lang === 'bn' ? 'আপনার লক্ষণ অনুযায়ী প্রাথমিক যত্ন নিন। আপনি অনলাইনে ডাক্তারের পরামর্শ নিতে পারেন।' :
-        lang === 'ur' ? 'اپنی علامات کے مطابق احتیاط کریں۔ آپ 1 کلک میں ڈاکٹر سے ٹیلی کنسلٹیشن بک کر سکتے ہیں۔' :
-        'Thank you for sharing your symptom. You can book an online doctor teleconsultation or discuss at your routine ASHA check-in.',
+        lang === 'mr' ? `तुमच्या विचारणेनुसार प्राथमिक आरोग्य सल्ला: पुरेशी विश्रांती घ्या, पाणी प्या आणि १-टॅप द्वारे तज्ज्ञ डॉक्टरांशी मोफत व्हिडिओ कन्सल्टेशन सुरू करा.` : 
+        lang === 'hi' ? `आपके स्वास्थ्य परामर्श के लिए: पर्याप्त आराम करें, स्वच्छ पानी पिएं और ऑनलाइन विशेषज्ञ डॉक्टर से तुरंत वीडियो परामर्श लें।` : 
+        lang === 'or' ? `ଆପଣଙ୍କ ସ୍ୱାସ୍ଥ୍ୟ ଲକ୍ଷଣ ଅନୁଯାୟୀ ବିଶ୍ରାମ ନିଅନ୍ତୁ ଏବଂ ଅନଲାଇନ୍ ଡାକ୍ତରଙ୍କ ସହିତ ଭିଡିଓ ପରାମର୍ଶ ବୁକ୍ କରନ୍ତୁ।` : 
+        lang === 'bn' ? `আপনার লক্ষণ অনুযায়ী বিশ্রাম নিন এবং অনলাইন ডাক্তারের সাথে পরামর্শ শুরু করুন।` :
+        lang === 'ur' ? `اپنی علامات کے مطابق احتیاط کریں۔ آپ 1 کلک میں ڈاکٹر سے ٹیلی کنسلٹیشن لے سکتے ہیں۔` :
+        `Based on your query, maintain hydration and proper rest. You can start an immediate 1-tap teleconsultation with a government specialist doctor.`,
       responseAction: 
         lang === 'mr' ? '१ टॅप मध्ये ऑनलाइन डॉक्टर अपॉइंटमेंट बुक करा.' : 
         lang === 'hi' ? '1 टैप में डॉक्टर अपॉइंटमेंट बुक करें।' : 
@@ -433,6 +605,74 @@ class BhashiniEngine {
       matchedScheme: intent.matchedScheme,
       escalateToAsha: intent.severity !== 'LOW'
     };
+  }
+
+  /**
+   * 8. Human-to-Human Live Language Bridge
+   */
+  public liveBridgeTranslate(text: string, fromLang: Language, toLang: Language): string {
+    if (!text || fromLang === toLang) return text;
+    
+    // Odia -> Hindi
+    if (fromLang === 'or' && toLang === 'hi') {
+      if (text.includes('ମୋତେ ଛାତିରେ ବ୍ୟଥା') || text.includes('ଯନ୍ତ୍ରଣା') || text.includes('ଛାତିରେ')) return 'मुझे सीने में दर्द हो रहा है और सांस लेने में तकलीफ हो रही है।';
+      if (text.includes('ଜ୍ୱର') || text.includes('ଥଣ୍ଡା')) return 'मुझे दो दिन से तेज बुखार और ठंड लग रही है।';
+      if (text.includes('ମୁଣ୍ଡ') || text.includes('ଚକ୍କର')) return 'मुझे तेज सिरदर्द और चक्कर आ रहा है।';
+      if (text.includes('ଔଷଧ')) return 'मुझे अपनी दवा के बारे में पूछना है।';
+      if (text.includes('ପେଟ')) return 'मुझे पेट में तेज दर्द हो रहा है।';
+      return `[अनुवादित]: ${text} (रोगी द्वारा ओड़िया में बताया गया)`;
+    }
+
+    // Hindi -> Odia
+    if (fromLang === 'hi' && toLang === 'or') {
+      if (text.includes('दवा') || text.includes('गोली') || text.includes('भोजन')) return 'ଆପଣଙ୍କୁ ଏହି ଔଷଧ ଦିନକୁ ଦୁଇଥର ଖାଇବା ପରେ ନେବାକୁ ପଡିବ।';
+      if (text.includes('आराम') || text.includes('विश्राम')) return 'ଆପଣଙ୍କୁ ସମ୍ପୂର୍ଣ୍ଣ ବିଶ୍ରାମ ନେବାକୁ ପରାମର୍ଶ ଦିଆଯାଇଛି।';
+      if (text.includes('बुखार') || text.includes('तापमान')) return 'ଆପଣଙ୍କ ଜ୍ୱର ମାପିବା ପାଇଁ ଥର୍ମୋମିଟର ବ୍ୟହାର କରନ୍ତୁ।';
+      if (text.includes('अस्पताल') || text.includes('जांच')) return 'ଆପଣଙ୍କୁ ନିକଟସ୍ଥ ପ୍ରାଥମିକ ସ୍ୱାସ୍ଥ୍ୟ କେନ୍ଦ୍ର (PHC) କୁ ଯିବାକୁ ପଡିବ।';
+      if (text.includes('पानी') || text.includes('ओआरएस')) return 'ପ୍ରଚୁର ପାଣି ପିଅନ୍ତୁ ଏବଂ ORS ଘୋଳ ନିଅନ୍ତୁ।';
+      return `[ଅନୁବାଦିତ]: ${text} (ସ୍ୱାସ୍ଥ୍ୟ କର୍ମୀଙ୍କ ନିର୍ଦ୍ଦେଶ)`;
+    }
+
+    // Bengali -> Hindi
+    if (fromLang === 'bn' && toLang === 'hi') {
+      if (text.includes('জ্বর') || text.includes('ঠান্ডা')) return 'मुझे तीन दिन से तेज बुखार और ठंड लग रही है।';
+      if (text.includes('বুকে ব্যথা') || text.includes('শ্বাসকষ্ট')) return 'सीने में दर्द और सांस लेने में तकलीफ हो रही है।';
+      if (text.includes('মাথা')) return 'मुझे तेज सिरदर्द हो रहा है।';
+      return `[अनुवादित]: ${text} (रोगी द्वारा बांग्ला में)`;
+    }
+
+    // Urdu -> Hindi
+    if (fromLang === 'ur' && toLang === 'hi') {
+      if (text.includes('بخار')) return 'मुझे तीन दिन से तेज बुखार है।';
+      if (text.includes('سینے میں درد')) return 'सीने में दर्द और भारीपन महसूस हो रहा है।';
+      if (text.includes('سر درد')) return 'मुझे तेज सरदर्द हो रहा है।';
+      return `[अनुवादित]: ${text} (रोगी द्वारा उर्दू में)`;
+    }
+
+    // Marathi -> Hindi
+    if (fromLang === 'mr' && toLang === 'hi') {
+      if (text.includes('ताप') || text.includes('थंडी')) return 'मुझे दो दिनों से तेज बुखार और ठंड लग रही है।';
+      if (text.includes('छातीत') || text.includes('दुखत')) return 'सीने में दर्द और सांस लेने में तकलीफ हो रही है।';
+      if (text.includes('डोके')) return 'मुझे तेज सिरदर्द और चक्कर आ रहे हैं।';
+      return `[अनुवादित]: ${text} (रोगी द्वारा मराठी में)`;
+    }
+
+    // Hindi -> Marathi
+    if (fromLang === 'hi' && toLang === 'mr') {
+      if (text.includes('दवा')) return 'तुम्हाला हे औषध दिवसातून दोनदा जेवणानंतर घ्यायचे आहे.';
+      if (text.includes('आराम')) return 'तुम्हाला पूर्ण विश्रांती घेण्याचा सल्ला दिला आहे.';
+      return `[भाषांतरित]: ${text} (आरोग्य कर्मचाऱ्यांचे निर्देश)`;
+    }
+
+    // English -> Any
+    if (fromLang === 'en' && toLang === 'or') {
+      return 'ଆପଣଙ୍କୁ ନିୟମିତ ଔଷଧ ଖାଇବା ଏବଂ ବିଶ୍ରାମ ନେବାକୁ ପରାମର୍ଶ ଦିଆଯାଇଛି।';
+    }
+    if (fromLang === 'en' && toLang === 'hi') {
+      return 'कृपया अपनी दवाएं समय पर लें और पूरा आराम करें।';
+    }
+
+    return text;
   }
 
   /**
@@ -719,40 +959,6 @@ class BhashiniEngine {
       }
       this.recognition = null;
     }
-  }
-
-  /**
-   * 8. Human-to-Human Live Language Bridge
-   */
-  public liveBridgeTranslate(text: string, fromLang: Language, toLang: Language): string {
-    if (!text || fromLang === toLang) return text;
-    
-    if (fromLang === 'or' && toLang === 'hi') {
-      if (text.includes('ମୋତେ ଛାତିରେ ବ୍ୟଥା') || text.includes('ଯନ୍ତ୍ରଣା')) return 'मुझे सीने में दर्द हो रहा है और सांस लेने में तकलीफ हो रही है।';
-      if (text.includes('ଜ୍ୱର')) return 'मुझे दो दिन से बुखार और ठंड लग रही है।';
-      if (text.includes('ମୁଣ୍ଡ')) return 'मुझे तेज सिरदर्द और चक्कर आ रहा है।';
-      return 'मरीज ने अपनी स्वास्थ्य समस्या बताई है।';
-    }
-
-    if (fromLang === 'hi' && toLang === 'or') {
-      if (text.includes('दवा')) return 'ଆପଣଙ୍କୁ ଏହି ଔଷଧ ଦିନକୁ ଦୁଇଥର ଭୋଜନ ପରେ ନେବାକୁ ପଡିବ।';
-      if (text.includes('आराम')) return 'ଆପଣଙ୍କୁ ସମ୍ପୂର୍ଣ୍ଣ ବିଶ୍ରାମ ନେବାକୁ ପରାମର୍ଶ ଦିଆଯାଇଛି।';
-      return 'ଡାକ୍ତରଙ୍କ ନିର୍ଦ୍ଦେଶ ପାଳନ କରନ୍ତୁ ଏବଂ ଔଷଧ ସମୟରେ ନିଅନ୍ତୁ।';
-    }
-
-    if (fromLang === 'bn' && toLang === 'hi') {
-      if (text.includes('জ্বর')) return 'मुझे तीन दिन से तेज बुखार है।';
-      if (text.includes('বুকে ব্যথা')) return 'सीने में दर्द और सांस लेने में तकलीफ हो रही है।';
-      return 'मरीज ने अपनी स्थिति बताई है।';
-    }
-
-    if (fromLang === 'ur' && toLang === 'hi') {
-      if (text.includes('بخار')) return 'मुझे तीन दिन से तेज बुखार है।';
-      if (text.includes('سینے میں درد')) return 'सीने में दर्द और भारीपन महसूस हो रहा है।';
-      return 'मरीज ने अपनी समस्या बताई है।';
-    }
-
-    return text;
   }
 }
 

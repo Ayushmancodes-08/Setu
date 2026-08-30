@@ -13,6 +13,7 @@ import {
   AlertCircle, 
   PhoneCall, 
   Mic, 
+  MicOff,
   Wifi, 
   WifiOff, 
   RefreshCw, 
@@ -32,7 +33,8 @@ import {
   AlertTriangle,
   Languages,
   Volume2,
-  Check
+  Check,
+  Radio
 } from 'lucide-react';
 
 export const AshaPortal: React.FC = () => {
@@ -53,6 +55,17 @@ export const AshaPortal: React.FC = () => {
   const [visitTemp, setVisitTemp] = useState<string>('98.4');
   const [visitGlucose, setVisitGlucose] = useState<string>('142');
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>(['Headache', 'Dizziness']);
+  const [availableSymptoms, setAvailableSymptoms] = useState<string[]>([
+    'Headache',
+    'Dizziness',
+    'Fever > 48h',
+    'Chest Discomfort',
+    'Swelling (Edema)',
+    'Cough / Breathlessness',
+    'Severe Fatigue'
+  ]);
+  const [newSymptomInput, setNewSymptomInput] = useState<string>('');
+  const [isAddingSymptom, setIsAddingSymptom] = useState<boolean>(false);
   const [visitNotes, setVisitNotes] = useState<string>('Patient counseled on salt restriction and daily Amlodipine tablet adherence.');
   const [aiTriageStatus, setAiTriageStatus] = useState<'ROUTINE' | 'FOLLOW_UP' | 'URGENT'>('FOLLOW_UP');
 
@@ -67,7 +80,8 @@ export const AshaPortal: React.FC = () => {
   const [bridgeChoTranslated, setBridgeChoTranslated] = useState<string>('मुझे सीने में दर्द हो रहा है और सांस लेने में तकलीफ हो रही है।');
   const [bridgeChoInput, setBridgeChoInput] = useState<string>('आपको यह दवा दिन में दो बार भोजन के बाद लेनी है।');
   const [bridgePatientTranslated, setBridgePatientTranslated] = useState<string>('ଆପଣଙ୍କୁ ଏହି ଔଷଧ ଦିନକୁ ଦୁଇଥର ଖାଇବା ପରେ ନେବାକୁ ପଡିବ।');
-  const [isBridgeListening, setIsBridgeListening] = useState<boolean>(false);
+  const [isPatientListening, setIsPatientListening] = useState<boolean>(false);
+  const [isChoListening, setIsChoListening] = useState<boolean>(false);
 
   // New Patient Registration State
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState<boolean>(false);
@@ -91,6 +105,21 @@ export const AshaPortal: React.FC = () => {
     } else {
       setSelectedSymptoms([...selectedSymptoms, sym]);
     }
+  };
+
+  const handleAddCustomSymptom = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = newSymptomInput.trim();
+    if (!trimmed) return;
+    if (!availableSymptoms.includes(trimmed)) {
+      setAvailableSymptoms(prev => [...prev, trimmed]);
+    }
+    if (!selectedSymptoms.includes(trimmed)) {
+      setSelectedSymptoms(prev => [...prev, trimmed]);
+    }
+    setNewSymptomInput('');
+    setIsAddingSymptom(false);
+    showToast(`Added observed symptom: "${trimmed}"`);
   };
 
   const handleStartFieldVisit = (patientObj: any) => {
@@ -140,17 +169,74 @@ export const AshaPortal: React.FC = () => {
   };
 
   // Live Language Bridge Translation Handlers (USE CASE #5)
-  const handleTranslatePatientToCho = (text: string) => {
+  const handleTranslatePatientToCho = (text: string, pLang = bridgePatientLang, cLang = bridgeChoLang) => {
     setBridgePatientInput(text);
-    const trans = bhashiniAI.liveBridgeTranslate(text, bridgePatientLang, bridgeChoLang);
+    const trans = bhashiniAI.liveBridgeTranslate(text, pLang, cLang);
     setBridgeChoTranslated(trans);
   };
 
-  const handleTranslateChoToPatient = (text: string) => {
+  const handleTranslateChoToPatient = (text: string, cLang = bridgeChoLang, pLang = bridgePatientLang) => {
     setBridgeChoInput(text);
-    const trans = bhashiniAI.liveBridgeTranslate(text, bridgeChoLang, bridgePatientLang);
+    const trans = bhashiniAI.liveBridgeTranslate(text, cLang, pLang);
     setBridgePatientTranslated(trans);
-    bhashiniAI.tts(trans, bridgePatientLang);
+  };
+
+  // Left Side: Patient Speech-to-Text handler
+  const handleStartPatientVoice = () => {
+    if (isPatientListening) {
+      bhashiniAI.stopASR();
+      setIsPatientListening(false);
+      return;
+    }
+    if (isChoListening) {
+      bhashiniAI.stopASR();
+      setIsChoListening(false);
+    }
+    setIsPatientListening(true);
+    showToast(`🎙️ Patient Mic Active: Listening in ${bridgePatientLang === 'or' ? 'Odia (ଓଡ଼ିଆ)' : bridgePatientLang}...`);
+    bhashiniAI.asr(
+      bridgePatientLang,
+      (transcript) => {
+        setBridgePatientInput(transcript);
+        const trans = bhashiniAI.liveBridgeTranslate(transcript, bridgePatientLang, bridgeChoLang);
+        setBridgeChoTranslated(trans);
+      },
+      (err) => {
+        console.warn('Patient Voice ASR notice:', err);
+      },
+      () => {
+        setIsPatientListening(false);
+      }
+    );
+  };
+
+  // Right Side: CHO / ASHA Speech-to-Text handler
+  const handleStartChoVoice = () => {
+    if (isChoListening) {
+      bhashiniAI.stopASR();
+      setIsChoListening(false);
+      return;
+    }
+    if (isPatientListening) {
+      bhashiniAI.stopASR();
+      setIsPatientListening(false);
+    }
+    setIsChoListening(true);
+    showToast(`🎙️ CHO/ASHA Mic Active: Listening in ${bridgeChoLang === 'hi' ? 'Hindi (हिन्दी)' : bridgeChoLang}...`);
+    bhashiniAI.asr(
+      bridgeChoLang,
+      (transcript) => {
+        setBridgeChoInput(transcript);
+        const trans = bhashiniAI.liveBridgeTranslate(transcript, bridgeChoLang, bridgePatientLang);
+        setBridgePatientTranslated(trans);
+      },
+      (err) => {
+        console.warn('CHO Voice ASR notice:', err);
+      },
+      () => {
+        setIsChoListening(false);
+      }
+    );
   };
 
   const handleCreateReferral = async (e: React.FormEvent) => {
@@ -648,24 +734,79 @@ export const AshaPortal: React.FC = () => {
             </div>
 
             {/* Symptoms Tagging */}
-            <div className="space-y-2 text-xs">
-              <h4 className="font-black text-xs text-slate-900 uppercase tracking-wider">2. Observed Symptoms:</h4>
-              <div className="flex flex-wrap gap-2">
-                {['Headache', 'Dizziness', 'Fever > 48h', 'Chest Discomfort', 'Swelling (Edema)', 'Cough / Breathlessness', 'Severe Fatigue'].map((sym) => {
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between">
+                <h4 className="font-black text-xs text-slate-900 uppercase tracking-wider">2. Observed Symptoms:</h4>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  {selectedSymptoms.length} selected
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {availableSymptoms.map((sym) => {
                   const isChecked = selectedSymptoms.includes(sym);
                   return (
                     <button
                       key={sym}
                       type="button"
                       onClick={() => toggleSymptom(sym)}
-                      className={`px-3 py-1.5 rounded-xl border font-bold transition-all ${
-                        isChecked ? 'bg-rose-100 text-rose-900 border-rose-300' : 'bg-slate-50 text-slate-700 border-slate-200'
+                      className={`px-3 py-1.5 rounded-xl border font-bold transition-all flex items-center gap-1 shadow-2xs ${
+                        isChecked ? 'bg-rose-100 text-rose-900 border-rose-300 ring-1 ring-rose-200' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                       }`}
                     >
                       {isChecked ? `✓ ${sym}` : `+ ${sym}`}
                     </button>
                   );
                 })}
+
+                {/* + Add More Symptoms input / trigger */}
+                {isAddingSymptom ? (
+                  <form 
+                    onSubmit={handleAddCustomSymptom} 
+                    className="flex items-center gap-1.5 bg-white border-2 border-blue-400 rounded-xl p-1 shadow-xs"
+                  >
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Type new symptom..."
+                      value={newSymptomInput}
+                      onChange={(e) => setNewSymptomInput(e.target.value)}
+                      className="px-2.5 py-1 text-xs font-semibold text-slate-900 bg-transparent focus:outline-hidden min-w-[170px]"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setIsAddingSymptom(false);
+                          setNewSymptomInput('');
+                        }
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-2.5 py-1 rounded-lg text-[11px] transition-colors flex items-center gap-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddingSymptom(false);
+                        setNewSymptomInput('');
+                      }}
+                      className="p-1 text-slate-400 hover:text-slate-600 rounded-md"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </form>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingSymptom(true)}
+                    className="px-3 py-1.5 rounded-xl border-2 border-dashed border-blue-400 bg-blue-50/50 hover:bg-blue-100 text-blue-700 font-extrabold text-xs transition-all flex items-center gap-1 shadow-2xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>+ Add More Symptoms</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -704,87 +845,254 @@ export const AshaPortal: React.FC = () => {
         {/* TAB 3: USE CASE #5 — BHASHINI LIVE LANGUAGE BRIDGE */}
         {activeTab === 'language_bridge' && (
           <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-900 px-2.5 py-0.5 rounded-full border border-blue-300">
                   USE CASE #5 — BHASHINI Anuvaad Bridge
                 </span>
                 <h3 className="font-extrabold text-xl text-slate-900 mt-1">Live ASHA / CHO ↔ Patient Language Bridge</h3>
                 <p className="text-xs text-slate-500">
-                  Instant bidirectional translation and voice synthesis for tribal & linguistic minority patient communication.
+                  Instant bidirectional speech-to-text translation and voice synthesis for tribal & linguistic minority patient communication.
                 </p>
+              </div>
+
+              <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700">
+                <Radio className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+                <span>Real-Time Bilateral Speech Bridge</span>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
-              {/* Patient Side (e.g. Speaks Odia) */}
-              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4 flex flex-col justify-between">
+              {/* Patient Side (e.g. Speaks Odia / Tribal / Regional) */}
+              <div className={`rounded-2xl border p-5 space-y-4 flex flex-col justify-between transition-all ${
+                isPatientListening ? 'bg-blue-50/80 border-blue-400 ring-2 ring-blue-300 shadow-md' : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-extrabold text-xs text-slate-800">👤 Patient Language (e.g. Odia)</span>
-                    <span className="text-[10px] bg-slate-200 font-mono font-bold px-2 py-0.5 rounded">
-                      Language: Odia (ଓଡ଼ିଆ)
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-extrabold text-xs text-slate-800 flex items-center gap-1.5">
+                      <span>👤</span> Patient Voice Input
                     </span>
+                    
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-slate-500 font-medium">Language:</span>
+                      <select
+                        value={bridgePatientLang}
+                        onChange={(e) => {
+                          const newLang = e.target.value as Language;
+                          setBridgePatientLang(newLang);
+                          handleTranslatePatientToCho(bridgePatientInput, newLang, bridgeChoLang);
+                        }}
+                        className="text-[11px] bg-white border border-slate-300 font-bold px-2 py-1 rounded-lg text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-blue-500"
+                      >
+                        <option value="or">Odia (ଓଡ଼ିଆ)</option>
+                        <option value="mr">Marathi (मराठी)</option>
+                        <option value="bn">Bengali (বাংলা)</option>
+                        <option value="ur">Urdu (اردو)</option>
+                        <option value="hi">Hindi (हिन्दी)</option>
+                        <option value="en">English</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Speech to Text Mic Button for Patient */}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleStartPatientVoice}
+                      className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs ${
+                        isPatientListening 
+                          ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse' 
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      {isPatientListening ? (
+                        <>
+                          <MicOff className="w-4 h-4" />
+                          <span>🔴 Listening Patient... Click to Stop</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="w-4 h-4" />
+                          <span>🎤 Speak to Text (Patient Mic)</span>
+                        </>
+                      )}
+                    </button>
+                    {isPatientListening && (
+                      <p className="text-[10px] text-red-600 font-semibold text-center mt-1 animate-pulse">
+                        🎙️ Patient is speaking... converting speech to text in real-time
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Quick Preset Phrases for Instant Testing */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Quick Voice Test Phrases:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleTranslatePatientToCho('ମୋତେ ଛାତିରେ ବ୍ୟଥା ହେଉଛି ଏବଂ ନିଶ୍ୱାସ ନେବାରେ କଷ୍ଟ ହେଉଛି।')}
+                        className="text-[10px] bg-white hover:bg-blue-100 border border-slate-200 hover:border-blue-300 text-slate-700 font-medium px-2 py-1 rounded-lg transition-colors"
+                      >
+                        ଛାତିରେ ଯନ୍ତ୍ରଣା (Chest Pain)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleTranslatePatientToCho('ମୋତେ ଦୁଇ ଦିନ ହେଲା ଜ୍ୱର ଏବଂ ଥଣ୍ଡା ହେଉଛି।')}
+                        className="text-[10px] bg-white hover:bg-blue-100 border border-slate-200 hover:border-blue-300 text-slate-700 font-medium px-2 py-1 rounded-lg transition-colors"
+                      >
+                        ଜ୍ୱର ହେଉଛି (Fever)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleTranslatePatientToCho('ମୋତେ ଭୀଷଣ ମୁଣ୍ଡ ବିନ୍ଧା ଓ ଚକ୍କର ଆସୁଛି।')}
+                        className="text-[10px] bg-white hover:bg-blue-100 border border-slate-200 hover:border-blue-300 text-slate-700 font-medium px-2 py-1 rounded-lg transition-colors"
+                      >
+                        ମୁଣ୍ଡ ବିନ୍ଧା (Headache)
+                      </button>
+                    </div>
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-slate-500 block mb-1">Patient Speaks:</label>
+                    <label className="text-[11px] font-bold text-slate-500 block mb-1">Patient Speech Transcript / Input:</label>
                     <textarea
                       rows={3}
                       value={bridgePatientInput}
                       onChange={(e) => handleTranslatePatientToCho(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900"
+                      placeholder="Patient voice transcript will appear here..."
+                      className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900 focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 p-3 rounded-xl space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-blue-800 block">CHO / ASHA Hears (Hindi Translation):</span>
+                    <span className="text-[10px] uppercase font-bold text-blue-800 block">CHO / ASHA Hears ({bridgeChoLang.toUpperCase()} Translation):</span>
                     <p className="text-xs font-bold text-blue-950">"{bridgeChoTranslated}"</p>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => bhashiniAI.tts(bridgeChoTranslated, 'hi')}
-                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                  type="button"
+                  onClick={() => bhashiniAI.tts(bridgeChoTranslated, bridgeChoLang)}
+                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs mt-3"
                 >
                   <Volume2 className="w-3.5 h-3.5" />
-                  <span>Listen in Hindi (ASHA)</span>
+                  <span>🔊 Listen in {bridgeChoLang === 'hi' ? 'Hindi' : bridgeChoLang.toUpperCase()} (ASHA/CHO)</span>
                 </button>
               </div>
 
-              {/* CHO Side (e.g. Speaks Hindi) */}
-              <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-4 flex flex-col justify-between">
+              {/* CHO Side (e.g. Speaks Hindi / Regional) */}
+              <div className={`rounded-2xl border p-5 space-y-4 flex flex-col justify-between transition-all ${
+                isChoListening ? 'bg-emerald-50/80 border-emerald-400 ring-2 ring-emerald-300 shadow-md' : 'bg-slate-50 border-slate-200'
+              }`}>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-extrabold text-xs text-slate-800">👩‍⚕️ CHO / ASHA Response (Hindi)</span>
-                    <span className="text-[10px] bg-slate-200 font-mono font-bold px-2 py-0.5 rounded">
-                      Language: Hindi (हिन्दी)
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-extrabold text-xs text-slate-800 flex items-center gap-1.5">
+                      <span>👩‍⚕️</span> CHO / ASHA Response Voice Input
                     </span>
+                    
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-slate-500 font-medium">Language:</span>
+                      <select
+                        value={bridgeChoLang}
+                        onChange={(e) => {
+                          const newLang = e.target.value as Language;
+                          setBridgeChoLang(newLang);
+                          handleTranslateChoToPatient(bridgeChoInput, newLang, bridgePatientLang);
+                        }}
+                        className="text-[11px] bg-white border border-slate-300 font-bold px-2 py-1 rounded-lg text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                      >
+                        <option value="hi">Hindi (हिन्दी)</option>
+                        <option value="mr">Marathi (मराठी)</option>
+                        <option value="or">Odia (ଓଡ଼ିଆ)</option>
+                        <option value="bn">Bengali (বাংলা)</option>
+                        <option value="ur">Urdu (اردو)</option>
+                        <option value="en">English</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Speech to Text Mic Button for CHO / ASHA */}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleStartChoVoice}
+                      className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs ${
+                        isChoListening 
+                          ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse' 
+                          : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      }`}
+                    >
+                      {isChoListening ? (
+                        <>
+                          <MicOff className="w-4 h-4" />
+                          <span>🔴 Listening CHO/ASHA... Click to Stop</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="w-4 h-4" />
+                          <span>🎤 Speak to Text (CHO/ASHA Mic)</span>
+                        </>
+                      )}
+                    </button>
+                    {isChoListening && (
+                      <p className="text-[10px] text-red-600 font-semibold text-center mt-1 animate-pulse">
+                        🎙️ CHO/ASHA is speaking directions... converting speech to text in real-time
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Quick Preset Phrases for Instant Testing */}
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Quick CHO Voice Presets:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleTranslateChoToPatient('आपको यह दवा दिन में दो बार भोजन के बाद लेनी है।')}
+                        className="text-[10px] bg-white hover:bg-emerald-100 border border-slate-200 hover:border-emerald-300 text-slate-700 font-medium px-2 py-1 rounded-lg transition-colors"
+                      >
+                        दवा भोजन के बाद लें (Medication)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleTranslateChoToPatient('आपको पूरा आराम करने की सलाह दी जाती है।')}
+                        className="text-[10px] bg-white hover:bg-emerald-100 border border-slate-200 hover:border-emerald-300 text-slate-700 font-medium px-2 py-1 rounded-lg transition-colors"
+                      >
+                        पूरा आराम करें (Rest)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleTranslateChoToPatient('जांच के लिए तुरंत प्राथमिक स्वास्थ्य केंद्र (PHC) जाएं।')}
+                        className="text-[10px] bg-white hover:bg-emerald-100 border border-slate-200 hover:border-emerald-300 text-slate-700 font-medium px-2 py-1 rounded-lg transition-colors"
+                      >
+                        PHC अस्पताल जाएं (Referral)
+                      </button>
+                    </div>
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-slate-500 block mb-1">CHO Speaks Directions:</label>
+                    <label className="text-[11px] font-bold text-slate-500 block mb-1">CHO Directions Transcript / Input:</label>
                     <textarea
                       rows={3}
                       value={bridgeChoInput}
                       onChange={(e) => handleTranslateChoToPatient(e.target.value)}
-                      className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900"
+                      placeholder="CHO voice transcript will appear here..."
+                      className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs text-slate-900 focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
 
                   <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-emerald-800 block">Patient Hears (Odia Translation):</span>
+                    <span className="text-[10px] uppercase font-bold text-emerald-800 block">Patient Hears ({bridgePatientLang.toUpperCase()} Translation):</span>
                     <p className="text-xs font-bold text-emerald-950">"{bridgePatientTranslated}"</p>
                   </div>
                 </div>
 
                 <button
-                  onClick={() => bhashiniAI.tts(bridgePatientTranslated, 'or')}
-                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                  type="button"
+                  onClick={() => bhashiniAI.tts(bridgePatientTranslated, bridgePatientLang)}
+                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs mt-3"
                 >
                   <Volume2 className="w-3.5 h-3.5" />
-                  <span>🔊 Play Voice to Patient in Odia</span>
+                  <span>🔊 Play Voice to Patient in {bridgePatientLang === 'or' ? 'Odia' : bridgePatientLang.toUpperCase()}</span>
                 </button>
               </div>
 

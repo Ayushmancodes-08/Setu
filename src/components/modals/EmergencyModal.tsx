@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useHealthData } from '../../context/HealthDataContext';
 import { MAHARASHTRA_FACILITIES } from '../../data/mockData';
+import { bhashiniAI } from '../../services/bhashiniService';
 import { 
   PhoneCall, 
   X, 
@@ -22,7 +23,12 @@ import {
   AlertOctagon,
   Shield,
   Hospital,
-  Ambulance
+  Ambulance,
+  Mic,
+  MicOff,
+  Sparkles,
+  Flame,
+  Volume2
 } from 'lucide-react';
 
 type ReferralLeg = {
@@ -42,12 +48,18 @@ const REFERRAL_CHAIN: ReferralLeg[] = [
 ];
 
 const FIRST_AID_CARDS = [
-  { color: 'red', title: 'Heart Attack / Chest Pain', steps: ['Sit patient upright, loosen clothing', 'Give Aspirin 300mg chewable (if not allergic)', 'Do NOT give water / food', 'Call 108 immediately, start CPR if unconscious'] },
-  { color: 'green', title: 'Snakebite', steps: ['Immobilize the affected limb with splint', 'Remove rings / tight items near bite', 'Do NOT cut, suck, or tourniquet', 'Rush to nearest PHC for ASV (Anti-Snake Venom)'] },
-  { color: 'blue', title: 'Severe Bleeding / Trauma', steps: ['Apply firm continuous direct pressure', 'Elevate limb above heart level', 'Do NOT remove embedded objects', 'Pack wound with clean cloth, call 108'] },
-  { color: 'amber', title: 'Severe Pregnancy Emergency', steps: ['Lay patient on left side', 'Check for bleeding, convulsions', 'Do not give food/water if unconscious', 'Call 108 — state "obstetric emergency"'] },
-  { color: 'purple', title: 'Stroke (Brain Attack)', steps: ['FAST: Face droop, Arm weakness, Speech slur, Time to call 108', 'Do NOT give aspirin for stroke', 'Keep patient calm, do not give anything by mouth', 'Note time when symptoms started'] },
-  { color: 'cyan', title: 'Child Febrile Seizure', steps: ['Lay child on side on soft surface', 'Do not restrain or put anything in mouth', 'Time the seizure — if >5 min, call 108', 'Cool child with tepid sponge after seizure stops'] },
+  { color: 'red', title: 'Heart Attack / Chest Pain', keywords: ['chest', 'heart', 'attack', 'pain', 'छाती', 'हृदय', 'ଦରଜ'], steps: ['Sit patient upright and loosen tight clothing.', 'Give Aspirin 300mg chewable (if not allergic).', 'Do NOT give water, solid food or stimulants.', 'Call 108 immediately; start CPR if patient becomes unresponsive.'] },
+  { color: 'green', title: 'Snakebite (ASV Protocol)', keywords: ['snake', 'bite', 'snakebite', 'सांप', 'ସାପ'], steps: ['Immobilize the affected limb with a splint; keep it below heart level.', 'Remove tight rings, bracelets, and footwear near the bite immediately.', 'Do NOT cut, suck venom, wash vigorously, or apply tight tourniquets.', 'Rush immediately to nearest PHC for Anti-Snake Venom (ASV) within Golden Hour.'] },
+  { color: 'blue', title: 'Severe Bleeding & Trauma', keywords: ['bleed', 'blood', 'trauma', 'cut', 'wound', 'खून', 'ରକ୍ତ'], steps: ['Apply firm, continuous direct pressure with a sterile/clean pad.', 'Elevate the injured limb above heart level if no fracture is suspected.', 'Do NOT pull out deeply embedded penetrating objects.', 'Pack wound firmly and call 108 for emergency resuscitation.'] },
+  { color: 'amber', title: 'Severe Pregnancy / ANC Emergency', keywords: ['pregnant', 'delivery', 'maternal', 'pregnancy', 'गर्भ', 'ଗର୍ଭବତୀ'], steps: ['Place the mother in left lateral tilt (lying on her left side).', 'Ensure open airway and do not administer solid food/water if convulsing.', 'Check for active bleeding, amniotic rupture, or high blood pressure.', 'Call 108 immediately and state "Obstetric Code Red" for priority transfer.'] },
+  { color: 'purple', title: 'Stroke (Brain Attack / FAST)', keywords: ['stroke', 'paralysis', 'fast', 'lakwa', 'পক্ষাঘাত'], steps: ['Perform FAST check: Face droop, Arm weakness, Slurred speech, Time to call 108.', 'Do NOT give aspirin, food, or water to suspected stroke patients.', 'Keep patient calm, head elevated at 30 degrees, note exact symptom start time.', 'Transfer rapidly to nearest CT-scan equipped Civil / District Hospital.'] },
+  { color: 'cyan', title: 'Child Febrile Seizure / Fits', keywords: ['seizure', 'fits', 'child', 'convulsion', 'झटका'], steps: ['Lay the child gently on their side in a safe area away from hard edges.', 'Do NOT restrain the child or insert fingers/spoons into their mouth.', 'Time the seizure — if it lasts longer than 5 minutes, call 108.', 'After seizure stops, sponge with tepid (lukewarm) water to bring down fever.'] },
+  { color: 'red', title: 'Severe Burns & Scalds', keywords: ['burn', 'fire', 'scald', 'oil', 'जलना', 'ପୋଡ଼ି'], steps: ['Cool the burn immediately under cool, running tap water for 15-20 minutes.', 'Do NOT apply toothpaste, butter, ice, or burst any blisters.', 'Cover the burned area loosely with a sterile, non-adherent dressing or clean cling film.', 'Keep patient warm and hydrate with ORS if conscious; call 108 for extensive burns.'] },
+  { color: 'amber', title: 'Poisoning & Chemical Ingestion', keywords: ['poison', 'chemical', 'insecticide', 'pesticide', 'विष', 'ବିଷ'], steps: ['Identify the poison container/label without inhaling fumes.', 'Do NOT induce vomiting unless specifically told by a poison control doctor.', 'If skin or eyes are exposed, flush thoroughly with copious water for 15 mins.', 'Rush immediately to nearest PHC with the poison packaging or bottle.'] },
+  { color: 'blue', title: 'Drowning / Near Drowning', keywords: ['drown', 'water', 'submersion', 'ডুবে', 'ପାଣି'], steps: ['Remove person from water safely without putting yourself at risk.', 'Check for breathing; if not breathing, start CPR immediately with 5 rescue breaths.', 'Perform cycles of 30 chest compressions followed by 2 rescue breaths.', 'Keep patient warm with dry blankets and transfer to hospital even if revived.'] },
+  { color: 'purple', title: 'Bone Fracture & Dislocation', keywords: ['fracture', 'bone', 'broken', 'dislocation', 'हड्डी', 'ହାଡ଼'], steps: ['Immobilize the injured area; support the bone above and below the fracture.', 'Apply an ice pack wrapped in a cloth to reduce swelling (max 15 mins).', 'Do NOT attempt to push bone fragments back in or straighten crooked limbs.', 'Cover open wounds with a clean cloth and transport to nearest Trauma Care Centre.'] },
+  { color: 'green', title: 'Dog / Animal Bite (Rabies Prevention)', keywords: ['dog', 'animal', 'bite', 'rabies', 'कुत्ता', 'କୁକୁର'], steps: ['Wash the wound immediately under running water with soap for at least 15 minutes.', 'Apply an antiseptic like Povidone-Iodine; do NOT stitch or cauterize the wound.', 'Do NOT apply turmeric, chilli powder, or soil to the bite.', 'Visit PHC on Day 0 for Anti-Rabies Vaccine (ARV) and Immunoglobulin (RIG).'] },
+  { color: 'cyan', title: 'Heatstroke & Severe Dehydration', keywords: ['heat', 'heatstroke', 'dehydration', 'sun', 'लू', 'ଅଂଶୁଘାତ'], steps: ['Move person to a shaded, cool, well-ventilated spot immediately.', 'Remove excess clothing and apply cool, wet cloths over neck, armpits, and groin.', 'Fan the patient continuously; give small sips of ORS or cool water if fully conscious.', 'If confusion or loss of consciousness occurs, call 108 immediately.'] },
 ];
 
 const COLOR_MAP: Record<string, { bg: string; text: string; border: string }> = {
@@ -69,8 +81,35 @@ export const EmergencyModal: React.FC = () => {
   const [abhaQuery, setAbhaQuery] = useState('');
   const [foundPatient, setFoundPatient] = useState<any>(null);
   const [selectedFirstAid, setSelectedFirstAid] = useState<number | null>(null);
+  const [firstAidSearch, setFirstAidSearch] = useState<string>('');
+  const [isVoiceListening, setIsVoiceListening] = useState<boolean>(false);
 
   const nearestTrauma = MAHARASHTRA_FACILITIES[0];
+
+  const handleVoiceSearch = () => {
+    setIsVoiceListening(true);
+    bhashiniAI.asr(
+      language,
+      (transcript) => {
+        setFirstAidSearch(transcript);
+        showToast(`Voice Search: "${transcript}"`);
+      },
+      (err) => {
+        console.warn('Voice ASR:', err);
+      },
+      () => {
+        setIsVoiceListening(false);
+      }
+    );
+  };
+
+  const filteredFirstAidCards = FIRST_AID_CARDS.filter(card => {
+    if (!firstAidSearch.trim()) return true;
+    const q = firstAidSearch.toLowerCase();
+    return card.title.toLowerCase().includes(q) || 
+      card.keywords?.some(k => k.toLowerCase().includes(q)) ||
+      card.steps.some(s => s.toLowerCase().includes(q));
+  });
 
   // Countdown timer for ambulance ETA
   useEffect(() => {
@@ -385,17 +424,49 @@ export const EmergencyModal: React.FC = () => {
 
           {/* TAB: First-Aid Guide */}
           {activeTab === 'first_aid' && (
-            <div className="space-y-3">
+            <div className="space-y-3.5">
+              
+              {/* Voice-to-Text / Custom Search Bar */}
+              <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-300">
+                <Search className="w-4 h-4 text-slate-400 ml-1.5 shrink-0" />
+                <input
+                  type="text"
+                  value={firstAidSearch}
+                  onChange={(e) => setFirstAidSearch(e.target.value)}
+                  placeholder="Search emergency (e.g. burns, fracture, asthma, snakebite, drowning)..."
+                  className="w-full bg-transparent text-xs font-bold text-slate-900 focus:outline-hidden placeholder:font-normal placeholder:text-slate-400"
+                />
+                {firstAidSearch && (
+                  <button onClick={() => setFirstAidSearch('')} className="text-slate-400 hover:text-slate-600 p-1">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleVoiceSearch}
+                  className={`p-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shrink-0 ${
+                    isVoiceListening 
+                      ? 'bg-red-600 text-white animate-pulse' 
+                      : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300'
+                  }`}
+                  title="Speak emergency in your language (Voice to Text)"
+                >
+                  <Mic className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{isVoiceListening ? 'Listening...' : 'Voice Search'}</span>
+                </button>
+              </div>
+
               <div className="text-xs text-slate-500 font-medium">Select an emergency type for step-by-step first-aid protocol:</div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {FIRST_AID_CARDS.map((card, i) => {
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
+                {filteredFirstAidCards.map((card, i) => {
                   const colors = COLOR_MAP[card.color];
+                  const isSelected = selectedFirstAid === i;
                   return (
                     <button
                       key={i}
-                      onClick={() => setSelectedFirstAid(selectedFirstAid === i ? null : i)}
+                      onClick={() => setSelectedFirstAid(isSelected ? null : i)}
                       className={`text-left p-3 rounded-2xl border-2 transition-all ${
-                        selectedFirstAid === i
+                        isSelected
                           ? `${colors.bg} ${colors.border} ${colors.text} shadow-md`
                           : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                       }`}
@@ -406,15 +477,34 @@ export const EmergencyModal: React.FC = () => {
                 })}
               </div>
 
-              {selectedFirstAid !== null && (
-                <div className={`${COLOR_MAP[FIRST_AID_CARDS[selectedFirstAid].color].bg} border-2 ${COLOR_MAP[FIRST_AID_CARDS[selectedFirstAid].color].border} rounded-2xl p-4 animate-in slide-in-from-top-2`}>
-                  <h4 className={`font-extrabold text-sm ${COLOR_MAP[FIRST_AID_CARDS[selectedFirstAid].color].text} mb-3`}>
-                    {FIRST_AID_CARDS[selectedFirstAid].title}
-                  </h4>
+              {filteredFirstAidCards.length === 0 && (
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-center text-xs text-amber-900 space-y-2">
+                  <p>No preset match for "{firstAidSearch}". For any acute emergency, dial 108 immediately.</p>
+                  <a href="tel:108" className="inline-flex items-center gap-1.5 bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-xs">
+                    <PhoneCall className="w-3.5 h-3.5" /> Direct Call 108 SOS
+                  </a>
+                </div>
+              )}
+
+              {selectedFirstAid !== null && filteredFirstAidCards[selectedFirstAid] && (
+                <div className={`${COLOR_MAP[filteredFirstAidCards[selectedFirstAid].color].bg} border-2 ${COLOR_MAP[filteredFirstAidCards[selectedFirstAid].color].border} rounded-2xl p-4 animate-in slide-in-from-top-2`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className={`font-extrabold text-sm ${COLOR_MAP[filteredFirstAidCards[selectedFirstAid].color].text}`}>
+                      {filteredFirstAidCards[selectedFirstAid].title}
+                    </h4>
+                    <button
+                      onClick={() => bhashiniAI.tts(filteredFirstAidCards[selectedFirstAid].steps.join('. '), language)}
+                      className="text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-white/80 px-2.5 py-1 rounded-lg border border-slate-300 flex items-center gap-1"
+                    >
+                      <Volume2 className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>Listen Audio</span>
+                    </button>
+                  </div>
+
                   <ol className="space-y-2">
-                    {FIRST_AID_CARDS[selectedFirstAid].steps.map((step, j) => (
+                    {filteredFirstAidCards[selectedFirstAid].steps.map((step, j) => (
                       <li key={j} className="flex items-start gap-2.5 text-xs text-slate-700">
-                        <span className={`w-5 h-5 rounded-full ${COLOR_MAP[FIRST_AID_CARDS[selectedFirstAid].color].bg} border ${COLOR_MAP[FIRST_AID_CARDS[selectedFirstAid].color].border} ${COLOR_MAP[FIRST_AID_CARDS[selectedFirstAid].color].text} flex items-center justify-center font-black text-[10px] shrink-0`}>
+                        <span className={`w-5 h-5 rounded-full ${COLOR_MAP[filteredFirstAidCards[selectedFirstAid].color].bg} border ${COLOR_MAP[filteredFirstAidCards[selectedFirstAid].color].border} ${COLOR_MAP[filteredFirstAidCards[selectedFirstAid].color].text} flex items-center justify-center font-black text-[10px] shrink-0`}>
                           {j + 1}
                         </span>
                         <span className="leading-snug pt-0.5">{step}</span>

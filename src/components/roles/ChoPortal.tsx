@@ -18,9 +18,12 @@ import {
   X,
   Bell,
   Package,
-  Heart
+  Heart,
+  User,
+  Pill
 } from 'lucide-react';
 import { KpiCard, QuickAction, ActivityFeed, AlertBanner, SectionHeader, ProgressBar, ActivityItem } from '../common/DashboardWidgets';
+import { EditProfileModal } from '../modals/EditProfileModal';
 
 export const ChoPortal: React.FC = () => {
   const { showToast, language, setCurrentView, t } = useApp();
@@ -31,12 +34,25 @@ export const ChoPortal: React.FC = () => {
     updatePatientVitals,
     medicines,
     updateMedicineStock,
+    addNewStockConsignment,
     pocTests,
     logPocTest,
-    directives
+    directives,
+    currentUser
   } = useHealthData();
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'opd_queue' | 'triage_intake' | 'rapid_tests' | 'subcenter_stock'>('dashboard');
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isAddMedOpen, setIsAddMedOpen] = useState(false);
+
+  // New Medicine Form State
+  const [newMedName, setNewMedName] = useState('');
+  const [newMedGeneric, setNewMedGeneric] = useState('');
+  const [newMedCategory, setNewMedCategory] = useState('Essential Medicine');
+  const [newMedStock, setNewMedStock] = useState('500');
+  const [newMedUnit, setNewMedUnit] = useState('Tablets');
+  const [newMedBatch, setNewMedBatch] = useState('BT-2026-01');
+  const [newMedExpiry, setNewMedExpiry] = useState('2028-12-31');
   
   // Triage Intake Form State
   const [patientName, setPatientName] = useState<string>('Sunita Ravindra Shinde');
@@ -148,11 +164,11 @@ export const ChoPortal: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setCurrentView('doctor')}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+              onClick={() => setIsEditProfileOpen(true)}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold py-2.5 px-4 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
             >
-              <Video className="w-3.5 h-3.5" />
-              <span>{t.role_doctor} Hub</span>
+              <User className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Edit Profile</span>
             </button>
           </div>
         </div>
@@ -680,14 +696,23 @@ export const ChoPortal: React.FC = () => {
         {/* TAB 4: SUBCENTER DRUG KIT */}
         {activeTab === 'subcenter_stock' && (
           <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
                 <h3 className="font-extrabold text-base text-slate-900">Sub-Centre Essential Drug Kit A & B Ledger</h3>
                 <p className="text-xs text-slate-500">Live inventory synchronized with e-Aushadhi state procurement warehouse.</p>
               </div>
-              <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-xl">
-                e-Aushadhi Connected
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsAddMedOpen(true)}
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold py-2 px-3.5 rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Medicine to Kit</span>
+                </button>
+                <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-xl border border-emerald-300">
+                  e-Aushadhi Connected
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -717,8 +742,154 @@ export const ChoPortal: React.FC = () => {
                 </div>
               ))}
             </div>
+
+            {/* Add New Medicine Modal */}
+            {isAddMedOpen && (
+              <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                        <Pill className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-base text-slate-900">Add New Medicine to Drug Kit</h4>
+                        <p className="text-xs text-slate-500">Record stock intake in Sub-Centre e-Aushadhi ledger</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setIsAddMedOpen(false)} className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form 
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!newMedName.trim()) return;
+                      await addNewStockConsignment({
+                        name: newMedName.trim(),
+                        genericName: newMedGeneric.trim() || newMedName.trim(),
+                        category: newMedCategory,
+                        currentStock: parseInt(newMedStock, 10) || 500,
+                        unit: newMedUnit,
+                        batchNumber: newMedBatch.trim() || `BT-${Date.now().toString().slice(-4)}`,
+                        expiryDate: newMedExpiry,
+                        reorderLevel: 200,
+                        status: 'In Stock',
+                        location: 'Rack C-1',
+                        lastDispensedDate: 'Today'
+                      });
+                      showToast(`Added ${newMedName} (${newMedStock} ${newMedUnit}) to Sub-Centre Drug Kit!`);
+                      setIsAddMedOpen(false);
+                      setNewMedName('');
+                      setNewMedGeneric('');
+                    }}
+                    className="space-y-3 text-xs"
+                  >
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Medicine / Formulation Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={newMedName}
+                        onChange={(e) => setNewMedName(e.target.value)}
+                        placeholder="e.g. Metformin 500mg Tablets IP / ORS Sachet"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Category</label>
+                        <select
+                          value={newMedCategory}
+                          onChange={(e) => setNewMedCategory(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                        >
+                          <option value="Essential Medicine">Essential Medicine</option>
+                          <option value="Maternal Supplement">Maternal Supplement</option>
+                          <option value="Analgesic">Analgesic / Antipyretic</option>
+                          <option value="Antibiotic">Antibiotic</option>
+                          <option value="Antihypertensive">Antihypertensive</option>
+                          <option value="Antidiabetic">Antidiabetic</option>
+                          <option value="Oral Rehydration">Oral Rehydration (ORS)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Unit of Dispensing</label>
+                        <select
+                          value={newMedUnit}
+                          onChange={(e) => setNewMedUnit(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                        >
+                          <option value="Tablets">Tablets</option>
+                          <option value="Capsules">Capsules</option>
+                          <option value="Bottles">Bottles (Syrup/Suspension)</option>
+                          <option value="Sachets">Sachets (ORS/Powder)</option>
+                          <option value="Vials">Vials / Injections</option>
+                          <option value="Tubes">Tubes (Ointment)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Stock Quantity *</label>
+                        <input
+                          type="number"
+                          required
+                          value={newMedStock}
+                          onChange={(e) => setNewMedStock(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Batch Number</label>
+                        <input
+                          type="text"
+                          value={newMedBatch}
+                          onChange={(e) => setNewMedBatch(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                        />
+                      </div>
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Expiry Date</label>
+                        <input
+                          type="date"
+                          value={newMedExpiry}
+                          onChange={(e) => setNewMedExpiry(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddMedOpen(false)}
+                        className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-100"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-xl shadow-md flex items-center gap-1"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Add to Inventory</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
           </div>
         )}
+
+        {/* Global Edit Profile Modal */}
+        <EditProfileModal isOpen={isEditProfileOpen} onClose={() => setIsEditProfileOpen(false)} />
 
       </div>
     </div>

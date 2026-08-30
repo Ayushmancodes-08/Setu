@@ -22,8 +22,11 @@ import {
   UserCheck, 
   RefreshCw,
   Home,
-  Sparkles
+  Sparkles,
+  User,
+  Edit
 } from 'lucide-react';
+import { EditProfileModal } from '../modals/EditProfileModal';
 
 const ROLES: { id: Role; labelEn: string; labelMr: string; labelHi: string; icon: any; color: string; desc: string }[] = [
   { id: 'patient', labelEn: 'Patient Portal', labelMr: 'रुग्ण पोर्टल', labelHi: 'मरीज पोर्टल', icon: Activity, color: 'text-teal-600', desc: 'ABHA Health Locker, Prescriptions & Teleconsult' },
@@ -62,6 +65,7 @@ export const Header: React.FC = () => {
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchedPatient, setSearchedPatient] = useState<any>(null);
 
@@ -258,21 +262,28 @@ export const Header: React.FC = () => {
 
           {/* Active User Session or Role Login Trigger */}
           {currentUser ? (
-            <div className="flex items-center gap-2 bg-emerald-50/80 border border-emerald-300 px-3 py-1.5 rounded-2xl">
-              <div className="w-7 h-7 rounded-xl bg-emerald-700 text-white font-bold text-xs flex items-center justify-center">
-                {currentUser.avatarInitials || 'U'}
-              </div>
-              <div className="hidden sm:block text-left">
-                <div className="font-extrabold text-xs text-slate-900 leading-tight truncate max-w-[120px]">
-                  {currentUser.fullName}
+            <div className="flex items-center gap-2 bg-emerald-50/80 hover:bg-emerald-100/90 border border-emerald-300 px-3 py-1.5 rounded-2xl transition-colors">
+              <button
+                type="button"
+                onClick={() => setIsEditProfileOpen(true)}
+                className="flex items-center gap-2 text-left group"
+                title="Click to edit profile & account details"
+              >
+                <div className="w-7 h-7 rounded-xl bg-emerald-700 group-hover:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center transition-colors">
+                  {currentUser.avatarInitials || 'U'}
                 </div>
-                <div className="text-[10px] text-emerald-800 font-medium truncate max-w-[120px]">
-                  {currentUser.designation.split('(')[0]}
+                <div className="hidden sm:block text-left">
+                  <div className="font-extrabold text-xs text-slate-900 group-hover:text-emerald-950 leading-tight truncate max-w-[120px]">
+                    {currentUser.fullName}
+                  </div>
+                  <div className="text-[10px] text-emerald-800 font-medium truncate max-w-[120px]">
+                    {currentUser.designation.split('(')[0]}
+                  </div>
                 </div>
-              </div>
+              </button>
               <button
                 onClick={handleLogout}
-                className="text-slate-400 hover:text-red-600 p-1 rounded-lg hover:bg-white transition-colors"
+                className="text-slate-400 hover:text-red-600 p-1 rounded-lg hover:bg-white transition-colors ml-1"
                 title="Sign Out of Session"
               >
                 <LogOut className="w-4 h-4" />
@@ -519,6 +530,12 @@ export const Header: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* GLOBAL EDIT PROFILE MODAL */}
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+      />
 
     </header>
   );

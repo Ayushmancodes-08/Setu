@@ -20,12 +20,15 @@ export interface DBUser {
   phone: string;
   identifierNumber: string; // e.g. ABHA ID, Medical Reg No, Employee ID
   facilityName: string;
+  village?: string;
   taluka: string;
   district: string;
   designation: string;
   avatarInitials: string;
   createdAt: string;
   isVerified?: boolean;
+  age?: number;
+  gender?: string;
 }
 
 export interface DoctorApplication {
@@ -369,15 +372,169 @@ class IndexedDBManager {
     // 2. Default Active Session (None)
     tx.objectStore('session').put({ id: 'activeUser', user: null });
 
+    // Seed Verified User Profiles
+    const userStore = tx.objectStore('users');
+    const u1: DBUser = {
+      id: 'usr-rajesh',
+      role: 'patient',
+      username: '9823044512',
+      fullName: 'Rajesh Kumar Shinde',
+      phone: '+91 98230 44512',
+      identifierNumber: '91-8841-2091-7741',
+      facilityName: 'Khamgaon Ayushman Arogya Mandir',
+      taluka: 'Junnar',
+      district: 'Pune',
+      designation: 'Citizen (Khamgaon Village)',
+      avatarInitials: 'RS',
+      createdAt: '2026-08-20',
+      isVerified: true
+    };
+    const u2: DBUser = {
+      id: 'usr-sunita',
+      role: 'patient',
+      username: '9823044513',
+      fullName: 'Sunita Ravindra Shinde',
+      phone: '+91 98230 44513',
+      identifierNumber: '91-4821-9902-3312',
+      facilityName: 'Khamgaon Ayushman Arogya Mandir',
+      taluka: 'Junnar',
+      district: 'Pune',
+      designation: 'Citizen (Maternal ANC)',
+      avatarInitials: 'SR',
+      createdAt: '2026-08-20',
+      isVerified: true
+    };
+    const u3: DBUser = {
+      id: 'usr-cho',
+      role: 'cho',
+      username: '9422088312',
+      fullName: 'Pooja Jadhav, CHO',
+      phone: '+91 94220 88312',
+      identifierNumber: 'CHO-MH-8819',
+      facilityName: 'Khamgaon Ayushman Arogya Mandir',
+      taluka: 'Junnar',
+      district: 'Pune',
+      designation: 'Community Health Officer',
+      avatarInitials: 'PJ',
+      createdAt: '2026-08-20',
+      isVerified: true
+    };
+    const u4: DBUser = {
+      id: 'usr-doc',
+      role: 'doctor',
+      username: '9822411092',
+      fullName: 'Dr. Rohini Kulkarni, MD',
+      phone: '+91 98224 11092',
+      identifierNumber: 'MMC-2016-99410',
+      facilityName: 'Junnar Rural Hospital Telemedicine Hub',
+      taluka: 'Junnar',
+      district: 'Pune',
+      designation: 'Specialist Hub Consultant (OBGYN)',
+      avatarInitials: 'RK',
+      createdAt: '2026-08-20',
+      isVerified: true
+    };
+    const u5: DBUser = {
+      id: 'usr-asha',
+      role: 'asha',
+      username: '9890123412',
+      fullName: 'Manisha Kadam',
+      phone: '+91 98901 23412',
+      identifierNumber: 'ASHA-PUN-0482',
+      facilityName: 'Khamgaon Village Sector',
+      taluka: 'Junnar',
+      district: 'Pune',
+      designation: 'Frontline ASHA Worker (Sector 4)',
+      avatarInitials: 'MK',
+      createdAt: '2026-08-20',
+      isVerified: true
+    };
+    userStore.put(u1);
+    userStore.put(u2);
+    userStore.put(u3);
+    userStore.put(u4);
+    userStore.put(u5);
+
     // 3. Seed Initial Verified Patients
     const patientStore = tx.objectStore('patients');
     const p1: DBPatient = {
       id: 'p-001',
+      abhaId: '91-8841-2091-7741',
+      name: 'Rajesh Kumar Shinde',
+      age: 47,
+      gender: 'Male',
+      mobile: '+91 98230 44512',
+      village: 'Khamgaon',
+      taluka: 'Junnar',
+      district: 'Pune',
+      category: 'NCD Patient',
+      riskLevel: 'Moderate',
+      vitals: {
+        bp: '138/86 mmHg',
+        pulse: '76 bpm',
+        spo2: '98%',
+        temp: '98.4 °F',
+        weight: '68 kg',
+        bloodSugar: '104 mg/dL',
+        lastRecordedAt: 'Today, 09:15 AM'
+      },
+      diagnoses: ['Essential Hypertension (Grade 1)', 'Routine Prescription Follow-up'],
+      allergies: ['None reported'],
+      assignedAsha: 'Manisha Kadam',
+      assignedCho: 'Pooja Jadhav, CHO (Khamgaon Sub-Centre)',
+      activePrescriptions: [
+        {
+          id: 'rx-1',
+          medicineName: 'Amlodipine 5mg Tablets',
+          dosage: '1 Tab (5mg)',
+          frequency: '1-0-0 (Morning with breakfast)',
+          duration: '30 Days',
+          instructions: 'Take daily after breakfast. Do not miss doses.',
+          prescribedBy: 'Dr. Rohini Kulkarni, MD',
+          prescribedAt: 'Yesterday, 10:15 AM',
+          status: 'Dispensed' as const
+        },
+        {
+          id: 'rx-2',
+          medicineName: 'Telmisartan 40mg Tablets',
+          dosage: '1 Tab (40mg)',
+          frequency: '0-0-1 (Night after dinner)',
+          duration: '30 Days',
+          instructions: 'Take with warm water before sleep.',
+          prescribedBy: 'Dr. Rohini Kulkarni, MD',
+          prescribedAt: 'Yesterday, 10:15 AM',
+          status: 'Dispensed' as const
+        }
+      ],
+      recentLabReports: [
+        {
+          id: 'lab-1',
+          testName: 'Lipid Profile & Serum Cholesterol',
+          result: 'Total Cholesterol: 182 mg/dL',
+          referenceRange: '125 - 200 mg/dL (Normal Range)',
+          status: 'Normal' as const,
+          reportedAt: '2 days ago'
+        },
+        {
+          id: 'lab-2',
+          testName: 'Fasting Blood Glucose (FBS)',
+          result: 'Blood Sugar: 104 mg/dL',
+          referenceRange: '70 - 100 mg/dL (Borderline)',
+          status: 'Abnormal' as const,
+          reportedAt: '2 days ago'
+        }
+      ],
+      schemeEligibility: ['PM-JAY', 'MJPJAY'],
+      createdAt: '2026-08-20'
+    };
+
+    const p2: DBPatient = {
+      id: 'p-002',
       abhaId: '91-4821-9902-3312',
       name: 'Sunita Ravindra Shinde',
       age: 24,
       gender: 'Female',
-      mobile: '+91 98230 44512',
+      mobile: '+91 98230 44513',
       village: 'Khamgaon',
       taluka: 'Junnar',
       district: 'Pune',
@@ -403,6 +560,7 @@ class IndexedDBManager {
       createdAt: '2026-08-20'
     };
     patientStore.put(p1);
+    patientStore.put(p2);
 
     // 4. Seed Inventory
     const invStore = tx.objectStore('inventory');

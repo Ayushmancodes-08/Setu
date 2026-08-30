@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { useHealthData } from '../../context/HealthDataContext';
 import { Appointment } from '../../types';
 import { VideoConsultationRoom } from '../video/VideoConsultationRoom';
+import { EditProfileModal } from '../modals/EditProfileModal';
 import { KpiCard, QuickAction, ActivityFeed, AlertBanner, SectionHeader, ProgressBar, ActivityItem } from '../common/DashboardWidgets';
 import { 
   Stethoscope, 
@@ -25,7 +26,9 @@ import {
   FileCheck,
   Calendar,
   PhoneCall,
-  User
+  User,
+  X,
+  Check
 } from 'lucide-react';
 
 export const DoctorPortal: React.FC = () => {
@@ -39,12 +42,14 @@ export const DoctorPortal: React.FC = () => {
     patients,
     submitLabResult,
     appointments,
-    updateAppointmentStatus
+    updateAppointmentStatus,
+    currentUser
   } = useHealthData();
 
   // Selected queue patient
   const [selectedQueueItem, setSelectedQueueItem] = useState<any>(teleconsultQueue[0] || appointments[0] || null);
   const [isLiveConsulting, setIsLiveConsulting] = useState<boolean>(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'consultation' | 'rx_builder' | 'lab_order' | 'record_lab' | 'referral'>('dashboard');
   const [queueFilter, setQueueFilter] = useState<'all' | 'teleconsult' | 'appointments'>('all');
 
@@ -82,6 +87,23 @@ export const DoctorPortal: React.FC = () => {
 
   // Lab Order Requisitions State
   const [selectedTests, setSelectedTests] = useState<string[]>(['Complete Blood Count (CBC)', 'Serum Ferritin & Iron Studies']);
+  const [availableTests, setAvailableTests] = useState<string[]>([
+    'Complete Blood Count (CBC)',
+    'Serum Ferritin & Iron Studies',
+    'Lipid Profile',
+    'Fasting Blood Glucose',
+    'Urine Routine & Micro',
+    'Thyroid Profile (TSH)',
+    'Liver Function Test (LFT)',
+    'Kidney Function Test (KFT/Creatinine)',
+    'HbA1c (Glycated Hemoglobin)',
+    'Serum Electrolytes (Na+/K+/Cl-)',
+    'Vitamin D3 & B12 Levels',
+    'Obstetric / Abdominal USG',
+    '12-Lead ECG'
+  ]);
+  const [newTestInput, setNewTestInput] = useState<string>('');
+  const [isAddingCustomTest, setIsAddingCustomTest] = useState<boolean>(false);
 
   // Direct Lab Record Entry State
   const [directTestName, setDirectTestName] = useState<string>('Complete Blood Count (CBC) & Hemoglobin');
@@ -95,6 +117,29 @@ export const DoctorPortal: React.FC = () => {
   const [referralSpecialty, setReferralSpecialty] = useState<string>('Obstetrics & High-Risk Pregnancy');
   const [referralUrgency, setReferralUrgency] = useState<'red' | 'amber' | 'green'>('amber');
   const [referralNotes, setReferralNotes] = useState<string>('High-risk pregnancy with severe gestational anemia requiring parenteral iron or blood transfusion standby.');
+
+  const toggleTest = (test: string) => {
+    if (selectedTests.includes(test)) {
+      setSelectedTests(selectedTests.filter(t => t !== test));
+    } else {
+      setSelectedTests([...selectedTests, test]);
+    }
+  };
+
+  const handleAddCustomTest = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = newTestInput.trim();
+    if (!trimmed) return;
+    if (!availableTests.includes(trimmed)) {
+      setAvailableTests(prev => [...prev, trimmed]);
+    }
+    if (!selectedTests.includes(trimmed)) {
+      setSelectedTests(prev => [...prev, trimmed]);
+    }
+    setNewTestInput('');
+    setIsAddingCustomTest(false);
+    showToast(`Added diagnostic investigation: "${trimmed}"`);
+  };
 
   const handleAddMedication = () => {
     if (!draftMedName.trim()) return;
@@ -223,16 +268,17 @@ export const DoctorPortal: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+            <button
+              onClick={() => setIsEditProfileOpen(true)}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl border border-slate-300 transition-colors flex items-center gap-1.5"
+            >
+              <User className="w-3.5 h-3.5 text-blue-700" />
+              <span>Edit Profile</span>
+            </button>
+            <span className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-3 py-2 rounded-xl flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               <span>Tele-Clinic Hub Live</span>
             </span>
-            <button
-              onClick={() => setCurrentView('patient')}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3.5 py-1.5 rounded-xl border border-slate-300 transition-colors"
-            >
-              Patient Portal View
-            </button>
           </div>
         </div>
 
@@ -374,7 +420,22 @@ export const DoctorPortal: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {selectedQueueItem.appointmentToken && (
+                      <button
+                        onClick={async () => {
+                          if (updateAppointmentStatus) {
+                            await updateAppointmentStatus(selectedQueueItem.id, 'CONFIRMED', 'Approved by Dr. Rohini Kulkarni');
+                          }
+                          showToast(`Appointment #${selectedQueueItem.appointmentToken} Approved & Confirmed!`);
+                        }}
+                        className="px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 flex items-center gap-1.5"
+                      >
+                        <Check className="w-4 h-4 text-emerald-700" />
+                        <span>Approve Appointment</span>
+                      </button>
+                    )}
+
                     <button
                       onClick={() => {
                         setIsLiveConsulting(!isLiveConsulting);
@@ -581,33 +642,94 @@ export const DoctorPortal: React.FC = () => {
             {/* TAB 3: LAB REQUISITION */}
             {activeTab === 'lab_order' && (
               <div className="space-y-4 text-xs">
-                <span className="font-bold text-slate-800 block">Select Diagnostic Requisitions for Central Lab:</span>
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-800 block">Select Diagnostic Requisitions for Central Lab:</span>
+                  <span className="text-[11px] font-bold text-blue-800 bg-blue-100 px-2.5 py-0.5 rounded-full">
+                    {selectedTests.length} investigations selected
+                  </span>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {['Complete Blood Count (CBC)', 'Serum Ferritin & Iron Studies', 'Lipid Profile', 'Fasting Blood Glucose', 'Urine Routine & Micro', 'Thyroid Profile (TSH)'].map((test) => {
+                  {availableTests.map((test) => {
                     const isChecked = selectedTests.includes(test);
                     return (
                       <button
                         key={test}
-                        onClick={() => {
-                          if (isChecked) setSelectedTests(selectedTests.filter(t => t !== test));
-                          else setSelectedTests([...selectedTests, test]);
-                        }}
-                        className={`p-3 rounded-xl border text-left font-bold transition-all ${
-                          isChecked ? 'bg-blue-50 border-blue-500 text-blue-950' : 'bg-slate-50 border-slate-200 text-slate-700'
+                        type="button"
+                        onClick={() => toggleTest(test)}
+                        className={`p-3 rounded-xl border text-left font-bold transition-all flex items-center justify-between shadow-2xs ${
+                          isChecked ? 'bg-blue-50 border-blue-500 text-blue-950 ring-1 ring-blue-300' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                         }`}
                       >
-                        {isChecked ? `✓ ${test}` : `+ ${test}`}
+                        <span>{isChecked ? `✓ ${test}` : `+ ${test}`}</span>
                       </button>
                     );
                   })}
                 </div>
 
+                {/* Add Custom Lab Test / Investigation Input */}
+                {isAddingCustomTest ? (
+                  <form 
+                    onSubmit={handleAddCustomTest} 
+                    className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-blue-50/70 border-2 border-blue-400 rounded-2xl p-3 shadow-xs"
+                  >
+                    <input
+                      type="text"
+                      autoFocus
+                      placeholder="Type custom test name (e.g. D-Dimer, Troponin I, Chest X-Ray PA View)..."
+                      value={newTestInput}
+                      onChange={(e) => setNewTestInput(e.target.value)}
+                      className="px-3 py-2 text-xs font-semibold text-slate-900 bg-white border border-slate-300 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500 grow"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setIsAddingCustomTest(false);
+                          setNewTestInput('');
+                        }
+                      }}
+                    />
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="submit"
+                        className="bg-blue-700 hover:bg-blue-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-xs"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Investigation</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAddingCustomTest(false);
+                          setNewTestInput('');
+                        }}
+                        className="p-2 text-slate-500 hover:text-slate-700 bg-white border border-slate-300 rounded-xl"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingCustomTest(true)}
+                    className="w-full py-2.5 px-4 rounded-xl border-2 border-dashed border-blue-400 bg-blue-50/50 hover:bg-blue-100 text-blue-700 font-extrabold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Add Custom Lab Test / Investigation</span>
+                  </button>
+                )}
+
                 <button
+                  type="button"
+                  disabled={selectedTests.length === 0}
                   onClick={handleDispatchLabOrders}
-                  className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5"
+                  className={`w-full font-bold py-3 rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5 ${
+                    selectedTests.length === 0 
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed' 
+                      : 'bg-blue-700 hover:bg-blue-800 text-white'
+                  }`}
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Dispatch Requisition to Diagnostic Wing</span>
+                  <span>Dispatch {selectedTests.length} Requisitions to Diagnostic Wing</span>
                 </button>
               </div>
             )}
@@ -684,6 +806,12 @@ export const DoctorPortal: React.FC = () => {
           }}
         />
       )}
+
+      {/* GLOBAL EDIT PROFILE MODAL */}
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+      />
 
     </div>
   );

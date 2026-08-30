@@ -77,6 +77,7 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
   const [isVitalsHudOpen, setIsVitalsHudOpen] = useState(true);
   const [isCaptionsEnabled, setIsCaptionsEnabled] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSimulatedRemoteCamera, setIsSimulatedRemoteCamera] = useState(true);
 
   // Chat
   const [chatInput, setChatInput] = useState('');
@@ -429,43 +430,92 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
                   <span className="text-[10px] text-slate-400 font-mono">({config.remoteParticipantRole})</span>
                 </div>
 
-                <div className="flex items-center gap-1 bg-slate-900/80 px-2.5 py-1 rounded-full text-[10px] text-emerald-400 font-bold border border-emerald-500/20">
-                  <Zap className="w-3 h-3 text-emerald-400" />
-                  <span>1080p HD</span>
-                </div>
-              </div>
-
-              {/* Remote Stream Center Visualizer / Video Simulation */}
-              <div className="relative z-10 my-auto flex flex-col items-center justify-center gap-4 py-8">
-                <div className="relative">
-                  {/* Dynamic Voice Pulse Waves */}
-                  <div className="absolute -inset-4 rounded-full bg-emerald-500/20 animate-ping" />
-                  <div className="absolute -inset-8 rounded-full bg-teal-500/10 animate-pulse" />
-
-                  <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-gradient-to-tr from-emerald-800 via-teal-700 to-emerald-900 border-4 border-emerald-400/60 shadow-2xl flex items-center justify-center text-4xl sm:text-5xl font-black text-white relative z-10">
-                    {config.remoteParticipantName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                  </div>
-
-                  <span className="absolute bottom-1 right-1 bg-emerald-500 text-slate-950 p-1.5 rounded-full shadow-lg z-20">
-                    <Volume2 className="w-4 h-4 animate-bounce" />
-                  </span>
-                </div>
-
-                <div className="text-center space-y-1">
-                  <div className="font-black text-base sm:text-lg text-white">
-                    {config.remoteParticipantName}
-                  </div>
-                  <div className="text-xs text-slate-400 font-medium flex items-center justify-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span>Microphone active • High-Fidelity Audio Linked</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsSimulatedRemoteCamera(!isSimulatedRemoteCamera)}
+                    className="bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1 rounded-full text-[10px] font-bold border border-slate-700 transition-colors flex items-center gap-1"
+                  >
+                    <Video className="w-3 h-3 text-emerald-400" />
+                    <span>{isSimulatedRemoteCamera ? 'Feed: Live Video' : 'Feed: Avatar'}</span>
+                  </button>
+                  <div className="flex items-center gap-1 bg-slate-900/80 px-2.5 py-1 rounded-full text-[10px] text-emerald-400 font-bold border border-emerald-500/20">
+                    <Zap className="w-3 h-3 text-emerald-400" />
+                    <span>1080p 60fps</span>
                   </div>
                 </div>
               </div>
+
+              {/* Remote Stream Center Visualizer / Dual Video Simulation */}
+              {isSimulatedRemoteCamera ? (
+                <div className="relative z-10 my-auto flex flex-col items-center justify-center gap-3 py-6">
+                  <div className="relative w-full max-w-sm aspect-video rounded-2xl bg-gradient-to-tr from-slate-950 via-teal-950/70 to-slate-900 border-2 border-emerald-500/30 overflow-hidden shadow-2xl flex flex-col justify-between p-3.5">
+                    {/* Simulated Camera Room Grid / Scanlines */}
+                    <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px] opacity-10 pointer-events-none" />
+                    
+                    <div className="flex items-center justify-between text-[10px] z-10">
+                      <span className="bg-red-600/90 text-white font-black px-2 py-0.5 rounded tracking-wider flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                        REC LIVE
+                      </span>
+                      <span className="font-mono text-emerald-400 bg-slate-900/80 px-2 py-0.5 rounded border border-emerald-500/20">
+                        LATENCY: 14ms
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center gap-2 my-auto z-10">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-teal-700 to-emerald-600 border-2 border-white/80 shadow-lg flex items-center justify-center text-2xl font-black text-white animate-pulse">
+                        {config.remoteParticipantName.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="text-center">
+                        <div className="font-extrabold text-xs text-white drop-shadow-md">
+                          {config.remoteParticipantName}
+                        </div>
+                        <div className="text-[10px] text-emerald-300 font-medium">
+                          Bilateral HD Stream Active
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[10px] text-slate-300 z-10 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-xs">
+                      <span className="flex items-center gap-1">
+                        <Volume2 className="w-3 h-3 text-emerald-400 animate-bounce" />
+                        <span>Speaking...</span>
+                      </span>
+                      <span className="font-mono text-slate-400">e-Sanjeevani Grid</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative z-10 my-auto flex flex-col items-center justify-center gap-4 py-8">
+                  <div className="relative">
+                    <div className="absolute -inset-4 rounded-full bg-emerald-500/20 animate-ping" />
+                    <div className="absolute -inset-8 rounded-full bg-teal-500/10 animate-pulse" />
+
+                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-gradient-to-tr from-emerald-800 via-teal-700 to-emerald-900 border-4 border-emerald-400/60 shadow-2xl flex items-center justify-center text-4xl sm:text-5xl font-black text-white relative z-10">
+                      {config.remoteParticipantName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </div>
+
+                    <span className="absolute bottom-1 right-1 bg-emerald-500 text-slate-950 p-1.5 rounded-full shadow-lg z-20">
+                      <Volume2 className="w-4 h-4 animate-bounce" />
+                    </span>
+                  </div>
+
+                  <div className="text-center space-y-1">
+                    <div className="font-black text-base sm:text-lg text-white">
+                      {config.remoteParticipantName}
+                    </div>
+                    <div className="text-xs text-slate-400 font-medium flex items-center justify-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <span>Microphone active • High-Fidelity Audio Linked</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Remote Stream Footer HUD */}
               <div className="relative z-10 flex items-center justify-between text-[11px] text-slate-400 bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-800">
                 <span>Location: Junnar Rural Hospital Hub</span>
-                <span className="font-mono text-emerald-400">Echo Cancelled</span>
+                <span className="font-mono text-emerald-400">Echo Cancelled • Dual Test Active</span>
               </div>
             </div>
 
