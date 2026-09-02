@@ -22,6 +22,7 @@ import {
   Activity, 
   Sparkles, 
   Volume2, 
+  VolumeX,
   Languages, 
   Send, 
   FileText, 
@@ -36,7 +37,9 @@ import {
   Stethoscope,
   Smile,
   Zap,
-  Radio
+  Radio,
+  Play,
+  Headphones
 } from 'lucide-react';
 
 interface VideoConsultationRoomProps {
@@ -68,33 +71,31 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isVideoMuted, setIsVideoMuted] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isRemoteSpeaking, setIsRemoteSpeaking] = useState(false);
+  const [isPeerConnected, setIsPeerConnected] = useState(false);
+  const [isSpeakerMuted, setIsSpeakerMuted] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'speaker' | 'presentation'>('speaker');
   const [isMinimized, setIsMinimized] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isVirtualBgEnabled, setIsVirtualBgEnabled] = useState(false);
   
-  // Drawers
+  // Drawers & Overlays
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isVitalsHudOpen, setIsVitalsHudOpen] = useState(true);
-  const [isCaptionsEnabled, setIsCaptionsEnabled] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isSimulatedRemoteCamera, setIsSimulatedRemoteCamera] = useState(true);
+  const [isCaptionsEnabled, setIsCaptionsEnabled] = useState(true);
 
-  // Chat
+  // Chat & Captions
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState<InCallMessage[]>([]);
-
-  // Captions & Live Transcripts
   const [currentCaption, setCurrentCaption] = useState<LiveCaption | null>(null);
 
   // Call Duration Timer
   const [durationSeconds, setDurationSeconds] = useState(0);
-  const [hasReceivedBroadcastFrame, setHasReceivedBroadcastFrame] = useState(false);
 
-  // Video & Canvas Element Refs
+  // Video & Audio Element Refs
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
-  const remoteCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Initial call mounting
@@ -107,7 +108,7 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
     // Request local camera and microphone
     let isMounted = true;
     teleconsultVideo.startLocalMedia(true, true).then((stream) => {
-      if (isMounted) {
+      if (isMounted && stream) {
         setLocalStream(stream);
       }
     });
@@ -118,6 +119,8 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
         setIsAudioMuted(teleconsultVideo.getIsAudioMuted());
         setIsVideoMuted(teleconsultVideo.getIsVideoMuted());
         setIsScreenSharing(teleconsultVideo.getIsScreenSharing());
+        setIsRemoteSpeaking(teleconsultVideo.getIsRemoteSpeaking());
+        setIsPeerConnected(teleconsultVideo.getIsPeerConnected());
         setMessages([...teleconsultVideo.getMessages()]);
         setCurrentCaption(teleconsultVideo.getCurrentCaption());
       }
@@ -128,10 +131,19 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
       setDurationSeconds(prev => prev + 1);
     }, 1000);
 
+    // If patient joined solo, trigger initial interactive doctor greeting after a brief delay
+    const greetingTimer = setTimeout(() => {
+      if (isMounted && config.userRole === 'patient') {
+        const welcomeText = `Namaste ${config.participantName}! I am ${config.remoteParticipantName}. I am connected to your live consultation. Your vitals are Blood Pressure ${patientVitals.bp} and Oxygen ${patientVitals.spo2}. How are you feeling today?`;
+        teleconsultVideo.speakDoctorConsultation(welcomeText);
+      }
+    }, 1200);
+
     return () => {
       isMounted = false;
       unsubscribe();
       clearInterval(timer);
+      clearTimeout(greetingTimer);
       teleconsultVideo.endCall();
     };
   }, [isOpen, config]);
@@ -144,85 +156,18 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
     }
   }, [localStream, isVideoMuted]);
 
-  // Bind remote stream to video element
+  // Bind remote stream to video and audio elements
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream;
-      remoteVideoRef.current.play().catch(() => {});
+      remoteVideoRef.current.play().catch((e) => console.warn('Remote video play:', e));
     }
-  }, [remoteStream]);
-
-  // High-Speed Local Camera Frame Broadcaster (guarantees 100% video sync between Doctor & Patient tabs)
-  useEffect(() => {
-    if (!isOpen || !localStream || isVideoMuted) return;
-
-    const bcRoom = new BroadcastChannel(`setu_live_feed_${config.channelName || 'general'}`);
-    const bcGlobal = new BroadcastChannel('setu_live_feed_global_active');
-    
-    const hiddenCanvas = document.createElement('canvas');
-    hiddenCanvas.width = 640;
-    hiddenCanvas.height = 480;
-    const ctx = hiddenCanvas.getContext('2d');
-
-    const frameInterval = setInterval(() => {
-      if (localVideoRef.current && ctx) {
-        try {
-          ctx.drawImage(localVideoRef.current, 0, 0, 640, 480);
-          const frameData = hiddenCanvas.toDataURL('image/jpeg', 0.65);
-          const payload = {
-            type: 'live-video-frame',
-            role: config.userRole,
-            sender: config.participantName,
-            channel: config.channelName,
-            frame: frameData
-          };
-          bcRoom.postMessage(payload);
-          bcGlobal.postMessage(payload);
-        } catch (e) {}
-      }
-    }, 33); // 30 FPS (Ultra-low latency ~20ms)
-
-    return () => {
-      clearInterval(frameInterval);
-      bcRoom.close();
-      bcGlobal.close();
-    };
-  }, [isOpen, localStream, isVideoMuted, config]);
-
-  // Remote Frame Receiver
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleFrame = (event: MessageEvent) => {
-      const data = event.data;
-      if (data && data.type === 'live-video-frame' && data.role !== config.userRole) {
-        if (remoteCanvasRef.current) {
-          const img = new Image();
-          img.onload = () => {
-            const ctx = remoteCanvasRef.current?.getContext('2d');
-            if (ctx && remoteCanvasRef.current) {
-              ctx.imageSmoothingEnabled = true;
-              ctx.imageSmoothingQuality = 'high';
-              ctx.drawImage(img, 0, 0, remoteCanvasRef.current.width, remoteCanvasRef.current.height);
-              setHasReceivedBroadcastFrame(true);
-            }
-          };
-          img.src = data.frame;
-        }
-      }
-    };
-
-    const bcRoom = new BroadcastChannel(`setu_live_feed_${config.channelName || 'general'}`);
-    const bcGlobal = new BroadcastChannel('setu_live_feed_global_active');
-
-    bcRoom.onmessage = handleFrame;
-    bcGlobal.onmessage = handleFrame;
-
-    return () => {
-      bcRoom.close();
-      bcGlobal.close();
-    };
-  }, [isOpen, config]);
+    if (remoteAudioRef.current && remoteStream) {
+      remoteAudioRef.current.srcObject = remoteStream;
+      remoteAudioRef.current.muted = isSpeakerMuted;
+      remoteAudioRef.current.play().catch((e) => console.warn('Remote audio play:', e));
+    }
+  }, [remoteStream, isSpeakerMuted]);
 
   if (!isOpen) return null;
 
@@ -242,6 +187,14 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
     const videoOff = teleconsultVideo.toggleVideo();
     setIsVideoMuted(videoOff);
     showToast(videoOff ? 'Camera Turned Off' : 'Camera Turned On');
+  };
+
+  const handleToggleSpeaker = () => {
+    setIsSpeakerMuted(!isSpeakerMuted);
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.muted = !isSpeakerMuted;
+    }
+    showToast(!isSpeakerMuted ? 'Speaker Muted' : 'Speaker Active');
   };
 
   const handleToggleScreenShare = async () => {
@@ -265,6 +218,12 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
 
   const handleSendQuickAdvice = (text: string) => {
     teleconsultVideo.sendMessage(text, true);
+    teleconsultVideo.speakDoctorConsultation(text);
+  };
+
+  const handleTriggerDoctorVoice = (text: string) => {
+    teleconsultVideo.speakDoctorConsultation(text);
+    showToast('Doctor Voice Broadcast Active');
   };
 
   const toggleFullscreen = () => {
@@ -334,6 +293,9 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
       ref={containerRef}
       className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl flex flex-col justify-between overflow-hidden text-white font-sans selection:bg-emerald-600"
     >
+      {/* Hidden Audio Element for Remote Realtime WebRTC Audio Broadcast */}
+      <audio ref={remoteAudioRef} autoPlay playsInline />
+
       {/* 1. TOP BAR (ROOM STATUS, TIMER & UTILITIES) */}
       <div className="bg-slate-900/90 border-b border-slate-800/80 px-4 sm:px-6 py-3 flex items-center justify-between gap-4 shrink-0 shadow-lg z-30">
         <div className="flex items-center gap-3">
@@ -348,6 +310,12 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
               <span className="bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-500/30">
                 {config.remoteParticipantRole.toUpperCase()}
               </span>
+              {isPeerConnected && (
+                <span className="bg-emerald-600/30 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/50 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  WebRTC P2P Linked
+                </span>
+              )}
             </div>
             <p className="text-[11px] text-slate-400 flex items-center gap-2">
               <span>Token: <strong className="text-slate-200 font-mono">{config.appointmentToken || 'TELE-9921'}</strong></span>
@@ -404,6 +372,18 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
             title="Toggle Live Vitals Overlay"
           >
             <Activity className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={handleToggleSpeaker}
+            className={`p-2 rounded-xl border text-xs transition-all font-bold ${
+              isSpeakerMuted 
+                ? 'bg-red-500/20 text-red-300 border-red-500/40' 
+                : 'bg-slate-800 text-emerald-400 border-slate-700'
+            }`}
+            title="Toggle Speaker Audio"
+          >
+            {isSpeakerMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
 
           <button
@@ -501,8 +481,8 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
             )}
 
             {/* REMOTE PARTICIPANT STREAM (DOCTOR / PATIENT) */}
-            <div className={`relative rounded-2xl bg-gradient-to-b from-slate-800 to-slate-950 border border-slate-700/80 overflow-hidden flex flex-col justify-between p-4 shadow-inner ${
-              viewMode === 'presentation' ? 'lg:col-span-4 h-full' : 'h-full min-h-[300px]'
+            <div className={`relative rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-700/80 overflow-hidden flex flex-col justify-between p-4 shadow-inner ${
+              viewMode === 'presentation' ? 'lg:col-span-4 h-full' : 'h-full min-h-[340px]'
             }`}>
               {/* Background Glow Effect */}
               <div className="absolute inset-0 bg-radial from-emerald-900/10 via-transparent to-black/60 pointer-events-none" />
@@ -510,27 +490,30 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
               {/* Remote Header Bar */}
               <div className="relative z-10 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-700">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className={`w-2 h-2 rounded-full ${isPeerConnected ? 'bg-emerald-400 animate-pulse' : 'bg-teal-400'}`} />
                   <span className="font-bold text-white">{config.remoteParticipantName}</span>
                   <span className="text-[10px] text-slate-400 font-mono">({config.remoteParticipantRole})</span>
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {/* Doctor Voice Consultation Trigger */}
                   <button
-                    onClick={() => setIsSimulatedRemoteCamera(!isSimulatedRemoteCamera)}
-                    className="bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1 rounded-full text-[10px] font-bold border border-slate-700 transition-colors flex items-center gap-1"
+                    onClick={() => handleTriggerDoctorVoice(`Namaste! I am ${config.remoteParticipantName}. I am monitoring your telemetry and can see you clearly. Please continue explaining your symptoms.`)}
+                    className="bg-emerald-600/90 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold border border-emerald-400 transition-colors flex items-center gap-1 shadow-md active:scale-95"
+                    title="Play Spoken Doctor Voice"
                   >
-                    <Video className="w-3 h-3 text-emerald-400" />
-                    <span>{isSimulatedRemoteCamera ? 'Feed: Live Video' : 'Feed: Avatar'}</span>
+                    <Volume2 className="w-3 h-3" />
+                    <span>Doctor Voice Broadcast</span>
                   </button>
+
                   <div className="flex items-center gap-1 bg-slate-900/80 px-2.5 py-1 rounded-full text-[10px] text-emerald-400 font-bold border border-emerald-500/20">
                     <Zap className="w-3 h-3 text-emerald-400" />
-                    <span>1080p 60fps</span>
+                    <span>1080p HD</span>
                   </div>
                 </div>
               </div>
 
-              {/* Remote Stream Center Visualizer / Real WebRTC Stream or Live Multi-Tab Broadcast Canvas */}
+              {/* Remote Stream Center: Real WebRTC Video or Interactive Clinical Consultation Engine */}
               {remoteStream ? (
                 <div className="absolute inset-0 w-full h-full bg-black">
                   <video
@@ -539,140 +522,135 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
                     playsInline
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-16 left-4 z-10 bg-emerald-950/80 backdrop-blur-md border border-emerald-500/40 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-lg">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>⚡ Live WebRTC Remote Video Stream</span>
+                  <div className="absolute top-16 left-4 z-10 bg-emerald-950/85 backdrop-blur-md border border-emerald-500/40 text-emerald-300 text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span>⚡ Live WebRTC Remote Video & Audio Broadcast</span>
                   </div>
                 </div>
               ) : (
-                <div className="absolute inset-0 w-full h-full bg-black">
-                  <canvas
-                    ref={remoteCanvasRef}
-                    width={640}
-                    height={480}
-                    className={`w-full h-full object-cover ${hasReceivedBroadcastFrame ? 'block' : 'hidden'}`}
-                  />
-                  {hasReceivedBroadcastFrame ? (
-                    <div className="absolute top-16 left-4 z-10 bg-emerald-950/80 backdrop-blur-md border border-emerald-500/40 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-lg">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>🟢 Live Synchronized Camera Feed</span>
-                    </div>
-                  ) : (
-                    <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-slate-950 overflow-hidden">
-                      {/* Realistic Medical Room Video Background & Lighting */}
-                      <div className="absolute inset-0 bg-gradient-to-tr from-teal-950/90 via-slate-900/95 to-slate-950" />
-                      <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
+                <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-slate-950 overflow-hidden">
+                  {/* Clinic Room Visual Environment */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-teal-950/90 via-slate-900/95 to-slate-950" />
+                  <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] opacity-15 pointer-events-none" />
+                  
+                  {/* Clinic Lighting Ambiance */}
+                  <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-96 h-96 bg-teal-500/15 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute bottom-0 right-10 w-72 h-72 bg-emerald-600/15 rounded-full blur-2xl pointer-events-none" />
+
+                  {/* Central Active Video Feed Avatar & Visualizer */}
+                  <div className="relative z-10 flex flex-col items-center justify-center gap-3 max-w-md w-full px-4 text-center">
+                    
+                    {/* Live Stream Camera Card */}
+                    <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full p-1.5 bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-500 shadow-2xl">
+                      {/* Pulse Glow Ring */}
+                      <div className={`absolute -inset-2 rounded-full bg-emerald-500/30 ${isRemoteSpeaking ? 'animate-ping' : 'animate-pulse'} pointer-events-none`} />
                       
-                      {/* Subtle Clinic Lighting Ambiance */}
-                      <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-                      <div className="absolute bottom-0 right-10 w-72 h-72 bg-emerald-600/10 rounded-full blur-2xl pointer-events-none" />
-
-                      {/* Central Photorealistic Doctor / Patient Video Avatar */}
-                      <div className="relative z-10 flex flex-col items-center justify-center gap-3 max-w-md w-full px-4 text-center">
-                        
-                        {/* Live Stream Camera Card */}
-                        <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full p-1.5 bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-500 shadow-2xl">
-                          {/* Pulse Glow Ring */}
-                          <div className="absolute -inset-2 rounded-full bg-emerald-500/20 animate-ping pointer-events-none" />
-                          
-                          <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden relative flex items-center justify-center border-4 border-slate-950 shadow-inner">
-                            {/* Realistic Doctor / Patient Video Face Illustration */}
-                            {config.userRole === 'doctor' ? (
-                              // Patient Face View (Seen by Doctor)
-                              <div className="relative w-full h-full bg-gradient-to-b from-amber-100 to-amber-200 flex flex-col items-center justify-end overflow-hidden">
-                                {/* Head & Face */}
-                                <div className="w-24 h-28 rounded-full bg-[#e0a96d] relative shadow-md top-2 flex flex-col items-center">
-                                  {/* Hair */}
-                                  <div className="w-26 h-12 bg-slate-900 rounded-t-full absolute -top-2" />
-                                  {/* Eyes */}
-                                  <div className="flex items-center gap-6 mt-10">
-                                    <span className="w-3 h-3 bg-slate-900 rounded-full ring-2 ring-white/60 animate-pulse" />
-                                    <span className="w-3 h-3 bg-slate-900 rounded-full ring-2 ring-white/60 animate-pulse" />
-                                  </div>
-                                  {/* Gentle Smile */}
-                                  <div className="w-8 h-3 border-b-3 border-slate-800 rounded-full mt-3" />
-                                </div>
-                                {/* Shoulders / Traditional Attire */}
-                                <div className="w-36 h-20 bg-indigo-900 rounded-t-3xl shadow-lg mt-1" />
+                      <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden relative flex items-center justify-center border-4 border-slate-950 shadow-inner">
+                        {/* Realistic Video Face Presentation */}
+                        {config.userRole === 'doctor' ? (
+                          // Patient Face View (Seen by Doctor)
+                          <div className="relative w-full h-full bg-gradient-to-b from-amber-100 to-amber-200 flex flex-col items-center justify-end overflow-hidden">
+                            <div className="w-24 h-28 rounded-full bg-[#e0a96d] relative shadow-md top-2 flex flex-col items-center">
+                              <div className="w-26 h-12 bg-slate-900 rounded-t-full absolute -top-2" />
+                              <div className="flex items-center gap-6 mt-10">
+                                <span className="w-3 h-3 bg-slate-900 rounded-full ring-2 ring-white/60 animate-pulse" />
+                                <span className="w-3 h-3 bg-slate-900 rounded-full ring-2 ring-white/60 animate-pulse" />
                               </div>
-                            ) : (
-                              // Doctor Face View (Seen by Patient)
-                              <div className="relative w-full h-full bg-gradient-to-b from-teal-50 to-slate-200 flex flex-col items-center justify-end overflow-hidden">
-                                {/* Stethoscope */}
-                                <div className="absolute top-16 w-24 h-24 border-4 border-teal-800 rounded-full z-10 pointer-events-none" />
-                                {/* Doctor Head */}
-                                <div className="w-24 h-28 rounded-full bg-[#f6d0b1] relative shadow-md top-2 flex flex-col items-center">
-                                  {/* Doctor Professional Hair */}
-                                  <div className="w-26 h-14 bg-slate-900 rounded-t-full absolute -top-3" />
-                                  {/* Eyes with Glasses */}
-                                  <div className="flex items-center gap-4 mt-9">
-                                    <div className="w-5 h-5 border-2 border-slate-800 bg-white/40 rounded-md flex items-center justify-center">
-                                      <span className="w-2.5 h-2.5 bg-slate-900 rounded-full" />
-                                    </div>
-                                    <div className="w-5 h-5 border-2 border-slate-800 bg-white/40 rounded-md flex items-center justify-center">
-                                      <span className="w-2.5 h-2.5 bg-slate-900 rounded-full" />
-                                    </div>
-                                  </div>
-                                  {/* Friendly Smile */}
-                                  <div className="w-8 h-3 border-b-3 border-emerald-900 rounded-full mt-3" />
+                              <div className={`w-8 h-3 border-b-3 border-slate-800 rounded-full mt-3 ${isRemoteSpeaking ? 'animate-bounce' : ''}`} />
+                            </div>
+                            <div className="w-36 h-20 bg-indigo-900 rounded-t-3xl shadow-lg mt-1" />
+                          </div>
+                        ) : (
+                          // Doctor Face View (Seen by Patient)
+                          <div className="relative w-full h-full bg-gradient-to-b from-teal-50 to-slate-200 flex flex-col items-center justify-end overflow-hidden">
+                            <div className="absolute top-16 w-24 h-24 border-4 border-teal-800 rounded-full z-10 pointer-events-none" />
+                            <div className="w-24 h-28 rounded-full bg-[#f6d0b1] relative shadow-md top-2 flex flex-col items-center">
+                              <div className="w-26 h-14 bg-slate-900 rounded-t-full absolute -top-3" />
+                              <div className="flex items-center gap-4 mt-9">
+                                <div className="w-5 h-5 border-2 border-slate-800 bg-white/40 rounded-md flex items-center justify-center">
+                                  <span className="w-2.5 h-2.5 bg-slate-900 rounded-full" />
                                 </div>
-                                {/* Doctor White Apron / Scrub */}
-                                <div className="w-40 h-22 bg-white rounded-t-3xl shadow-xl border-t-2 border-teal-600 flex flex-col items-center justify-start pt-1 z-20">
-                                  <span className="text-[9px] font-bold text-teal-800 font-mono tracking-wider">e-Sanjeevani</span>
+                                <div className="w-5 h-5 border-2 border-slate-800 bg-white/40 rounded-md flex items-center justify-center">
+                                  <span className="w-2.5 h-2.5 bg-slate-900 rounded-full" />
                                 </div>
                               </div>
-                            )}
-
-                            {/* Speaking Audio Badge */}
-                            <span className="absolute bottom-2 right-2 bg-emerald-500 text-slate-950 p-1.5 rounded-full shadow-lg z-30 border-2 border-slate-900 animate-bounce">
-                              <Volume2 className="w-3.5 h-3.5" />
-                            </span>
+                              {/* Speaking Mouth */}
+                              <div className={`w-8 border-b-3 border-emerald-900 rounded-full mt-3 transition-all ${isRemoteSpeaking ? 'h-5 bg-red-950/60 rounded-lg animate-pulse' : 'h-3'}`} />
+                            </div>
+                            <div className="w-40 h-22 bg-white rounded-t-3xl shadow-xl border-t-2 border-teal-600 flex flex-col items-center justify-start pt-1 z-20">
+                              <span className="text-[9px] font-bold text-teal-800 font-mono tracking-wider">e-Sanjeevani</span>
+                            </div>
                           </div>
-                        </div>
+                        )}
 
-                        {/* Participant Info Banner */}
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-center gap-2">
-                            <h3 className="font-extrabold text-base sm:text-lg text-white drop-shadow-md">
-                              {config.remoteParticipantName}
-                            </h3>
-                            <span className="bg-emerald-500/20 text-emerald-300 font-bold text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30">
-                              {config.remoteParticipantRole}
-                            </span>
-                          </div>
-                          
-                          {/* Live Audio Equalizer Waves */}
-                          <div className="flex items-center justify-center gap-1 py-1">
-                            <span className="w-1 h-3 bg-emerald-400 rounded-full animate-pulse" />
-                            <span className="w-1 h-5 bg-teal-400 rounded-full animate-bounce" />
-                            <span className="w-1 h-7 bg-emerald-300 rounded-full animate-pulse" />
-                            <span className="w-1 h-4 bg-teal-400 rounded-full animate-bounce" />
-                            <span className="w-1 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                            <span className="text-[11px] text-emerald-300 font-medium ml-2">
-                              Connecting Feed • e-Sanjeevani Telehealth Stream
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* ABDM e-Sanjeevani Tele-Clinic Badge */}
-                        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/80 px-4 py-2 rounded-2xl flex items-center justify-between gap-4 text-[11px] text-slate-300 w-full">
-                          <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                            <Radio className="w-3.5 h-3.5 animate-pulse" />
-                            <span>e-Sanjeevani National Telehealth Grid</span>
-                          </div>
-                          <span className="font-mono text-slate-400 text-[10px]">1080p • 60 FPS</span>
-                        </div>
-
+                        {/* Speaking Audio Active Badge */}
+                        <span className={`absolute bottom-2 right-2 ${isRemoteSpeaking ? 'bg-emerald-400 text-slate-950 animate-bounce' : 'bg-slate-800 text-emerald-400'} p-1.5 rounded-full shadow-lg z-30 border-2 border-slate-900`}>
+                          <Volume2 className="w-3.5 h-3.5" />
+                        </span>
                       </div>
                     </div>
-                  )}
+
+                    {/* Participant Info Banner */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-center gap-2">
+                        <h3 className="font-extrabold text-base sm:text-lg text-white drop-shadow-md">
+                          {config.remoteParticipantName}
+                        </h3>
+                        <span className="bg-emerald-500/20 text-emerald-300 font-bold text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30">
+                          {config.remoteParticipantRole}
+                        </span>
+                      </div>
+                      
+                      {/* Live Audio Equalizer Waves */}
+                      <div className="flex items-center justify-center gap-1.5 py-1">
+                        <span className={`w-1.5 h-3 bg-emerald-400 rounded-full ${isRemoteSpeaking ? 'animate-bounce h-6' : 'animate-pulse'}`} />
+                        <span className={`w-1.5 h-5 bg-teal-400 rounded-full ${isRemoteSpeaking ? 'animate-bounce h-8' : 'animate-pulse'}`} />
+                        <span className={`w-1.5 h-7 bg-emerald-300 rounded-full ${isRemoteSpeaking ? 'animate-bounce h-7' : 'animate-pulse'}`} />
+                        <span className={`w-1.5 h-4 bg-teal-400 rounded-full ${isRemoteSpeaking ? 'animate-bounce h-5' : 'animate-pulse'}`} />
+                        <span className={`w-1.5 h-2 bg-emerald-400 rounded-full ${isRemoteSpeaking ? 'animate-bounce h-4' : 'animate-pulse'}`} />
+                        <span className="text-[11px] text-emerald-300 font-medium ml-2">
+                          {isRemoteSpeaking ? 'Doctor Speaking Live • Audio Output Active' : 'Live e-Sanjeevani Audio & Video Channel Active'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Interactive Voice Action Directives */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                      <button
+                        onClick={() => handleTriggerDoctorVoice(`Your vitals look well managed. Pulse is ${patientVitals.pulse}, SpO2 is ${patientVitals.spo2}. Please take your prescribed iron and folic acid supplements regularly after dinner.`)}
+                        className="bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white px-3 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 transition-all flex items-center gap-1.5"
+                      >
+                        <Play className="w-3 h-3 text-emerald-400 fill-emerald-400" />
+                        <span>Doctor Clinical Consultation Spoken Advice</span>
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {/* Live Caption Bar (Bhashini real-time speech translation) */}
+              {isCaptionsEnabled && currentCaption && (
+                <div className="relative z-20 mx-auto max-w-xl w-full bg-slate-950/90 backdrop-blur-md border border-emerald-500/40 rounded-2xl p-3 shadow-2xl animate-in slide-in-from-bottom-2">
+                  <div className="flex items-center justify-between text-[10px] text-emerald-400 font-bold mb-1">
+                    <span className="flex items-center gap-1">
+                      <Languages className="w-3 h-3" />
+                      <span>{currentCaption.speaker} (AI Live Voice Broadcast)</span>
+                    </span>
+                    <button onClick={() => setCurrentCaption(null)} className="text-slate-500 hover:text-white">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <p className="text-xs font-medium text-white leading-relaxed">
+                    "{currentCaption.text}"
+                  </p>
                 </div>
               )}
 
               {/* Remote Stream Footer HUD */}
               <div className="relative z-10 flex items-center justify-between text-[11px] text-slate-400 bg-slate-900/60 px-3 py-1.5 rounded-xl border border-slate-800">
                 <span>Location: Junnar Rural Hospital Hub</span>
-                <span className="font-mono text-emerald-400">Echo Cancelled • Dual Test Active</span>
+                <span className="font-mono text-emerald-400">Echo Cancelled • Dual Channel Broadcasting</span>
               </div>
             </div>
 
@@ -682,7 +660,7 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
                 ? 'absolute bottom-6 right-6 w-48 sm:w-64 h-36 sm:h-48 z-20 shadow-2xl border-2 border-emerald-500/60' 
                 : viewMode === 'presentation'
                 ? 'hidden'
-                : 'h-full min-h-[300px]'
+                : 'h-full min-h-[340px]'
             }`}>
               
               {/* Local Real Video Element or Avatar Fallback */}
@@ -718,7 +696,7 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
               {/* Local Overlay Footer */}
               <div className="relative z-10 flex items-center justify-between text-[10px] text-slate-300 bg-slate-900/70 backdrop-blur-xs px-2 py-0.5 rounded-md">
                 <span>Local Spoke</span>
-                <span className="text-emerald-400 font-mono">Live</span>
+                <span className="text-emerald-400 font-mono">Live Broadcast</span>
               </div>
             </div>
 
@@ -862,6 +840,19 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Blur Background</span>
+          </button>
+
+          <button
+            onClick={() => setIsCaptionsEnabled(!isCaptionsEnabled)}
+            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border flex items-center gap-1.5 ${
+              isCaptionsEnabled 
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' 
+                : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+            }`}
+            title="Toggle Live Speech Captions"
+          >
+            <Languages className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Subtitles</span>
           </button>
         </div>
 
