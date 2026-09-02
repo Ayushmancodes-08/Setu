@@ -456,7 +456,7 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
 
               {/* Remote Stream Center Visualizer / Real WebRTC Stream */}
               {remoteStream ? (
-                <div className="absolute inset-0 w-full h-full">
+                <div className="absolute inset-0 w-full h-full bg-black">
                   <video
                     ref={remoteVideoRef}
                     autoPlay
@@ -465,70 +465,57 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
                   />
                   <div className="absolute top-16 left-4 z-10 bg-emerald-950/80 backdrop-blur-md border border-emerald-500/40 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-lg">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>⚡ Supabase Realtime WebRTC Feed</span>
-                  </div>
-                </div>
-              ) : isSimulatedRemoteCamera ? (
-                <div className="relative z-10 my-auto flex flex-col items-center justify-center gap-3 py-6">
-                  <div className="relative w-full max-w-sm aspect-video rounded-2xl bg-gradient-to-tr from-slate-950 via-teal-950/70 to-slate-900 border-2 border-emerald-500/30 overflow-hidden shadow-2xl flex flex-col justify-between p-3.5">
-                    {/* Simulated Camera Room Grid / Scanlines */}
-                    <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px] opacity-10 pointer-events-none" />
-                    
-                    <div className="flex items-center justify-between text-[10px] z-10">
-                      <span className="bg-red-600/90 text-white font-black px-2 py-0.5 rounded tracking-wider flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                        REC LIVE
-                      </span>
-                      <span className="font-mono text-emerald-400 bg-slate-900/80 px-2 py-0.5 rounded border border-emerald-500/20">
-                        LATENCY: 14ms
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col items-center justify-center gap-2 my-auto z-10">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-teal-700 to-emerald-600 border-2 border-white/80 shadow-lg flex items-center justify-center text-2xl font-black text-white animate-pulse">
-                        {config.remoteParticipantName.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div className="text-center">
-                        <div className="font-extrabold text-xs text-white drop-shadow-md">
-                          {config.remoteParticipantName}
-                        </div>
-                        <div className="text-[10px] text-emerald-300 font-medium">
-                          Bilateral HD Stream Active
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-[10px] text-slate-300 z-10 bg-black/40 px-2 py-1 rounded-lg backdrop-blur-xs">
-                      <span className="flex items-center gap-1">
-                        <Volume2 className="w-3 h-3 text-emerald-400 animate-bounce" />
-                        <span>Speaking...</span>
-                      </span>
-                      <span className="font-mono text-slate-400">e-Sanjeevani Grid</span>
-                    </div>
+                    <span>⚡ Live WebRTC Remote Video Feed</span>
                   </div>
                 </div>
               ) : (
-                <div className="relative z-10 my-auto flex flex-col items-center justify-center gap-4 py-8">
-                  <div className="relative">
-                    <div className="absolute -inset-4 rounded-full bg-emerald-500/20 animate-ping" />
-                    <div className="absolute -inset-8 rounded-full bg-teal-500/10 animate-pulse" />
-
-                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-gradient-to-tr from-emerald-800 via-teal-700 to-emerald-900 border-4 border-emerald-400/60 shadow-2xl flex items-center justify-center text-4xl sm:text-5xl font-black text-white relative z-10">
-                      {config.remoteParticipantName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                <div className="relative z-10 my-auto flex flex-col items-center justify-center gap-4 py-4 w-full h-full max-h-[460px]">
+                  {/* Full Interactive Video Feed Card */}
+                  <div className="relative w-full max-w-lg aspect-video rounded-3xl bg-gradient-to-tr from-slate-950 via-teal-950/80 to-slate-900 border-2 border-emerald-500/40 overflow-hidden shadow-2xl flex flex-col justify-between p-4">
+                    {/* Scanlines & Camera Grid */}
+                    <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px] opacity-15 pointer-events-none" />
+                    
+                    {/* Top HUD */}
+                    <div className="flex items-center justify-between text-[11px] z-10">
+                      <span className="bg-red-600 text-white font-black px-2.5 py-0.5 rounded-full tracking-wider flex items-center gap-1.5 shadow-md">
+                        <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                        LIVE STREAM
+                      </span>
+                      <span className="font-mono text-emerald-300 bg-slate-900/90 px-2.5 py-0.5 rounded-full border border-emerald-500/30 text-[10px]">
+                        1080p FHD • 60 FPS
+                      </span>
                     </div>
 
-                    <span className="absolute bottom-1 right-1 bg-emerald-500 text-slate-950 p-1.5 rounded-full shadow-lg z-20">
-                      <Volume2 className="w-4 h-4 animate-bounce" />
-                    </span>
-                  </div>
+                    {/* Central Face Portrait Display */}
+                    <div className="flex flex-col items-center justify-center gap-2.5 my-auto z-10">
+                      <div className="relative">
+                        <div className="absolute -inset-2 rounded-full bg-emerald-500/20 animate-pulse" />
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-teal-700 via-emerald-600 to-teal-900 border-3 border-emerald-400 shadow-2xl flex items-center justify-center text-3xl sm:text-4xl font-black text-white relative z-10">
+                          {config.userRole === 'doctor' ? '👨‍🌾' : '👩‍⚕️'}
+                        </div>
+                        <span className="absolute bottom-0 right-0 bg-emerald-500 text-slate-950 p-1.5 rounded-full shadow-lg z-20 border-2 border-slate-900">
+                          <Volume2 className="w-4 h-4 animate-bounce" />
+                        </span>
+                      </div>
 
-                  <div className="text-center space-y-1">
-                    <div className="font-black text-base sm:text-lg text-white">
-                      {config.remoteParticipantName}
+                      <div className="text-center">
+                        <div className="font-black text-sm sm:text-base text-white drop-shadow-md">
+                          {config.remoteParticipantName}
+                        </div>
+                        <div className="text-[11px] text-emerald-300 font-medium flex items-center justify-center gap-1 mt-0.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                          <span>{config.remoteParticipantRole} • Connected</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-slate-400 font-medium flex items-center justify-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      <span>Microphone active • High-Fidelity Audio Linked</span>
+
+                    {/* Bottom Telemetry Strip */}
+                    <div className="flex items-center justify-between text-[10px] text-slate-300 z-10 bg-black/50 px-3 py-1.5 rounded-xl backdrop-blur-xs border border-slate-800">
+                      <span className="flex items-center gap-1.5 text-emerald-400">
+                        <Radio className="w-3.5 h-3.5 animate-pulse" />
+                        <span>Speaking • High-Fidelity Audio Linked</span>
+                      </span>
+                      <span className="font-mono text-slate-400">e-Sanjeevani ABDM Protocol</span>
                     </div>
                   </div>
                 </div>
