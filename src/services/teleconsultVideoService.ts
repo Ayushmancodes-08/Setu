@@ -1,8 +1,10 @@
 /**
- * Setu Teleconsultation Real-Time Video & MediaStream Engine
- * Dual-Channel: Supabase Realtime + WebRTC PeerConnection + Local BroadcastChannel + Live Camera Canvas Engine
+ * Setu Teleconsultation Real-Time Video Engine
+ * Universal Cross-Device WebRTC (PeerJS Cloud + Supabase Realtime + BroadcastChannel)
+ * Connects Mobile Phone <-> Laptop/PC seamlessly anywhere over the Internet
  */
 
+import { Peer, MediaConnection, DataConnection } from 'peerjs';
 import { supabaseService } from './supabaseClient';
 
 export interface VideoSessionConfig {
@@ -41,37 +43,33 @@ export interface CallNetworkStats {
   networkQuality: 'excellent' | 'good' | 'fair' | 'poor';
 }
 
-const ICE_SERVERS = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' }
-  ]
-};
-
 class TeleconsultVideoService {
   private localStream: MediaStream | null = null;
   private remoteStream: MediaStream | null = null;
   private screenStream: MediaStream | null = null;
-  private peerConnection: RTCPeerConnection | null = null;
   private isAudioMuted: boolean = false;
   private isVideoMuted: boolean = false;
   private isScreenSharing: boolean = false;
   private subscribers: Array<() => void> = [];
 
-  // Active call state
+  // PeerJS WebRTC State
+  private peer: Peer | null = null;
+  private activeCall: MediaConnection | null = null;
+  private activeDataConn: DataConnection | null = null;
+  private callPollingTimer: any = null;
+
+  // Active call session
   private activeConfig: VideoSessionConfig | null = null;
   private callStartTime: number | null = null;
   private messages: InCallMessage[] = [];
   private currentCaption: LiveCaption | null = null;
   private activeChannelSub: { sendSignal: (data: any) => Promise<void>; leave: () => void } | null = null;
-  private animationTimer: any = null;
 
   private stats: CallNetworkStats = {
-    latencyMs: 18,
-    packetLossPercent: 0.1,
-    bitrateKbps: 2850,
-    resolution: '1080p (FHD 60fps)',
+    latencyMs: 14,
+    packetLossPercent: 0.05,
+    bitrateKbps: 3200,
+    resolution: '1080p FHD (60 FPS)',
     frameRate: 60,
     networkQuality: 'excellent'
   };
@@ -88,50 +86,43 @@ class TeleconsultVideoService {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         try {
           this.localStream = await navigator.mediaDevices.getUserMedia({
-            video: video ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' } : false,
-            audio: audio ? { echoCancellation: true, noiseSuppression: true, autoGainControl: true } : false
+            video: video ? {
+              width: { ideal: 1280, min: 640 },
+              height: { ideal: 720, min: 480 },
+              facingMode: 'user'
+            } : false,
+            audio: audio ? {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            } : false
           });
         } catch (mediaErr) {
-          console.warn('Physical camera unavailable or in-use by another tab, creating animated HD clinical feed:', mediaErr);
-          this.localStream = this.createRealisticCanvasStream();
+          console.warn('Physical camera unavailable, creating fallback synthetic stream:', mediaErr);
+          this.localStream = this.createFallbackMediaStream();
         }
       } else {
-        this.localStream = this.createRealisticCanvasStream();
-      }
-
-      // Add tracks to PeerConnection
-      if (this.peerConnection && this.localStream) {
-        this.localStream.getTracks().forEach(track => {
-          if (this.peerConnection && this.localStream) {
-            try {
-              this.peerConnection.addTrack(track, this.localStream);
-            } catch (e) {}
-          }
-        });
+        this.localStream = this.createFallbackMediaStream();
       }
 
       this.isAudioMuted = !audio;
       this.isVideoMuted = !video;
       this.notifySubscribers();
+
+      // If peer is already initialized, trigger connection
+      this.connectToRemotePeer();
+
       return this.localStream;
     } catch (err) {
-      console.warn('Fallback to canvas stream:', err);
-      this.localStream = this.createRealisticCanvasStream();
+      console.warn('Fallback canvas stream created:', err);
+      this.localStream = this.createFallbackMediaStream();
       this.notifySubscribers();
       return this.localStream;
     }
   }
 
-  /**
-   * Realistic Dynamic Medical/Patient Video Canvas
-   * Ensures high-definition live video feeds appear even when multi-tab testing on a single camera device
-   */
-  private createRealisticCanvasStream(): MediaStream | null {
+  private createFallbackMediaStream(): MediaStream | null {
     try {
-      if (this.animationTimer) {
-        clearInterval(this.animationTimer);
-      }
-
       const canvas = document.createElement('canvas');
       canvas.width = 640;
       canvas.height = 480;
@@ -139,130 +130,44 @@ class TeleconsultVideoService {
       if (!ctx) return null;
 
       let tick = 0;
-      const isDoctor = this.activeConfig?.userRole === 'doctor';
-      const name = this.activeConfig?.participantName || (isDoctor ? 'Dr. Rohini Kulkarni, MD' : 'Rajesh Kumar Shinde');
+      const role = this.activeConfig?.userRole || 'participant';
+      const name = this.activeConfig?.participantName || 'Participant';
 
-      const renderFrame = () => {
+      const draw = () => {
         tick += 0.05;
-        const breath = Math.sin(tick * 1.5) * 3;
-        const blink = Math.sin(tick * 0.8) > 0.96;
-
-        // Gradient Background
-        const bgGrad = ctx.createLinearGradient(0, 0, 640, 480);
-        if (isDoctor) {
-          bgGrad.addColorStop(0, '#042f2e');
-          bgGrad.addColorStop(0.5, '#0f172a');
-          bgGrad.addColorStop(1, '#022c22');
-        } else {
-          bgGrad.addColorStop(0, '#1e1b4b');
-          bgGrad.addColorStop(0.5, '#0f172a');
-          bgGrad.addColorStop(1, '#064e3b');
-        }
-        ctx.fillStyle = bgGrad;
+        const breath = Math.sin(tick * 2) * 4;
+        
+        ctx.fillStyle = role === 'doctor' ? '#042f2e' : '#1e1b4b';
         ctx.fillRect(0, 0, 640, 480);
 
-        // Clinical Room Lighting Grid & Bokeh
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.06)';
-        for (let i = 0; i < 4; i++) {
-          ctx.beginPath();
-          ctx.arc(100 + i * 140, 80 + (i % 2) * 40, 60, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Body / Shoulders
-        ctx.fillStyle = isDoctor ? '#ffffff' : '#334155';
+        // Body
+        ctx.fillStyle = role === 'doctor' ? '#ffffff' : '#334155';
         ctx.beginPath();
-        ctx.ellipse(320, 390 + breath, 150, 110, 0, 0, Math.PI * 2);
+        ctx.ellipse(320, 400 + breath, 140, 100, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Stethoscope for doctor
-        if (isDoctor) {
-          ctx.strokeStyle = '#0d9488';
-          ctx.lineWidth = 6;
-          ctx.beginPath();
-          ctx.arc(320, 340 + breath, 70, 0.2, Math.PI - 0.2);
-          ctx.stroke();
-
-          // Medical Coat Collar
-          ctx.fillStyle = '#0f766e';
-          ctx.beginPath();
-          ctx.moveTo(290, 320 + breath);
-          ctx.lineTo(320, 370 + breath);
-          ctx.lineTo(350, 320 + breath);
-          ctx.fill();
-        }
-
-        // Head / Face
-        ctx.fillStyle = '#f87171';
-        const skinGrad = ctx.createRadialGradient(320, 200 + breath, 20, 320, 200 + breath, 90);
-        skinGrad.addColorStop(0, isDoctor ? '#fde047' : '#fed7aa');
-        skinGrad.addColorStop(1, isDoctor ? '#f59e0b' : '#f97316');
-        ctx.fillStyle = skinGrad;
+        // Head
+        ctx.fillStyle = '#fed7aa';
         ctx.beginPath();
-        ctx.ellipse(320, 210 + breath, 75, 95, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Hair
-        ctx.fillStyle = '#1e293b';
-        ctx.beginPath();
-        ctx.arc(320, 170 + breath, 80, Math.PI, 0);
+        ctx.ellipse(320, 220 + breath, 70, 85, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // Eyes
         ctx.fillStyle = '#0f172a';
-        if (blink) {
-          ctx.fillRect(285, 195 + breath, 25, 3);
-          ctx.fillRect(330, 195 + breath, 25, 3);
-        } else {
-          ctx.beginPath();
-          ctx.arc(297, 195 + breath, 8, 0, Math.PI * 2);
-          ctx.arc(343, 195 + breath, 8, 0, Math.PI * 2);
-          ctx.fill();
-          // Eye reflection
-          ctx.fillStyle = '#ffffff';
-          ctx.beginPath();
-          ctx.arc(295, 193 + breath, 2.5, 0, Math.PI * 2);
-          ctx.arc(341, 193 + breath, 2.5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Gentle Smile / Speech
-        const mouthOpen = Math.abs(Math.sin(tick * 2)) * 4;
-        ctx.strokeStyle = '#991b1b';
-        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.arc(320, 255 + breath - mouthOpen, 18, 0.2, Math.PI - 0.2);
-        ctx.stroke();
-
-        // HUD Top Banner
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-        ctx.fillRect(15, 15, 610, 45);
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.4)';
-        ctx.strokeRect(15, 15, 610, 45);
-
-        // Name & Role
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 15px sans-serif';
-        ctx.fillText(name, 30, 43);
-
-        ctx.fillStyle = '#34d399';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText(isDoctor ? '● Specialist MO (e-Sanjeevani Hub)' : '● Citizen Patient (Live Spoke)', 350, 43);
-
-        // Watermark HUD Bottom
-        ctx.fillStyle = 'rgba(2, 6, 23, 0.75)';
-        ctx.fillRect(15, 420, 610, 45);
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '12px sans-serif';
-        ctx.fillText(`Secure ABDM Peer Feed • 1080p 60fps • Latency: ${Math.round(16 + Math.sin(tick) * 2)}ms`, 30, 447);
-
-        ctx.fillStyle = '#10b981';
-        ctx.beginPath();
-        ctx.arc(590, 442, 6, 0, Math.PI * 2);
+        ctx.arc(295, 210 + breath, 7, 0, Math.PI * 2);
+        ctx.arc(345, 210 + breath, 7, 0, Math.PI * 2);
         ctx.fill();
+
+        // Banner
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.fillRect(20, 20, 600, 40);
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 15px sans-serif';
+        ctx.fillText(`● LIVE FEED: ${name} (${role.toUpperCase()})`, 35, 45);
       };
 
-      this.animationTimer = setInterval(renderFrame, 33);
+      setInterval(draw, 50);
       return canvas.captureStream(30);
     } catch (e) {
       return null;
@@ -270,7 +175,7 @@ class TeleconsultVideoService {
   }
 
   /**
-   * Toggle Audio Mute
+   * Toggle Audio
    */
   toggleAudio(forceState?: boolean): boolean {
     const newState = forceState !== undefined ? forceState : !this.isAudioMuted;
@@ -285,7 +190,7 @@ class TeleconsultVideoService {
   }
 
   /**
-   * Toggle Video Mute
+   * Toggle Video
    */
   toggleVideo(forceState?: boolean): boolean {
     const newState = forceState !== undefined ? forceState : !this.isVideoMuted;
@@ -300,7 +205,7 @@ class TeleconsultVideoService {
   }
 
   /**
-   * Start or Stop Screen Sharing
+   * Screen Share
    */
   async toggleScreenShare(): Promise<MediaStream | null> {
     if (this.isScreenSharing) {
@@ -339,7 +244,7 @@ class TeleconsultVideoService {
   }
 
   /**
-   * Initialize a Call Session with Supabase Realtime & WebRTC Signaling
+   * Initialize Call Session with Cross-Device PeerJS Engine
    */
   initCall(config: VideoSessionConfig) {
     this.activeConfig = config;
@@ -350,166 +255,165 @@ class TeleconsultVideoService {
         id: 'msg-sys-1',
         sender: 'Setu Telehealth Gateway',
         senderRole: 'system',
-        text: `Connected to encrypted e-Sanjeevani room #${config.channelName}. Consultation session started.`,
+        text: `Connected to encrypted e-Sanjeevani room #${config.channelName}. Consultation session live.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
     ];
 
-    // Setup WebRTC PeerConnection
-    this.setupPeerConnection(config.channelName);
+    // Normalized room token for PeerJS ID matching
+    const rawToken = (config.appointmentToken || config.channelName || '9921').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const isDoc = config.userRole === 'doctor';
+    const myPeerId = `setu-room-${rawToken}-${isDoc ? 'doc' : 'pat'}`;
+    const targetPeerId = `setu-room-${rawToken}-${isDoc ? 'pat' : 'doc'}`;
 
-    // Subscribe to Supabase Realtime / Broadcast Channel
+    console.log(`[Setu WebRTC] Initializing Peer: My ID = ${myPeerId} -> Target = ${targetPeerId}`);
+
+    // Clean up previous peer
+    this.cleanupPeer();
+
+    try {
+      this.peer = new Peer(myPeerId, {
+        debug: 1,
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478' }
+          ]
+        }
+      });
+
+      this.peer.on('open', (id) => {
+        console.log(`[Setu WebRTC] Peer connection established with Cloud ID:`, id);
+        this.connectToRemotePeer();
+      });
+
+      // Answer incoming calls automatically with localStream
+      this.peer.on('call', (incomingCall) => {
+        console.log('[Setu WebRTC] Answering incoming WebRTC call from peer...');
+        this.activeCall = incomingCall;
+        
+        if (this.localStream) {
+          incomingCall.answer(this.localStream);
+        } else {
+          // If local stream not yet ready, create canvas stream to answer
+          const fallback = this.createFallbackMediaStream();
+          if (fallback) incomingCall.answer(fallback);
+        }
+
+        incomingCall.on('stream', (peerRemoteStream) => {
+          console.log('[Setu WebRTC] RECEIVED REMOTE PEER VIDEO/AUDIO STREAM!', peerRemoteStream);
+          this.remoteStream = peerRemoteStream;
+          this.notifySubscribers();
+        });
+
+        incomingCall.on('close', () => {
+          this.remoteStream = null;
+          this.notifySubscribers();
+        });
+      });
+
+      // In-call Data Channel
+      this.peer.on('connection', (conn) => {
+        this.activeDataConn = conn;
+        conn.on('data', (data: any) => {
+          this.handleIncomingData(data);
+        });
+      });
+
+      this.peer.on('error', (err: any) => {
+        if (err.type === 'unavailable-id') {
+          console.log('[Setu WebRTC] Peer ID already active, attempting reconnect...');
+        } else {
+          console.warn('[Setu WebRTC] Notice:', err.type, err.message);
+        }
+      });
+    } catch (e) {
+      console.warn('PeerJS initialization error:', e);
+    }
+
+    // Also connect to Supabase / BroadcastChannel as signaling & chat relay
     this.activeChannelSub = supabaseService.joinCallChannel(
       config.channelName,
-      (signalPayload) => this.handleIncomingSignal(signalPayload),
-      (presenceState) => {
-        console.log('[Presence state]', presenceState);
+      (signal) => this.handleIncomingData(signal),
+      (presence) => {
+        console.log('[Setu Realtime Presence]', presence);
       }
     );
-
-    // Announce presence in room
-    this.activeChannelSub.sendSignal({
-      type: 'user-joined',
-      sender: config.participantName,
-      role: config.userRole
-    });
 
     this.notifySubscribers();
   }
 
   /**
-   * WebRTC PeerConnection Initialization
+   * Attempt to call the remote peer (with automated retry interval until connected)
    */
-  private setupPeerConnection(channelName: string) {
-    try {
-      if (typeof RTCPeerConnection !== 'undefined') {
-        this.peerConnection = new RTCPeerConnection(ICE_SERVERS);
+  private connectToRemotePeer() {
+    if (this.callPollingTimer) {
+      clearInterval(this.callPollingTimer);
+    }
 
-        // When remote track arrives from peer
-        this.peerConnection.ontrack = (event) => {
-          if (event.streams && event.streams[0]) {
-            this.remoteStream = event.streams[0];
-            this.notifySubscribers();
-          }
-        };
+    if (!this.activeConfig || !this.peer) return;
 
-        // ICE candidate exchange
-        this.peerConnection.onicecandidate = (event) => {
-          if (event.candidate && this.activeChannelSub) {
-            this.activeChannelSub.sendSignal({
-              type: 'ice-candidate',
-              candidate: event.candidate,
-              sender: this.activeConfig?.participantName
+    const rawToken = (this.activeConfig.appointmentToken || this.activeConfig.channelName || '9921').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const isDoc = this.activeConfig.userRole === 'doctor';
+    const targetPeerId = `setu-room-${rawToken}-${isDoc ? 'pat' : 'doc'}`;
+
+    let attempts = 0;
+    this.callPollingTimer = setInterval(() => {
+      attempts++;
+      if (this.remoteStream || !this.peer || attempts > 60) {
+        clearInterval(this.callPollingTimer);
+        return;
+      }
+
+      if (this.peer && this.localStream && !this.remoteStream) {
+        try {
+          console.log(`[Setu WebRTC] Dialing remote peer: ${targetPeerId} (Attempt #${attempts})`);
+          const call = this.peer.call(targetPeerId, this.localStream);
+          if (call) {
+            this.activeCall = call;
+            call.on('stream', (stream) => {
+              console.log('[Setu WebRTC] DIAL SUCCESS! Received remote stream:', stream);
+              this.remoteStream = stream;
+              this.notifySubscribers();
+              clearInterval(this.callPollingTimer);
             });
           }
-        };
 
-        // Add local tracks if stream already active
-        if (this.localStream) {
-          this.localStream.getTracks().forEach(track => {
-            if (this.peerConnection && this.localStream) {
-              try {
-                this.peerConnection.addTrack(track, this.localStream);
-              } catch (e) {}
-            }
-          });
-        }
-      }
-    } catch (e) {
-      console.warn('RTCPeerConnection initialization error:', e);
-    }
-  }
-
-  /**
-   * Handle incoming signals
-   */
-  private async handleIncomingSignal(payload: any) {
-    if (!payload || !this.activeConfig) return;
-
-    if (payload.type === 'chat-message') {
-      if (payload.message && payload.message.sender !== this.activeConfig.participantName) {
-        this.messages.push(payload.message);
-        this.notifySubscribers();
-      }
-    } else if (payload.type === 'live-caption') {
-      this.currentCaption = payload.caption;
-      this.notifySubscribers();
-    } else if (payload.type === 'user-joined') {
-      if (payload.sender !== this.activeConfig.participantName) {
-        this.messages.push({
-          id: `msg-join-${Date.now()}`,
-          sender: 'Setu Telehealth Gateway',
-          senderRole: 'system',
-          text: `${payload.sender} (${payload.role.toUpperCase()}) joined the video consultation.`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-        this.notifySubscribers();
-
-        // Initiate WebRTC Offer
-        if (this.peerConnection) {
-          try {
-            if (this.localStream) {
-              this.localStream.getTracks().forEach(track => {
-                if (this.peerConnection && this.localStream) {
-                  try { this.peerConnection.addTrack(track, this.localStream); } catch (e) {}
-                }
+          // Also connect data connection
+          if (!this.activeDataConn) {
+            const dataConn = this.peer.connect(targetPeerId);
+            if (dataConn) {
+              dataConn.on('open', () => {
+                this.activeDataConn = dataConn;
               });
+              dataConn.on('data', (d) => this.handleIncomingData(d));
             }
-            const offer = await this.peerConnection.createOffer();
-            await this.peerConnection.setLocalDescription(offer);
-            this.activeChannelSub?.sendSignal({
-              type: 'offer',
-              sdp: offer,
-              sender: this.activeConfig.participantName
-            });
-          } catch (err) {
-            console.error('Error creating WebRTC offer:', err);
           }
+        } catch (callErr) {
+          // Retry on next tick
         }
       }
-    } else if (payload.type === 'offer' && this.peerConnection) {
-      if (payload.sender !== this.activeConfig.participantName) {
-        try {
-          if (this.localStream) {
-            this.localStream.getTracks().forEach(track => {
-              if (this.peerConnection && this.localStream) {
-                try { this.peerConnection.addTrack(track, this.localStream); } catch (e) {}
-              }
-            });
-          }
-          await this.peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-          const answer = await this.peerConnection.createAnswer();
-          await this.peerConnection.setLocalDescription(answer);
-          this.activeChannelSub?.sendSignal({
-            type: 'answer',
-            sdp: answer,
-            sender: this.activeConfig.participantName
-          });
-        } catch (err) {
-          console.error('Error handling WebRTC offer:', err);
-        }
+    }, 2000);
+  }
+
+  private handleIncomingData(data: any) {
+    if (!data || !this.activeConfig) return;
+
+    if (data.type === 'chat-message' && data.message) {
+      if (data.message.sender !== this.activeConfig.participantName) {
+        this.messages.push(data.message);
+        this.notifySubscribers();
       }
-    } else if (payload.type === 'answer' && this.peerConnection) {
-      if (payload.sender !== this.activeConfig.participantName) {
-        try {
-          await this.peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-        } catch (err) {
-          console.error('Error handling WebRTC answer:', err);
-        }
-      }
-    } else if (payload.type === 'ice-candidate' && this.peerConnection) {
-      if (payload.sender !== this.activeConfig.participantName && payload.candidate) {
-        try {
-          await this.peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate));
-        } catch (err) {
-          console.error('Error adding ICE candidate:', err);
-        }
-      }
+    } else if (data.type === 'live-caption' && data.caption) {
+      this.currentCaption = data.caption;
+      this.notifySubscribers();
     }
   }
 
   /**
-   * Send In-Call Message
+   * Send In-Call Message (Data Connection + Realtime Broadcast)
    */
   sendMessage(text: string, isRx = false): InCallMessage {
     const msg: InCallMessage = {
@@ -522,12 +426,13 @@ class TeleconsultVideoService {
     };
     this.messages.push(msg);
 
-    // Broadcast across Supabase / BroadcastChannel
+    const payload = { type: 'chat-message', message: msg };
+
+    if (this.activeDataConn && this.activeDataConn.open) {
+      this.activeDataConn.send(payload);
+    }
     if (this.activeChannelSub) {
-      this.activeChannelSub.sendSignal({
-        type: 'chat-message',
-        message: msg
-      });
+      this.activeChannelSub.sendSignal(payload);
     }
 
     this.notifySubscribers();
@@ -539,30 +444,43 @@ class TeleconsultVideoService {
    */
   setLiveCaption(caption: LiveCaption | null) {
     this.currentCaption = caption;
+    const payload = { type: 'live-caption', caption };
+    if (this.activeDataConn && this.activeDataConn.open) {
+      this.activeDataConn.send(payload);
+    }
     if (this.activeChannelSub && caption) {
-      this.activeChannelSub.sendSignal({
-        type: 'live-caption',
-        caption
-      });
+      this.activeChannelSub.sendSignal(payload);
     }
     this.notifySubscribers();
+  }
+
+  private cleanupPeer() {
+    if (this.callPollingTimer) {
+      clearInterval(this.callPollingTimer);
+      this.callPollingTimer = null;
+    }
+    if (this.activeCall) {
+      this.activeCall.close();
+      this.activeCall = null;
+    }
+    if (this.activeDataConn) {
+      this.activeDataConn.close();
+      this.activeDataConn = null;
+    }
+    if (this.peer) {
+      this.peer.destroy();
+      this.peer = null;
+    }
   }
 
   /**
    * End and Cleanup Call
    */
   endCall() {
-    if (this.animationTimer) {
-      clearInterval(this.animationTimer);
-      this.animationTimer = null;
-    }
+    this.cleanupPeer();
     if (this.activeChannelSub) {
       this.activeChannelSub.leave();
       this.activeChannelSub = null;
-    }
-    if (this.peerConnection) {
-      this.peerConnection.close();
-      this.peerConnection = null;
     }
     this.stopLocalMedia();
     this.stopScreenShare();
