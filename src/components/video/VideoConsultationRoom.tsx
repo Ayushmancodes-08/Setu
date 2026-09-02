@@ -64,6 +64,7 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
   
   // Streams and states
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isVideoMuted, setIsVideoMuted] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
@@ -111,6 +112,7 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
 
     const unsubscribe = teleconsultVideo.subscribe(() => {
       if (isMounted) {
+        setRemoteStream(teleconsultVideo.getRemoteStream());
         setIsAudioMuted(teleconsultVideo.getIsAudioMuted());
         setIsVideoMuted(teleconsultVideo.getIsVideoMuted());
         setIsScreenSharing(teleconsultVideo.getIsScreenSharing());
@@ -138,6 +140,13 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
       localVideoRef.current.srcObject = localStream;
     }
   }, [localStream, isVideoMuted]);
+
+  // Bind remote stream to video element
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
 
   if (!isOpen) return null;
 
@@ -445,8 +454,21 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
                 </div>
               </div>
 
-              {/* Remote Stream Center Visualizer / Dual Video Simulation */}
-              {isSimulatedRemoteCamera ? (
+              {/* Remote Stream Center Visualizer / Real WebRTC Stream */}
+              {remoteStream ? (
+                <div className="absolute inset-0 w-full h-full">
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-16 left-4 z-10 bg-emerald-950/80 backdrop-blur-md border border-emerald-500/40 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-lg">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>⚡ Supabase Realtime WebRTC Feed</span>
+                  </div>
+                </div>
+              ) : isSimulatedRemoteCamera ? (
                 <div className="relative z-10 my-auto flex flex-col items-center justify-center gap-3 py-6">
                   <div className="relative w-full max-w-sm aspect-video rounded-2xl bg-gradient-to-tr from-slate-950 via-teal-950/70 to-slate-900 border-2 border-emerald-500/30 overflow-hidden shadow-2xl flex flex-col justify-between p-3.5">
                     {/* Simulated Camera Room Grid / Scanlines */}

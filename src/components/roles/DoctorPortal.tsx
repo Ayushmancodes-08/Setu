@@ -50,8 +50,18 @@ export const DoctorPortal: React.FC = () => {
   const [selectedQueueItem, setSelectedQueueItem] = useState<any>(teleconsultQueue[0] || appointments[0] || null);
   const [isLiveConsulting, setIsLiveConsulting] = useState<boolean>(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'consultation' | 'rx_builder' | 'lab_order' | 'record_lab' | 'referral'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'consultation' | 'patient_records' | 'rx_builder' | 'lab_order' | 'record_lab' | 'referral'>('dashboard');
   const [queueFilter, setQueueFilter] = useState<'all' | 'teleconsult' | 'appointments'>('all');
+  const [docRecordFilter, setDocRecordFilter] = useState<'all' | 'Diagnostic Lab' | 'Prescription' | 'Imaging / Scan' | 'Discharge Summary'>('all');
+
+  // Resolved matched patient in health DB
+  const matchedPatient = selectedQueueItem
+    ? (patients.find(p => 
+        (p.id && (p.id === selectedQueueItem.patientId || p.id === selectedQueueItem.id)) ||
+        (selectedQueueItem.patientName && p.name.toLowerCase() === selectedQueueItem.patientName.toLowerCase()) ||
+        (selectedQueueItem.name && p.name.toLowerCase() === selectedQueueItem.name.toLowerCase())
+      ) || (selectedQueueItem.patientName?.toLowerCase().includes('sunita') ? patients.find(p => p.name.toLowerCase().includes('sunita')) : null) || patients[0])
+    : patients[0];
 
   // Consultation Clinical Notes
   const [doctorNotes, setDoctorNotes] = useState<string>(
@@ -482,14 +492,15 @@ export const DoctorPortal: React.FC = () => {
               {[
                 { id: 'dashboard', label: '📊 Dashboard' },
                 { id: 'consultation', label: '🩺 Consult' },
+                { id: 'patient_records', label: `📑 Records (${(matchedPatient?.recentLabReports || []).length})` },
                 { id: 'rx_builder', label: `💊 e-Rx (${rxItems.length})` },
                 { id: 'lab_order', label: '🧪 Lab Order' },
                 { id: 'referral', label: '📤 Referral' },
               ].map(tab => (
                 <button key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex-1 py-2 px-2 rounded-xl transition-all whitespace-nowrap ${
-                    activeTab === tab.id ? 'bg-blue-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 hover:bg-white'
+                  className={`flex-1 py-2 px-2.5 rounded-xl transition-all whitespace-nowrap ${
+                    activeTab === tab.id ? 'bg-blue-700 text-white shadow-sm font-black' : 'text-slate-500 hover:text-slate-800 hover:bg-white'
                   }`}
                 >{tab.label}</button>
               ))}
@@ -519,7 +530,7 @@ export const DoctorPortal: React.FC = () => {
                     {teleconsultQueue.filter(q => q.urgency === 'red').length > 0 && (
                       <AlertBanner type="critical" title="🔴 RED triage patient waiting" message={`${teleconsultQueue.filter(q => q.urgency === 'red')[0]?.patientName || 'Patient'} — immediate consultation required`} action={{ label: 'See Now', onClick: () => { setSelectedQueueItem(teleconsultQueue.find(q => q.urgency === 'red')); setActiveTab('consultation'); } }} />
                     )}
-                    <AlertBanner type="warning" title="Lab report ready for review" message="Sunita Shinde — Hb 8.2 g/dL (Critical). Action required." action={{ label: 'Review', onClick: () => setActiveTab('record_lab') }} />
+                    <AlertBanner type="warning" title="Lab report ready for review" message="Sunita Shinde — Hb 8.2 g/dL (Critical). Action required." action={{ label: 'Review', onClick: () => setActiveTab('patient_records') }} />
                   </div>
 
                   {/* Quick Actions */}
@@ -527,8 +538,8 @@ export const DoctorPortal: React.FC = () => {
                     <SectionHeader title="Quick Actions" sub="Jump directly to key workflows" />
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       <QuickAction icon={Video} label="Start Consult" sub="Next patient" color="bg-blue-700 text-white" onClick={() => { setSelectedQueueItem(teleconsultQueue[0] || appointments[0]); setActiveTab('consultation'); }} pulse={!!(teleconsultQueue.length + appointments.length)} />
+                      <QuickAction icon={FileCheck} label="View Records" sub="Patient uploads" color="bg-teal-700 text-white" onClick={() => setActiveTab('patient_records')} />
                       <QuickAction icon={Pill} label="Write e-Rx" sub="Rx builder" color="bg-emerald-700 text-white" onClick={() => setActiveTab('rx_builder')} />
-                      <QuickAction icon={FileText} label="Order Lab" sub="Lab requisition" color="bg-purple-700 text-white" onClick={() => setActiveTab('lab_order')} />
                       <QuickAction icon={Send} label="Refer Patient" sub="Specialist" color="bg-amber-600 text-white" onClick={() => setActiveTab('referral')} />
                     </div>
                   </div>
@@ -557,6 +568,19 @@ export const DoctorPortal: React.FC = () => {
             {/* TAB 1: CLINICAL EVALUATION */}
             {activeTab === 'consultation' && (
               <div className="space-y-4">
+                <div className="flex items-center justify-between bg-blue-50 p-3 rounded-2xl border border-blue-200 text-xs text-blue-900">
+                  <div className="flex items-center gap-2">
+                    <FileCheck className="w-4 h-4 text-blue-700 shrink-0" />
+                    <span>Patient has <strong>{(matchedPatient?.recentLabReports || []).length} uploaded records</strong> (Lab Reports / Prescriptions / Scans).</span>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('patient_records')}
+                    className="text-blue-800 font-bold underline hover:text-blue-950 shrink-0"
+                  >
+                    View Records →
+                  </button>
+                </div>
+
                 <div>
                   <label className="font-bold text-slate-800 text-xs block mb-1">Doctor's Clinical Impression & Treatment Notes</label>
                   <textarea
@@ -569,8 +593,173 @@ export const DoctorPortal: React.FC = () => {
 
                 <div className="flex items-center justify-between pt-2">
                   <button
+                    onClick={() => setActiveTab('patient_records')}
+                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center gap-1.5"
+                  >
+                    <FileCheck className="w-3.5 h-3.5 text-blue-700" />
+                    <span>Inspect Patient Records</span>
+                  </button>
+
+                  <button
                     onClick={() => setActiveTab('rx_builder')}
                     className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-xs"
+                  >
+                    <span>Proceed to e-Prescription</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: PATIENT HEALTH RECORDS & UPLOADS */}
+            {activeTab === 'patient_records' && (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                      <FileCheck className="w-4 h-4 text-blue-700" />
+                      <span>{matchedPatient?.name}'s Medical Records & Uploads</span>
+                    </h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Uploaded by patient or diagnostic centers • Synchronized via ABDM & Supabase
+                    </p>
+                  </div>
+                  <span className="bg-teal-100 text-teal-800 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-teal-200 self-start sm:self-auto">
+                    ABHA: {matchedPatient?.abhaId || '91-8841-2091-7741'}
+                  </span>
+                </div>
+
+                {/* Filter Pills */}
+                <div className="flex bg-slate-100 p-1 rounded-xl gap-1 overflow-x-auto text-[11px] font-bold">
+                  {[
+                    { id: 'all', label: `All (${(matchedPatient?.recentLabReports || []).length})` },
+                    { id: 'Diagnostic Lab', label: '🧪 Lab Reports' },
+                    { id: 'Prescription', label: '💊 Prescriptions' },
+                    { id: 'Imaging / Scan', label: '🩻 Scans' },
+                    { id: 'Discharge Summary', label: '🏥 Discharge' },
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setDocRecordFilter(tab.id as any)}
+                      className={`px-3 py-1 rounded-lg whitespace-nowrap transition-all ${
+                        docRecordFilter === tab.id
+                          ? 'bg-white text-slate-900 shadow-xs font-black'
+                          : 'text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Records List */}
+                {(() => {
+                  const reports = (matchedPatient?.recentLabReports || []).filter((lab: any) => {
+                    if (docRecordFilter === 'all') return true;
+                    return (lab.category || 'Diagnostic Lab') === docRecordFilter;
+                  });
+
+                  if (reports.length === 0) {
+                    return (
+                      <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-2">
+                        <FileText className="w-8 h-8 text-slate-400 mx-auto" />
+                        <p className="text-xs font-bold text-slate-600">No records found under "{docRecordFilter}".</p>
+                        <p className="text-[11px] text-slate-400">Any document uploaded by the patient in their health locker will appear here instantly.</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-3">
+                      {reports.map((lab: any) => (
+                        <div
+                          key={lab.id}
+                          className="bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-2xl p-4 transition-all space-y-2 text-xs"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-blue-100 text-blue-900 border border-blue-200">
+                                  {lab.category || 'Diagnostic Lab'}
+                                </span>
+                                <span className="text-[10px] text-slate-500 font-medium">
+                                  • Reported: <strong>{lab.reportedAt}</strong>
+                                </span>
+                                {lab.doctorOrFacility && (
+                                  <span className="text-[10px] text-slate-400 truncate max-w-[150px]">
+                                    • {lab.doctorOrFacility}
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="font-extrabold text-sm text-slate-900 mt-1">{lab.testName}</h4>
+                            </div>
+
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                              lab.status === 'Normal'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : lab.status === 'Critical'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              {lab.status}
+                            </span>
+                          </div>
+
+                          <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-1">
+                            <div className="font-black text-slate-900">{lab.result}</div>
+                            {lab.referenceRange && (
+                              <div className="text-[11px] text-slate-500">Ref: {lab.referenceRange}</div>
+                            )}
+                          </div>
+
+                          <div className="bg-teal-50/70 p-2.5 rounded-xl border border-teal-200 text-slate-700 leading-relaxed text-[11px]">
+                            <strong className="text-teal-900">AI Finding Summary:</strong> {lab.explanation}
+                          </div>
+
+                          <div className="pt-2 border-t border-slate-200 flex items-center justify-between gap-2">
+                            <span className="text-[10px] text-slate-400">
+                              {lab.fileName || 'Verified Diagnostic Attachment'}
+                            </span>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  setDoctorNotes(prev => `${prev}\n\n[Reviewed Record: ${lab.testName} — ${lab.result}]`);
+                                  showToast(`Appended "${lab.testName}" findings to consultation notes.`);
+                                }}
+                                className="bg-blue-100 hover:bg-blue-200 text-blue-800 text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>Add to Notes</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setActiveTab('rx_builder');
+                                  showToast('Opening e-Prescription builder for this case.');
+                                }}
+                                className="bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                              >
+                                <Pill className="w-3 h-3" />
+                                <span>Prescribe</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                <div className="pt-2 flex justify-between items-center">
+                  <button
+                    onClick={() => setActiveTab('consultation')}
+                    className="text-xs text-slate-600 hover:text-slate-900 font-bold"
+                  >
+                    ← Back to Consultation Notes
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('rx_builder')}
+                    className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-xl text-xs transition-colors flex items-center gap-1.5 shadow-xs"
                   >
                     <span>Proceed to e-Prescription</span>
                     <ArrowRight className="w-3.5 h-3.5" />
