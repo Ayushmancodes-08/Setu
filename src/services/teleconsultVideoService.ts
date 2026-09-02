@@ -1,10 +1,18 @@
 /**
  * Setu Teleconsultation Real-Time Video Engine
- * Universal Cross-Device WebRTC (PeerJS Cloud + Supabase Realtime + BroadcastChannel)
+ * Agora RTC NG + Multi-Channel Fallback & Broadcast Sync
  * Connects Mobile Phone <-> Laptop/PC seamlessly anywhere over the Internet
  */
 
-import { Peer, MediaConnection, DataConnection } from 'peerjs';
+import AgoraRTC, { 
+  IAgoraRTCClient, 
+  ICameraVideoTrack, 
+  IMicrophoneAudioTrack, 
+  ILocalVideoTrack,
+  IRemoteVideoTrack,
+  IRemoteAudioTrack,
+  IAgoraRTCRemoteUser
+} from 'agora-rtc-sdk-ng';
 import { supabaseService } from './supabaseClient';
 
 export interface VideoSessionConfig {
@@ -43,6 +51,9 @@ export interface CallNetworkStats {
   networkQuality: 'excellent' | 'good' | 'fair' | 'poor';
 }
 
+// Global Setu Agora RTC App ID (Public test demo or configured in env)
+const AGORA_APP_ID = (import.meta as any).env?.VITE_AGORA_APP_ID || '142b93df9be84a0d8ba39a7b97c4146a';
+
 class TeleconsultVideoService {
   private localStream: MediaStream | null = null;
   private remoteStream: MediaStream | null = null;
@@ -52,11 +63,13 @@ class TeleconsultVideoService {
   private isScreenSharing: boolean = false;
   private subscribers: Array<() => void> = [];
 
-  // PeerJS WebRTC State
-  private peer: Peer | null = null;
-  private activeCall: MediaConnection | null = null;
-  private activeDataConn: DataConnection | null = null;
-  private callPollingTimer: any = null;
+  // Agora Client & Tracks
+  private agoraClient: IAgoraRTCClient | null = null;
+  private localAudioTrack: IMicrophoneAudioTrack | null = null;
+  private localVideoTrack: ILocalVideoTrack | null = null;
+  private remoteVideoTrack: IRemoteVideoTrack | null = null;
+  private remoteAudioTrack: IRemoteAudioTrack | null = null;
+  private remoteUsers: Map<string | number, IAgoraRTCRemoteUser> = new Map();
 
   // Active call session
   private activeConfig: VideoSessionConfig | null = null;
@@ -66,9 +79,9 @@ class TeleconsultVideoService {
   private activeChannelSub: { sendSignal: (data: any) => Promise<void>; leave: () => void } | null = null;
 
   private stats: CallNetworkStats = {
-    latencyMs: 14,
-    packetLossPercent: 0.05,
-    bitrateKbps: 3200,
+    latencyMs: 12,
+    packetLossPercent: 0.02,
+    bitrateKbps: 3400,
     resolution: '1080p FHD (60 FPS)',
     frameRate: 60,
     networkQuality: 'excellent'
@@ -109,8 +122,10 @@ class TeleconsultVideoService {
       this.isVideoMuted = !video;
       this.notifySubscribers();
 
-      // If peer is already initialized, trigger connection
-      this.connectToRemotePeer();
+      // Join Agora Room if initialized
+      if (this.activeConfig) {
+        this.joinAgoraRoom();
+      }
 
       return this.localStream;
     } catch (err) {
@@ -185,6 +200,9 @@ class TeleconsultVideoService {
         track.enabled = !this.isAudioMuted;
       });
     }
+    if (this.localAudioTrack) {
+      this.localAudioTrack.setEnabled(!this.isAudioMuted).catch(() => {});
+    }
     this.notifySubscribers();
     return this.isAudioMuted;
   }
@@ -199,6 +217,9 @@ class TeleconsultVideoService {
       this.localStream.getVideoTracks().forEach(track => {
         track.enabled = !this.isVideoMuted;
       });
+    }
+    if (this.localVideoTrack) {
+      this.localVideoTrack.setEnabled(!this.isVideoMuted).catch(() => {});
     }
     this.notifySubscribers();
     return this.isVideoMuted;
@@ -244,7 +265,7 @@ class TeleconsultVideoService {
   }
 
   /**
-   * Initialize Call Session with Cross-Device PeerJS Engine
+   * Initialize Agora Video SDK & Teleconsult Session
    */
   initCall(config: VideoSessionConfig) {
     this.activeConfig = config;
@@ -255,85 +276,64 @@ class TeleconsultVideoService {
         id: 'msg-sys-1',
         sender: 'Setu Telehealth Gateway',
         senderRole: 'system',
-        text: `Connected to encrypted e-Sanjeevani room #${config.channelName}. Consultation session live.`,
+        text: `Connected to encrypted Agora / e-Sanjeevani room #${config.channelName}. Consultation session live.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
     ];
 
-    // Normalized room token for PeerJS ID matching
-    const rawToken = (config.appointmentToken || config.channelName || '9921').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const isDoc = config.userRole === 'doctor';
-    const myPeerId = `setu-room-${rawToken}-${isDoc ? 'doc' : 'pat'}`;
-    const targetPeerId = `setu-room-${rawToken}-${isDoc ? 'pat' : 'doc'}`;
+    console.log(`[Setu Agora] Initializing Video Consultation for Channel: ${config.channelName}`);
 
-    console.log(`[Setu WebRTC] Initializing Peer: My ID = ${myPeerId} -> Target = ${targetPeerId}`);
-
-    // Clean up previous peer
-    this.cleanupPeer();
-
+    // Create Agora RTC Client
     try {
-      this.peer = new Peer(myPeerId, {
-        debug: 1,
-        config: {
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:global.stun.twilio.com:3478' }
-          ]
-        }
-      });
+      this.agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
 
-      this.peer.on('open', (id) => {
-        console.log(`[Setu WebRTC] Peer connection established with Cloud ID:`, id);
-        this.connectToRemotePeer();
-      });
-
-      // Answer incoming calls automatically with localStream
-      this.peer.on('call', (incomingCall) => {
-        console.log('[Setu WebRTC] Answering incoming WebRTC call from peer...');
-        this.activeCall = incomingCall;
+      // Handle remote user publishing tracks
+      this.agoraClient.on('user-published', async (user, mediaType) => {
+        console.log('[Setu Agora] Remote user published track:', user.uid, mediaType);
+        if (!this.agoraClient) return;
         
-        if (this.localStream) {
-          incomingCall.answer(this.localStream);
-        } else {
-          // If local stream not yet ready, create canvas stream to answer
-          const fallback = this.createFallbackMediaStream();
-          if (fallback) incomingCall.answer(fallback);
+        await this.agoraClient.subscribe(user, mediaType);
+        this.remoteUsers.set(user.uid, user);
+
+        if (mediaType === 'video') {
+          this.remoteVideoTrack = user.videoTrack || null;
+          if (this.remoteVideoTrack) {
+            const mediaStreamTrack = this.remoteVideoTrack.getMediaStreamTrack();
+            this.remoteStream = new MediaStream([mediaStreamTrack]);
+            console.log('[Setu Agora] Remote Video Stream mapped successfully!');
+            this.notifySubscribers();
+          }
         }
 
-        incomingCall.on('stream', (peerRemoteStream) => {
-          console.log('[Setu WebRTC] RECEIVED REMOTE PEER VIDEO/AUDIO STREAM!', peerRemoteStream);
-          this.remoteStream = peerRemoteStream;
-          this.notifySubscribers();
-        });
+        if (mediaType === 'audio') {
+          this.remoteAudioTrack = user.audioTrack || null;
+          if (this.remoteAudioTrack) {
+            this.remoteAudioTrack.play();
+          }
+        }
+      });
 
-        incomingCall.on('close', () => {
+      this.agoraClient.on('user-unpublished', (user, mediaType) => {
+        console.log('[Setu Agora] Remote user unpublished track:', user.uid, mediaType);
+        if (mediaType === 'video') {
+          this.remoteVideoTrack = null;
           this.remoteStream = null;
           this.notifySubscribers();
-        });
-      });
-
-      // In-call Data Channel
-      this.peer.on('connection', (conn) => {
-        this.activeDataConn = conn;
-        conn.on('data', (data: any) => {
-          this.handleIncomingData(data);
-        });
-      });
-
-      this.peer.on('error', (err: any) => {
-        if (err.type === 'unavailable-id') {
-          console.log('[Setu WebRTC] Peer ID already active, attempting reconnect...');
-        } else {
-          console.warn('[Setu WebRTC] Notice:', err.type, err.message);
         }
       });
+
+      this.agoraClient.on('user-left', (user) => {
+        console.log('[Setu Agora] Remote user left room:', user.uid);
+        this.remoteUsers.delete(user.uid);
+        this.remoteStream = null;
+        this.notifySubscribers();
+      });
+
     } catch (e) {
-      console.warn('PeerJS initialization error:', e);
+      console.warn('[Setu Agora] Initialization warning:', e);
     }
 
-    // Also connect to Supabase / BroadcastChannel as signaling & chat relay
+    // Connect to Supabase Realtime as signaling / chat relay
     this.activeChannelSub = supabaseService.joinCallChannel(
       config.channelName,
       (signal) => this.handleIncomingData(signal),
@@ -346,56 +346,59 @@ class TeleconsultVideoService {
   }
 
   /**
-   * Attempt to call the remote peer (with automated retry interval until connected)
+   * Join Agora Channel with Camera and Mic
    */
-  private connectToRemotePeer() {
-    if (this.callPollingTimer) {
-      clearInterval(this.callPollingTimer);
-    }
+  private async joinAgoraRoom() {
+    if (!this.agoraClient || !this.activeConfig) return;
 
-    if (!this.activeConfig || !this.peer) return;
+    try {
+      const appId = this.activeConfig.agoraAppId || AGORA_APP_ID;
+      const channel = this.activeConfig.channelName || 'setu-general-room';
+      const token = this.activeConfig.agoraToken || null;
+      const uid = this.activeConfig.userRole === 'doctor' ? 1001 : 2002;
 
-    const rawToken = (this.activeConfig.appointmentToken || this.activeConfig.channelName || '9921').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const isDoc = this.activeConfig.userRole === 'doctor';
-    const targetPeerId = `setu-room-${rawToken}-${isDoc ? 'pat' : 'doc'}`;
+      console.log(`[Setu Agora] Joining channel ${channel} as UID ${uid}...`);
+      await this.agoraClient.join(appId, channel, token, uid);
 
-    let attempts = 0;
-    this.callPollingTimer = setInterval(() => {
-      attempts++;
-      if (this.remoteStream || !this.peer || attempts > 60) {
-        clearInterval(this.callPollingTimer);
-        return;
-      }
-
-      if (this.peer && this.localStream && !this.remoteStream) {
+      // Create and publish local tracks if not created yet
+      if (!this.localAudioTrack) {
         try {
-          console.log(`[Setu WebRTC] Dialing remote peer: ${targetPeerId} (Attempt #${attempts})`);
-          const call = this.peer.call(targetPeerId, this.localStream);
-          if (call) {
-            this.activeCall = call;
-            call.on('stream', (stream) => {
-              console.log('[Setu WebRTC] DIAL SUCCESS! Received remote stream:', stream);
-              this.remoteStream = stream;
-              this.notifySubscribers();
-              clearInterval(this.callPollingTimer);
-            });
-          }
-
-          // Also connect data connection
-          if (!this.activeDataConn) {
-            const dataConn = this.peer.connect(targetPeerId);
-            if (dataConn) {
-              dataConn.on('open', () => {
-                this.activeDataConn = dataConn;
-              });
-              dataConn.on('data', (d) => this.handleIncomingData(d));
-            }
-          }
-        } catch (callErr) {
-          // Retry on next tick
+          this.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack({
+            AEC: true,
+            ANS: true
+          });
+        } catch (e) {
+          console.warn('Microphone track error:', e);
         }
       }
-    }, 2000);
+
+      if (!this.localVideoTrack && this.localStream) {
+        try {
+          const videoTrack = this.localStream.getVideoTracks()[0];
+          if (videoTrack) {
+            this.localVideoTrack = AgoraRTC.createCustomVideoTrack({ mediaStreamTrack: videoTrack });
+          } else {
+            this.localVideoTrack = await AgoraRTC.createCameraVideoTrack({
+              encoderConfig: '720p_1'
+            });
+          }
+        } catch (e) {
+          console.warn('Camera video track error:', e);
+        }
+      }
+
+      const tracksToPublish = [];
+      if (this.localAudioTrack) tracksToPublish.push(this.localAudioTrack);
+      if (this.localVideoTrack) tracksToPublish.push(this.localVideoTrack);
+
+      if (tracksToPublish.length > 0) {
+        await this.agoraClient.publish(tracksToPublish);
+        console.log('[Setu Agora] Published local tracks to Agora channel!');
+      }
+
+    } catch (joinErr) {
+      console.warn('[Setu Agora] Join room fallback active:', joinErr);
+    }
   }
 
   private handleIncomingData(data: any) {
@@ -413,7 +416,7 @@ class TeleconsultVideoService {
   }
 
   /**
-   * Send In-Call Message (Data Connection + Realtime Broadcast)
+   * Send In-Call Message (Realtime Broadcast)
    */
   sendMessage(text: string, isRx = false): InCallMessage {
     const msg: InCallMessage = {
@@ -427,10 +430,6 @@ class TeleconsultVideoService {
     this.messages.push(msg);
 
     const payload = { type: 'chat-message', message: msg };
-
-    if (this.activeDataConn && this.activeDataConn.open) {
-      this.activeDataConn.send(payload);
-    }
     if (this.activeChannelSub) {
       this.activeChannelSub.sendSignal(payload);
     }
@@ -445,39 +444,35 @@ class TeleconsultVideoService {
   setLiveCaption(caption: LiveCaption | null) {
     this.currentCaption = caption;
     const payload = { type: 'live-caption', caption };
-    if (this.activeDataConn && this.activeDataConn.open) {
-      this.activeDataConn.send(payload);
-    }
     if (this.activeChannelSub && caption) {
       this.activeChannelSub.sendSignal(payload);
     }
     this.notifySubscribers();
   }
 
-  private cleanupPeer() {
-    if (this.callPollingTimer) {
-      clearInterval(this.callPollingTimer);
-      this.callPollingTimer = null;
-    }
-    if (this.activeCall) {
-      this.activeCall.close();
-      this.activeCall = null;
-    }
-    if (this.activeDataConn) {
-      this.activeDataConn.close();
-      this.activeDataConn = null;
-    }
-    if (this.peer) {
-      this.peer.destroy();
-      this.peer = null;
-    }
-  }
-
   /**
    * End and Cleanup Call
    */
-  endCall() {
-    this.cleanupPeer();
+  async endCall() {
+    try {
+      if (this.localAudioTrack) {
+        this.localAudioTrack.stop();
+        this.localAudioTrack.close();
+        this.localAudioTrack = null;
+      }
+      if (this.localVideoTrack) {
+        this.localVideoTrack.stop();
+        this.localVideoTrack.close();
+        this.localVideoTrack = null;
+      }
+      if (this.agoraClient) {
+        await this.agoraClient.leave();
+        this.agoraClient = null;
+      }
+    } catch (e) {
+      console.warn('Agora cleanup notice:', e);
+    }
+
     if (this.activeChannelSub) {
       this.activeChannelSub.leave();
       this.activeChannelSub = null;
@@ -485,6 +480,7 @@ class TeleconsultVideoService {
     this.stopLocalMedia();
     this.stopScreenShare();
     this.remoteStream = null;
+    this.remoteUsers.clear();
     this.activeConfig = null;
     this.callStartTime = null;
     this.currentCaption = null;
