@@ -469,54 +469,111 @@ export const VideoConsultationRoom: React.FC<VideoConsultationRoomProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className="relative z-10 my-auto flex flex-col items-center justify-center gap-4 py-4 w-full h-full max-h-[460px]">
-                  {/* Full Interactive Video Feed Card */}
-                  <div className="relative w-full max-w-lg aspect-video rounded-3xl bg-gradient-to-tr from-slate-950 via-teal-950/80 to-slate-900 border-2 border-emerald-500/40 overflow-hidden shadow-2xl flex flex-col justify-between p-4">
-                    {/* Scanlines & Camera Grid */}
-                    <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px] opacity-15 pointer-events-none" />
-                    
-                    {/* Top HUD */}
-                    <div className="flex items-center justify-between text-[11px] z-10">
-                      <span className="bg-red-600 text-white font-black px-2.5 py-0.5 rounded-full tracking-wider flex items-center gap-1.5 shadow-md">
-                        <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                        LIVE STREAM
-                      </span>
-                      <span className="font-mono text-emerald-300 bg-slate-900/90 px-2.5 py-0.5 rounded-full border border-emerald-500/30 text-[10px]">
-                        1080p FHD • 60 FPS
-                      </span>
-                    </div>
+                <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-slate-950 overflow-hidden">
+                  {/* Realistic Medical Room Video Background & Lighting */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-teal-950/90 via-slate-900/95 to-slate-950" />
+                  <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
+                  
+                  {/* Subtle Clinic Lighting Ambiance */}
+                  <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute bottom-0 right-10 w-72 h-72 bg-emerald-600/10 rounded-full blur-2xl pointer-events-none" />
 
-                    {/* Central Face Portrait Display */}
-                    <div className="flex flex-col items-center justify-center gap-2.5 my-auto z-10">
-                      <div className="relative">
-                        <div className="absolute -inset-2 rounded-full bg-emerald-500/20 animate-pulse" />
-                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-teal-700 via-emerald-600 to-teal-900 border-3 border-emerald-400 shadow-2xl flex items-center justify-center text-3xl sm:text-4xl font-black text-white relative z-10">
-                          {config.userRole === 'doctor' ? '👨‍🌾' : '👩‍⚕️'}
-                        </div>
-                        <span className="absolute bottom-0 right-0 bg-emerald-500 text-slate-950 p-1.5 rounded-full shadow-lg z-20 border-2 border-slate-900">
-                          <Volume2 className="w-4 h-4 animate-bounce" />
+                  {/* Central Photorealistic Doctor / Patient Video Avatar */}
+                  <div className="relative z-10 flex flex-col items-center justify-center gap-3 max-w-md w-full px-4 text-center">
+                    
+                    {/* Live Stream Camera Card */}
+                    <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full p-1.5 bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-500 shadow-2xl">
+                      {/* Pulse Glow Ring */}
+                      <div className="absolute -inset-2 rounded-full bg-emerald-500/20 animate-ping pointer-events-none" />
+                      
+                      <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden relative flex items-center justify-center border-4 border-slate-950 shadow-inner">
+                        {/* Realistic Doctor / Patient Video Face Illustration */}
+                        {config.userRole === 'doctor' ? (
+                          // Patient Face View (Seen by Doctor)
+                          <div className="relative w-full h-full bg-gradient-to-b from-amber-100 to-amber-200 flex flex-col items-center justify-end overflow-hidden">
+                            {/* Head & Face */}
+                            <div className="w-24 h-28 rounded-full bg-[#e0a96d] relative shadow-md top-2 flex flex-col items-center">
+                              {/* Hair */}
+                              <div className="w-26 h-12 bg-slate-900 rounded-t-full absolute -top-2" />
+                              {/* Eyes */}
+                              <div className="flex items-center gap-6 mt-10">
+                                <span className="w-3 h-3 bg-slate-900 rounded-full ring-2 ring-white/60 animate-pulse" />
+                                <span className="w-3 h-3 bg-slate-900 rounded-full ring-2 ring-white/60 animate-pulse" />
+                              </div>
+                              {/* Gentle Smile */}
+                              <div className="w-8 h-3 border-b-3 border-slate-800 rounded-full mt-3" />
+                            </div>
+                            {/* Shoulders / Traditional Attire */}
+                            <div className="w-36 h-20 bg-indigo-900 rounded-t-3xl shadow-lg mt-1" />
+                          </div>
+                        ) : (
+                          // Doctor Face View (Seen by Patient)
+                          <div className="relative w-full h-full bg-gradient-to-b from-teal-50 to-slate-200 flex flex-col items-center justify-end overflow-hidden">
+                            {/* Stethoscope */}
+                            <div className="absolute top-16 w-24 h-24 border-4 border-teal-800 rounded-full z-10 pointer-events-none" />
+                            {/* Doctor Head */}
+                            <div className="w-24 h-28 rounded-full bg-[#f6d0b1] relative shadow-md top-2 flex flex-col items-center">
+                              {/* Doctor Professional Hair */}
+                              <div className="w-26 h-14 bg-slate-900 rounded-t-full absolute -top-3" />
+                              {/* Eyes with Glasses */}
+                              <div className="flex items-center gap-4 mt-9">
+                                <div className="w-5 h-5 border-2 border-slate-800 bg-white/40 rounded-md flex items-center justify-center">
+                                  <span className="w-2.5 h-2.5 bg-slate-900 rounded-full" />
+                                </div>
+                                <div className="w-5 h-5 border-2 border-slate-800 bg-white/40 rounded-md flex items-center justify-center">
+                                  <span className="w-2.5 h-2.5 bg-slate-900 rounded-full" />
+                                </div>
+                              </div>
+                              {/* Friendly Smile */}
+                              <div className="w-8 h-3 border-b-3 border-emerald-900 rounded-full mt-3" />
+                            </div>
+                            {/* Doctor White Apron / Scrub */}
+                            <div className="w-40 h-22 bg-white rounded-t-3xl shadow-xl border-t-2 border-teal-600 flex flex-col items-center justify-start pt-1 z-20">
+                              <span className="text-[9px] font-bold text-teal-800 font-mono tracking-wider">e-Sanjeevani</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Speaking Audio Badge */}
+                        <span className="absolute bottom-2 right-2 bg-emerald-500 text-slate-950 p-1.5 rounded-full shadow-lg z-30 border-2 border-slate-900 animate-bounce">
+                          <Volume2 className="w-3.5 h-3.5" />
                         </span>
                       </div>
+                    </div>
 
-                      <div className="text-center">
-                        <div className="font-black text-sm sm:text-base text-white drop-shadow-md">
+                    {/* Participant Info Banner */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-center gap-2">
+                        <h3 className="font-extrabold text-base sm:text-lg text-white drop-shadow-md">
                           {config.remoteParticipantName}
-                        </div>
-                        <div className="text-[11px] text-emerald-300 font-medium flex items-center justify-center gap-1 mt-0.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                          <span>{config.remoteParticipantRole} • Connected</span>
-                        </div>
+                        </h3>
+                        <span className="bg-emerald-500/20 text-emerald-300 font-bold text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30">
+                          {config.remoteParticipantRole}
+                        </span>
+                      </div>
+                      
+                      {/* Live Audio Equalizer Waves */}
+                      <div className="flex items-center justify-center gap-1 py-1">
+                        <span className="w-1 h-3 bg-emerald-400 rounded-full animate-pulse" />
+                        <span className="w-1 h-5 bg-teal-400 rounded-full animate-bounce" />
+                        <span className="w-1 h-7 bg-emerald-300 rounded-full animate-pulse" />
+                        <span className="w-1 h-4 bg-teal-400 rounded-full animate-bounce" />
+                        <span className="w-1 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                        <span className="text-[11px] text-emerald-300 font-medium ml-2">
+                          Speaking • Telemedicine Audio Encrypted
+                        </span>
                       </div>
                     </div>
 
-                    {/* Bottom Telemetry Strip */}
-                    <div className="flex items-center justify-between text-[10px] text-slate-300 z-10 bg-black/50 px-3 py-1.5 rounded-xl backdrop-blur-xs border border-slate-800">
-                      <span className="flex items-center gap-1.5 text-emerald-400">
+                    {/* ABDM e-Sanjeevani Tele-Clinic Badge */}
+                    <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/80 px-4 py-2 rounded-2xl flex items-center justify-between gap-4 text-[11px] text-slate-300 w-full">
+                      <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
                         <Radio className="w-3.5 h-3.5 animate-pulse" />
-                        <span>Speaking • High-Fidelity Audio Linked</span>
-                      </span>
-                      <span className="font-mono text-slate-400">e-Sanjeevani ABDM Protocol</span>
+                        <span>e-Sanjeevani National Telehealth Grid</span>
+                      </div>
+                      <span className="font-mono text-slate-400 text-[10px]">1080p • 60 FPS</span>
                     </div>
+
                   </div>
                 </div>
               )}
